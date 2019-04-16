@@ -34,7 +34,7 @@ class Combos extends BaseDimmer
                 'text' => 'Ver todos los '.$plural,
                 'link' => route('voyager.combos.index'),
             ],
-            'image' => voyager_asset('images/widget-backgrounds/01.jpg'),
+            'image' => 'images/combo.png',
         ]));
     }
 
