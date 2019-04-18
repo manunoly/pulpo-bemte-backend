@@ -47,36 +47,109 @@ class RegistroController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'user_id' => 'required',
-            'email' => 'required',
-            'disponible' => 'required',
+            'email' => 'required|email',
             'nombre' => 'required|min:3|max:50',
             'apellido' => 'required|min:3|max:50',
             'apodo' => 'required|min:3|max:20',
-            'cedula' => 'required|max:10',
             'ubicacion' => 'required',
             'ciudad' => 'required',
             'tipo' => 'required',
-            'celular' => 'required'
+            'celular' => 'required',
+            'tipo' => 'required'
         ]);
         if ($validator->fails()) 
         {
             return response()->json(['error' => $validator->errors()], 406);
         }
-        
+        if (($request['tipo'] != 'Alumno') && ($request['tipo'] != 'Profesor'))
+        {
+            return response()->json(['error' => 'El tipo de usuario enviado no es válido'], 401);
+        }
+        $ciudad = Ciudad::where('ciudad', '=', $request['ciudad'] )->first();
+        if (!$ciudad)
+        {
+            return response()->json(['error' => 'La ciudad enviada no es válida'], 401);
+        }
+        $cedula = $request['cedula'] ? trim($request['cedula']) : NULL;
+        if (strlen($cedula) != 10 && strlen($cedula) != 0)
+        {
+            return response()->json(['error' => 'Cédula inválida'], 401);
+        }
+
         $id_usuario = $request['user_id'];
         $user = User::where('id', $id_usuario)->select('*')->first();
         if ($user)
         {
-            $data['name'] = $request['name'];
-            $data['email'] = $request['email'];
+            if ($user['email'] != $request['email'])
+            {
+                $emailVerified = User::where('email', '=', $request['email'] )->first();
+                if ($emailVerified !== null) 
+                {
+                    return response()->json([ 'exist' => 'El email ya pertenece a otro usuario!'], 401);
+                }
+                $data['email'] = $request['email'];
+            }
+            if ( $request['password'] )
+            {
+                $data['password'] = bcrypt($request['password']);
+            }
+
+            $data['name'] = $request['nombre'].' '.$request['apellido'];
+            $avatar = $user['avatar'];
             if ( $request['avatar'] )
             {
                 $data['avatar'] = 'users/'.$request['avatar'];
+                $avatar = $data['avatar'];
             }
             $actualizado = User::where('id', $id_usuario )->update( $data );
             if( $actualizado )
             {
-                return response()->json(['success' => 'Datos actualizados correctamente', 'profile' => $user ], 200);
+                $dataUser['nombres'] = $request['nombre'];
+                $dataUser['apellidos'] = $request['apellido'];
+                $dataUser['apodo'] = $request['apodo'];
+                $dataUser['correo'] = $request['email'];
+                $dataUser['ubicacion'] = $request['ubicacion'];
+                $dataUser['ciudad'] = $request['ciudad'];
+                $dataUser['celular'] = $request['celular'];
+                if ($request['tipo'] == 'Alumno')
+                {
+                    $actualizado = Alumno::where('user_id', $id_usuario )->update( $dataUser );               
+                    if ($actualizado)
+                    {
+                        $alumno = Alumno::where('user_id', $id_usuario)->select('*')->first();   
+                        $alumno['tipo'] = 'Alumno';
+                        $alumno['avatar'] = $avatar;  
+                        return response()->json(['success' => 'Datos actualizados correctamente', 'profile' => $alumno ], 200);
+                    }
+                    else
+                    {
+                        return response()->json(['error' => 'Ocurrió un error al actualizar.'], 401);
+                    }
+                }
+                else
+                {
+                    $dataUser['cedula'] = $cedula;
+                    if ( $request['hojaVida'] )
+                    {
+                        $dataUser['hojaVida'] = 'users/'.$request['hojaVida'];
+                    }
+                    if ( $request['titulo'] )
+                    {
+                        $dataUser['titulo'] = 'users/'.$request['titulo'];
+                    }
+                    $actualizado = Profesore::where('user_id', $id_usuario )->update( $dataUser );
+                    if ($actualizado)
+                    {
+                        $profesor = Profesore::where('user_id', $id_usuario)->select('*')->first();
+                        $profesor['tipo'] = 'Profesor';
+                        $profesor['avatar'] = $avatar;
+                        return response()->json(['success' => 'Datos actualizados correctamente', 'profile' => $profesor ], 200);
+                    }
+                    else
+                    {
+                        return response()->json(['error' => 'Ocurrió un error al actualizar.'], 401);
+                    }
+                }
             }
             else
             {
@@ -154,12 +227,13 @@ class RegistroController extends Controller
         }
 
         $email = User::where('email', '=', $request['email'] )->first();
-        // generate random code to verify
-        $request['confirmation_code'] = str_random(30);
-        $mytime = date("Y-m-d H:i:s");  
         
         if ($email) 
         {
+            // generate random code to verify
+            $request['confirmation_code'] = str_random(30);
+            $mytime = date("Y-m-d H:i:s");  
+
             DB::insert('insert into password_resets (email, token,fecha) values (?, ?, ?)', [$request['email'], $request['confirmation_code'],$mytime]);
 
             $this->actual_email = $request['email'];
@@ -206,12 +280,12 @@ class RegistroController extends Controller
             return response()->json(['error' => $validator->errors()], 406);
         }
 
-        $request['password']=bcrypt( $request['password']);
         $email = User::where('email', '=', $request['email'] )->first();
         if ($email)
         {
-            DB::table('users')->where('email',$request['email'])->update(['password' => $request['password']]);
-            DB::table('password_resets')->where('token',$request['token'])->delete();
+            $request['password']=bcrypt( $request['password']);
+            DB::table('users')->where('email', $request['email'])->update(['password' => $request['password']]);
+            DB::table('password_resets')->where('token', $request['token'])->delete();
             return response()->json([ 'success' => 'Contraseña actualizada con éxito'], 200);
         }
         else
@@ -229,8 +303,7 @@ class RegistroController extends Controller
                 'nombre' => 'required|min:3|max:50',
                 'apellido' => 'required|min:3|max:50',
                 'apodo' => 'required|min:3|max:20',
-                'cedula' => 'required|max:10',
-                'email' => 'required|email|unique:users,email',
+                'email' => 'required|email',
                 'password' => 'required|min:6|max:20',
                 'ubicacion' => 'required',
                 'ciudad' => 'required',
@@ -245,16 +318,40 @@ class RegistroController extends Controller
             $user = User::where('email', '=', $request['email'] )->first();
             if ($user !== null) 
             {
-                return response()->json([ 'exist' => 'El usuario ya existe!'], 200);
+                return response()->json([ 'exist' => 'El usuario ya existe!'], 401);
             }
             if (($request['tipo'] != 'Alumno') && ($request['tipo'] != 'Profesor'))
             {
                 return response()->json(['error' => 'El tipo de usuario enviado no es válido'], 401);
             }
+            if ($request['tipo'] = 'Profesor')
+            {
+                if (!isset($request['clases']))
+                {
+                    return response()->json(['error' => 'Indique la Opción Clases'], 401);
+                }   
+                if ($request['clases'] != "0" && $request['clases'] != "1")
+                {
+                    return response()->json(['error' => 'Opción Clases incorrecta'], 401);
+                }
+                if (!isset($request['proyectos']))
+                {
+                    return response()->json(['error' => 'Indique la Opción Proyectos'], 401);
+                }   
+                if ($request['proyectos'] != "0" && $request['proyectos'] != "1")
+                {
+                    return response()->json(['error' => 'Opción Proyectos incorrecta'], 401);
+                }   
+            }
             $ciudad = Ciudad::where('ciudad', '=', $request['ciudad'] )->first();
             if (!$ciudad)
             {
                 return response()->json(['error' => 'La ciudad enviada no es válida'], 401);
+            }
+            $cedula = $request['cedula'] ? trim($request['cedula']) : NULL;
+            if (strlen($cedula) != 10 && strlen($cedula) != 0)
+            {
+                return response()->json(['error' => 'Cédula inválida'], 401);
             }
 
             $avatar = $request['avatar'] ? 'users/'.$request['avatar'] : NULL;
@@ -287,7 +384,6 @@ class RegistroController extends Controller
                         'ubicacion' => $request['ubicacion'],
                         'ciudad' => $request['ciudad'],
                         'ser_profesor' => false,
-                        'horas_disp' => 0,
                         'activo' => true,
                         'created_at' => $request['created_at'],
                         'updated_at' => $request['created_at']
@@ -299,26 +395,18 @@ class RegistroController extends Controller
                 }
                 else
                 {
-                    if (!$request['clases'])
-                    {
-                        return response()->json(['error' => 'No se ha especificado la opción Clases'], 401);
-                    }
-                    if (!$request['proyectos'])
-                    {
-                        return response()->json(['error' => 'No se ha especificado la opción Proyectos'], 401);
-                    }
                     $profesor = Profesore::create([
                         'user_id' => $user->id,
                         'celular' => $request['celular'],
                         'correo' => $user->email,
                         'nombres' => $request['nombre'],
                         'apellidos' => $request['apellido'],
-                        'cedula' => $request['cedula'],
+                        'cedula' => $cedula,
                         'apodo' => $request['apodo'],
                         'ubicacion' => $request['ubicacion'],
                         'ciudad' => $request['ciudad'],
-                        'clases' => $request['clases'],
-                        'proyectos' => $request['proyectos'],
+                        'clases' => $request['clases'] == "1" ? true : false,
+                        'proyectos' => $request['proyectos'] == "1" ? true : false,
                         'disponible' => true,
                         'hoja_vida ' => $hojaVida,
                         'titulo ' => $titulo,
@@ -345,7 +433,7 @@ class RegistroController extends Controller
         } 
         else 
         {
-            return response()->json(['error' => 'Form is empty!'], 401);
+            return response()->json(['error' => 'Formulario vacío!'], 401);
         }
     }
 }
