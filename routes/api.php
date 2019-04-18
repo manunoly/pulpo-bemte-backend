@@ -29,6 +29,7 @@ Route::post('reset_pw', 'RegistroController@actualizarPW');
 
 
 Route::get('lista-ciudades', 'CiudadController@listaCiudades');
+Route::get('lista-sedes', 'CiudadController@listaSedes');
 
 
 Route::get('lista-combos', 'CombosController@listaCombos');

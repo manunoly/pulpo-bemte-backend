@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Ciudad;
+use App\Sede;
 use Illuminate\Http\Request;
 
 class CiudadController extends Controller
@@ -11,5 +12,11 @@ class CiudadController extends Controller
     {
         $ciudades = Ciudad::where('activa', '1' )->select('ciudad')->get();
         return response()->json($ciudades, 200);
+    }
+
+    public function listaSedes()
+    {
+        $sedes = Sede::where('activa', '1' )->select('nombre', 'ciudad')->get();
+        return response()->json($sedes, 200);
     }
 }
