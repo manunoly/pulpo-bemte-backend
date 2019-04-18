@@ -8,26 +8,26 @@ use Validator;
 
 class ProfesorController extends Controller
 {
-    public function actualizarProyectos(Request $request)
+    public function actualizarTareas(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'user_id' => 'required',
-            'proyectos' => 'required'
+            'tareas' => 'required'
         ]);
         if ($validator->fails()) 
         {
             return response()->json(['error' => $validator->errors()], 406);
         } 
-        if ($request['proyectos'] != "0" && $request['proyectos'] != "1")
+        if ($request['tareas'] != "0" && $request['tareas'] != "1")
         {
-            return response()->json(['error' => 'Opción Proyectos incorrecta'], 401);
+            return response()->json(['error' => 'Opción Tareas incorrecta'], 401);
         }
 
         $id_usuario = $request['user_id'];
         $profesor = Profesore::where('user_id', $id_usuario)->select('*')->first();
         if ($profesor)
         {
-            $data['proyectos'] = $request['proyectos'] == "1" ? true : false;
+            $data['tareas'] = $request['tareas'] == "1" ? true : false;
             $actualizado = Profesore::where('user_id', $id_usuario )->update( $data );
             if( $actualizado )
             {

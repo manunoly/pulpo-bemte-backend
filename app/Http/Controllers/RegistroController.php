@@ -70,7 +70,7 @@ class RegistroController extends Controller
         {
             return response()->json(['error' => 'La ciudad enviada no es válida'], 401);
         }
-        $cedula = $request['cedula'] ? trim($request['cedula']) : NULL;
+        $cedula = isset($request['cedula']) ? trim($request['cedula']) : NULL;
         if (strlen($cedula) != 10 && strlen($cedula) != 0)
         {
             return response()->json(['error' => 'Cédula inválida'], 401);
@@ -89,14 +89,14 @@ class RegistroController extends Controller
                 }
                 $data['email'] = $request['email'];
             }
-            if ( $request['password'] )
+            if ( isset($request['password']) )
             {
                 $data['password'] = bcrypt($request['password']);
             }
 
             $data['name'] = $request['nombre'].' '.$request['apellido'];
             $avatar = $user['avatar'];
-            if ( $request['avatar'] )
+            if ( isset($request['avatar']) )
             {
                 $data['avatar'] = 'users/'.$request['avatar'];
                 $avatar = $data['avatar'];
@@ -129,11 +129,11 @@ class RegistroController extends Controller
                 else
                 {
                     $dataUser['cedula'] = $cedula;
-                    if ( $request['hojaVida'] )
+                    if ( isset($request['hojaVida']) )
                     {
                         $dataUser['hojaVida'] = 'users/'.$request['hojaVida'];
                     }
-                    if ( $request['titulo'] )
+                    if ( isset($request['titulo']) )
                     {
                         $dataUser['titulo'] = 'users/'.$request['titulo'];
                     }
@@ -334,13 +334,13 @@ class RegistroController extends Controller
                 {
                     return response()->json(['error' => 'Opción Clases incorrecta'], 401);
                 }
-                if (!isset($request['proyectos']))
+                if (!isset($request['tareas']))
                 {
-                    return response()->json(['error' => 'Indique la Opción Proyectos'], 401);
+                    return response()->json(['error' => 'Indique la Opción Tareas'], 401);
                 }   
-                if ($request['proyectos'] != "0" && $request['proyectos'] != "1")
+                if ($request['tareas'] != "0" && $request['tareas'] != "1")
                 {
-                    return response()->json(['error' => 'Opción Proyectos incorrecta'], 401);
+                    return response()->json(['error' => 'Opción Tareas incorrecta'], 401);
                 }   
             }
             $ciudad = Ciudad::where('ciudad', '=', $request['ciudad'] )->first();
@@ -348,16 +348,13 @@ class RegistroController extends Controller
             {
                 return response()->json(['error' => 'La ciudad enviada no es válida'], 401);
             }
-            $cedula = $request['cedula'] ? trim($request['cedula']) : NULL;
+            $cedula = isset($request['cedula']) ? trim($request['cedula']) : NULL;
             if (strlen($cedula) != 10 && strlen($cedula) != 0)
             {
                 return response()->json(['error' => 'Cédula inválida'], 401);
             }
 
-            $avatar = $request['avatar'] ? 'users/'.$request['avatar'] : NULL;
-            $hojaVida = $request['hojaVida'] ? 'users/'.$request['hojaVida'] : NULL;
-            $titulo = $request['titulo'] ? 'users/'.$request['titulo'] : NULL;
-
+            $avatar = isset($request['avatar']) ? 'users/'.$request['avatar'] : NULL;
             $user = User::create([
                 'role_id' => $request['tipo'] == 'Alumno' ? 2 : 4,
                 'name' => $request['nombre'].' '.$request['apellido'],
@@ -395,6 +392,8 @@ class RegistroController extends Controller
                 }
                 else
                 {
+                    $hojaVida = isset($request['hojaVida']) ? 'users/'.$request['hojaVida'] : NULL;
+                    $titulo = isset($request['titulo']) ? 'users/'.$request['titulo'] : NULL;
                     $profesor = Profesore::create([
                         'user_id' => $user->id,
                         'celular' => $request['celular'],
@@ -406,7 +405,7 @@ class RegistroController extends Controller
                         'ubicacion' => $request['ubicacion'],
                         'ciudad' => $request['ciudad'],
                         'clases' => $request['clases'] == "1" ? true : false,
-                        'proyectos' => $request['proyectos'] == "1" ? true : false,
+                        'tareas' => $request['tareas'] == "1" ? true : false,
                         'disponible' => true,
                         'hoja_vida ' => $hojaVida,
                         'titulo ' => $titulo,
