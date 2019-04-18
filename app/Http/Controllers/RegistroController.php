@@ -359,7 +359,7 @@ class RegistroController extends Controller
             $titulo = $request['titulo'] ? 'users/'.$request['titulo'] : NULL;
 
             $user = User::create([
-                'role_id' => 2,
+                'role_id' => $request['tipo'] == 'Alumno' ? 2 : 4,
                 'name' => $request['nombre'].' '.$request['apellido'],
                 'email' => $request['email'],
                 'password' => bcrypt($request['password']),

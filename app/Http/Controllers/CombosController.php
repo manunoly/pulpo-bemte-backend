@@ -27,14 +27,4 @@ class CombosController extends Controller
             return response()->json(['error' => 'Combo no especificado'], 401);
         }
     }
-
-    
-    public function getAll(){
-        $combos  = Combo::select( 'nombre' )
-        ->with(array('CombosHora'=>function($query){
-            $query->select('*');
-        }))
-        ->get();
-        return response()->json( $combos , 200);
-    }
 }
