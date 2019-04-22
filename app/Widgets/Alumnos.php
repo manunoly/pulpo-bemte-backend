@@ -34,7 +34,7 @@ class Alumnos extends BaseDimmer
                 'text' => 'Ver todos los '.$plural,
                 'link' => route('voyager.alumnos.index'),
             ],
-            'image' => 'images/alumno.png',
+            'image' => env('APP_URL').'/images/alumno.png',
         ]));
     }
 
