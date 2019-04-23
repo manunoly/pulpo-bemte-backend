@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Combo;
 use App\CombosHora;
 use Illuminate\Http\Request;
 

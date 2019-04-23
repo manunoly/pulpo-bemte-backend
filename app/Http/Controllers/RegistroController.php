@@ -316,7 +316,7 @@ class RegistroController extends Controller
             }
             
             $user = User::where('email', '=', $request['email'] )->first();
-            if ($user !== null) 
+            if ($user != null) 
             {
                 return response()->json([ 'exist' => 'El usuario ya existe!'], 401);
             }
@@ -324,7 +324,7 @@ class RegistroController extends Controller
             {
                 return response()->json(['error' => 'El tipo de usuario enviado no es válido'], 401);
             }
-            if ($request['tipo'] = 'Profesor')
+            if ($request['tipo'] == 'Profesor')
             {
                 if (!isset($request['clases']))
                 {
