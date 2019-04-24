@@ -21,6 +21,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::post('login', 'RegistroController@login');
 Route::post('registro', 'RegistroController@registro');
 Route::post('actualizar-cuenta', 'RegistroController@actualizarCuenta');
+Route::post('actualizar-celular', 'RegistroController@actualizarCelular');
 
 Route::get('eliminar-cuenta', 'RegistroController@eliminarCuenta');
 Route::post('reset', 'RegistroController@resetPassword');
@@ -40,3 +41,7 @@ Route::get('combo-horas', 'CombosController@listaCombosHoras');
 Route::post('actualizar-tareas', 'ProfesorController@actualizarTareas');
 Route::post('actualizar-clases', 'ProfesorController@actualizarClases');
 Route::post('actualizar-disponible', 'ProfesorController@actualizarDisponible');
+
+
+Route::post('solicitar-tarea', 'TareasController@solicitarTarea');
+Route::get('tarea-activa', 'TareasController@tareaActiva');

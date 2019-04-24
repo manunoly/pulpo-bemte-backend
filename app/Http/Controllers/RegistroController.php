@@ -355,6 +355,8 @@ class RegistroController extends Controller
             }
 
             $avatar = isset($request['avatar']) ? 'users/'.$request['avatar'] : NULL;
+            $token = isset($request['token']) ? $request['token'] : NULL;
+            $sistema = isset($request['sistema']) ? $request['sistema'] : NULL;
             $user = User::create([
                 'role_id' => $request['tipo'] == 'Alumno' ? 2 : 4,
                 'name' => $request['nombre'].' '.$request['apellido'],
@@ -364,7 +366,9 @@ class RegistroController extends Controller
                 'updated_at' => $request['created_at'],
                 'tipo' => $request['tipo'],
                 'activo' => true,
-                'avatar' => $avatar
+                'avatar' => $avatar,
+                'token' => $token,
+                'sistema' => $sistema
             ]);
 
             if( $user->id)
@@ -433,6 +437,41 @@ class RegistroController extends Controller
         else 
         {
             return response()->json(['error' => 'Formulario vacío!'], 401);
+        }
+    }
+
+    public function actualizarCelular(Request $request)
+    {
+        if (!isset($request['token']) && !isset($request['sistema']))
+        {
+            return response()->json(['error' => 'No se especificaron datos para actualizar'], 401);
+        }
+        $id_usuario = $request['user_id'];
+        $user = User::where('id', $id_usuario)->select('*')->first();
+        if ($user)
+        {
+            if (isset($request['token']))
+            {
+                $data['token'] = $request['token'];
+            }
+            if (isset($request['sistema']))
+            {
+                $data['sistema'] = $request['sistema'];
+            }
+
+            $actualizado = User::where('id', $id_usuario )->update( $data );
+            if( $actualizado )
+            {
+                return response()->json(['success' => 'Datos actualizados correctamente'], 200);
+            }
+            else
+            {
+                return response()->json(['error' => 'Ocurrió un error al actualizar.'], 401);
+            }
+        } 
+        else
+        {
+            return response()->json(['error' => 'No se encontró el usuario.'], 401);
         }
     }
 }
