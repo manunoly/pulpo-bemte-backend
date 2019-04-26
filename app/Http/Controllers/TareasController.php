@@ -101,6 +101,7 @@ class TareasController extends Controller
             $search = \Request::get('user_id');
             $tarea = Tarea::where('user_id', $search)->where('estado', '!=', 'Terminado')
                         ->where('estado', '!=', 'Cancelado')
+                        ->where('estado', '!=', 'Sin_Profesor')->where('estado', '!=', 'Sin_Pago')
                         ->select('user_id', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
                         'descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 
                         'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor')

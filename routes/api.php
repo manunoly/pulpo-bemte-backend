@@ -41,7 +41,11 @@ Route::get('combo-horas', 'CombosController@listaCombosHoras');
 Route::post('actualizar-tareas', 'ProfesorController@actualizarTareas');
 Route::post('actualizar-clases', 'ProfesorController@actualizarClases');
 Route::post('actualizar-disponible', 'ProfesorController@actualizarDisponible');
+Route::post('calificar-profesor', 'ProfesorController@calificarProfesor');
 
 
 Route::post('solicitar-tarea', 'TareasController@solicitarTarea');
 Route::get('tarea-activa', 'TareasController@tareaActiva');
+
+
+Route::post('calificar-alumno', 'AlumnosController@calificarAlumno');
