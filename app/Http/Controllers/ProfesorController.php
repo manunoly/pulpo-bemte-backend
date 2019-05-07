@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Tarea;
 use App\Profesore;
+use App\TareaProfesor;
 use Illuminate\Http\Request;
 use Validator;
 
@@ -129,7 +130,7 @@ class ProfesorController extends Controller
             return response()->json(['error' => $validator->errors()], 406);
         } 
         
-        if ($request['calificacion'] > 5 || $request['calificacion'] < 0)
+        if (!is_numeric($request['calificacion']) || $request['calificacion'] > 5 || $request['calificacion'] < 0)
         {
             return response()->json(['error' => 'La calificación debe estar en el rango de 0 a 5'], 401);
         }
@@ -177,5 +178,100 @@ class ProfesorController extends Controller
             Profesore::where('user_id',$id_calificado)->update($calif_prof);
         }
         return response()->json(['success' => 'Profesor calificado correctamente'], 200);
+    }
+
+    public function aplicarTarea(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required',
+            'tarea_id' => 'required',
+            'tiempo' => 'required',
+            'inversion' => 'required'
+        ]);
+        if ($validator->fails()) 
+        {
+            return response()->json(['error' => $validator->errors()], 406);
+        } 
+        
+        if (!is_numeric($request['tiempo']) || $request['tiempo'] <= 0)
+        {
+            return response()->json(['error' => 'Especifique un tiempo para la Tarea'], 401);
+        }
+        if (!is_numeric($request['inversion']) || $request['inversion'] <= 0)
+        {
+            return response()->json(['error' => 'Especifique una inversión para la Tarea'], 401);
+        }
+
+        $tarea = Tarea::where('id', $request['tarea_id'])->first();
+        if ($tarea != null)
+        {
+            if ($tarea->estado == 'Solicitado')
+            {
+                $profe = Profesore::where('user_id', $request['user_id'])->first();
+                if ($profe != null)
+                {
+                    if ($profe->activo)
+                    {
+                        $solicitud = TareaProfesor::where('tarea_id', $request['tarea_id'])->where('user_id', $request['user_id'])->first();
+                        if ($solicitud == null)
+                        {
+                            if ( 10 > TareaProfesor::where('tarea_id', $request['tarea_id'])->where('estado', 'Solicitada')->count())
+                            {
+                                $aplica = TareaProfesor::create([
+                                    'user_id' => $request['user_id'],
+                                    'tarea_id' => $request['tarea_id'],
+                                    'inversion' => $request['inversion'],
+                                    'tiempo' => $request['tiempo'],
+                                    'estado' => 'Solicitada'
+                                ]);
+                                if ($aplica->id)
+                                {
+                                    return response()->json(['success' => 'Tarea Solicitada'], 200);
+                                }
+                                else
+                                {
+                                    return response()->json(['error' => 'Ocurrió un error al registrar solicitud!'], 401);
+                                }
+                            }
+                            else
+                            {
+                                return response()->json(['error' => 'Solicitudes completas para la Tarea'], 401);
+                            }
+                        }
+                        else
+                        {
+                            $data['inversion'] = $request['inversion'];
+                            $data['tiempo'] = $request['tiempo'];
+                            $data['estado'] = 'Solicitada';
+                            $actualizado = TareaProfesor::where('id', $solicitud->id )->update( $data );
+                            if($actualizado)
+                            {
+                                return response()->json(['success' => 'Tarea Solicitada'], 200);
+                            }
+                            else
+                            {
+                                return response()->json(['error' => 'Solicitud para la Tarea no se pudo actualizar'], 401);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        return response()->json(['error' => 'El profesor no se encuentra activo'], 401);
+                    }
+                }
+                else
+                {
+                    return response()->json(['error' => 'No se encontró al Profesor para aplicar'], 401);
+                }
+            }
+            else
+            {
+                return response()->json(['error' => 'Tarea no disponible'], 401);
+            }
+        }
+        else
+        {
+            return response()->json(['error' => 'No se encontró la Tarea para aplicar'], 401);
+        }
     }
 }

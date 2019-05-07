@@ -44,10 +44,15 @@ Route::post('actualizar-tareas', 'ProfesorController@actualizarTareas');
 Route::post('actualizar-clases', 'ProfesorController@actualizarClases');
 Route::post('actualizar-disponible', 'ProfesorController@actualizarDisponible');
 Route::post('calificar-profesor', 'ProfesorController@calificarProfesor');
+Route::post('aplicar-tarea', 'ProfesorController@aplicarTarea');
 
 
 Route::post('solicitar-tarea', 'TareasController@solicitarTarea');
 Route::get('tarea-activa', 'TareasController@tareaActiva');
+Route::get('tareas-disponibles', 'TareasController@tareasDisponibles');
+Route::post('subir-ejercicio', 'TareasController@subirEjercicio');
 
 
 Route::post('calificar-alumno', 'AlumnosController@calificarAlumno');
+Route::post('subir-transferencia', 'AlumnosController@subirTransferencia');
+Route::post('pagar-con-combo', 'AlumnosController@pagarConCombo');
