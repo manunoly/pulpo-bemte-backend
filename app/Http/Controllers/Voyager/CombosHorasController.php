@@ -14,6 +14,8 @@ use TCG\Voyager\Events\BreadImagesDeleted;
 use TCG\Voyager\Facades\Voyager;
 use TCG\Voyager\Http\Controllers\Traits\BreadRelationshipParser;
 
+use App\Combo;
+
 class CombosHorasController extends Controller
 {
     use BreadRelationshipParser;
@@ -359,6 +361,19 @@ class CombosHorasController extends Controller
 
         // Validate fields with ajax
         $val = $this->validateBread($request->all(), $dataType->addRows)->validate();
+
+        $combo = Combo::where('nombre', $request['combo'])->first();
+        if (($request['combo'] == null) || ($combo == null))
+        {
+            $messages["combo"] = 'Seleccione un Combo';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+        if (($combo!=null) && (!$combo->activo))
+        {
+            $messages["combo"] = 'El Combo no está disponible';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+
         $data = $this->insertUpdateData($request, $slug, $dataType->addRows, new $dataType->model_name());
 
         event(new BreadDataAdded($dataType, $data));
