@@ -210,7 +210,7 @@ class ProfesorController extends Controller
                 $profe = Profesore::where('user_id', $request['user_id'])->first();
                 if ($profe != null)
                 {
-                    if ($profe->activo)
+                    if ($profe->activo && $profe->disponible && $profe->tareas)
                     {
                         $solicitud = TareaProfesor::where('tarea_id', $request['tarea_id'])->where('user_id', $request['user_id'])->first();
                         if ($solicitud == null)
@@ -256,7 +256,7 @@ class ProfesorController extends Controller
                     }
                     else
                     {
-                        return response()->json(['error' => 'El profesor no se encuentra activo'], 401);
+                        return response()->json(['error' => 'El profesor no se encuentra disponible para la tarea'], 401);
                     }
                 }
                 else
