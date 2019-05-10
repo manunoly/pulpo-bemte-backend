@@ -36,32 +36,32 @@ class Kernel extends ConsoleKernel
             ->sendOutputTo('C:\\virtual\\cron.txt');
             
         $schedule->command('asignar:pago:tarea')->everyMinute()
-        ->when(function () 
-        {
-            $newDate = date("Y-m-d H:i:s", strtotime(date("d/m/y H:i:s"). '-20 minutes'));
-            $tareas = Tarea::where('estado','Confirmado')->where('updated_at','<=', $newDate)->get();
-            return $tareas->count() > 0;
-        })
-        ->sendOutputTo('C:\\virtual\\cron.txt');
+            ->when(function () 
+            {
+                $newDate = date("Y-m-d H:i:s", strtotime(date("d/m/y H:i:s"). '-20 minutes'));
+                $tareas = Tarea::where('estado','Confirmado')->where('updated_at','<=', $newDate)->get();
+                return $tareas->count() > 0;
+            })
+            ->sendOutputTo('C:\\virtual\\cron.txt');
         
         $schedule->command('terminar:tarea')->everyMinute()
-        ->when(function () 
-        {
-            $newDate = date("Y-m-d");
-            $newTime = date("H:i:s");
-            $listado = Tarea::where('estado','Aceptado')->where('fecha_entrega','<=', $newDate)->get();
-            $tareas = [];
-            foreach($listado as $item)
+            ->when(function () 
             {
-                if (($item->fecha_entrega != $newDate) || (($item->fecha_entrega == $newDate)
-                        && ($item->hora_fin <= $newTime)))
+                $newDate = date("Y-m-d");
+                $newTime = date("H:i:s");
+                $listado = Tarea::where('estado','Aceptado')->where('fecha_entrega','<=', $newDate)->get();
+                $tareas = [];
+                foreach($listado as $item)
                 {
-                    $tareas[] = $item;
+                    if (($item->fecha_entrega != $newDate) || (($item->fecha_entrega == $newDate)
+                            && ($item->hora_fin <= $newTime)))
+                    {
+                        $tareas[] = $item;
+                    }
                 }
-            }
-            return count($tareas) > 0;
-        })
-        ->sendOutputTo('C:\\virtual\\cron.txt');
+                return count($tareas) > 0;
+            })
+            ->sendOutputTo('C:\\virtual\\cron.txt');
     }
 
     /**

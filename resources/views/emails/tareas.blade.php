@@ -107,11 +107,19 @@
             <td ></td> 
             <td class="cuerpo">
                 <p class="hola">Hola!</p>
-                <p>{{$alumno}}<p>
-                <p>{{$profesor}}<p>
                 <p>La Tarea solicitada ha sido asignada. A continuación los detalles de la misma.<p>
-                <p>{{$tarea->id}}<p>
-                <p>{{$tarea->fecha_entrega}}<p>
+                <p>Número: {{$tarea->id}}<p>
+                <p>Alumno: {{$alumno}}<p>
+                <p>Profesor: {{$profesor}}<p>
+                <p>Materia: {{$tarea->materia}}<p>
+                <p>Tema: {{$tarea->tema}}<p>
+                <p>Descripción: {{$tarea->descripcion}}<p>
+                <p>Formato: {{$tarea->formato_entrega}}<p>
+                <p>Fecha Entrega: {{$tarea->fecha_entrega}}<p>
+                <p>Hora Inicio: {{$tarea->hora_inicio}}<p>
+                <p>Hora Fin: {{$tarea->hora_fin}}<p>
+                <p>Tiempo Estimado: {{$tarea->tiempo_estimado}}<p>
+                <p>Inversión: {{$tarea->inversion}}<p>
                 <p class="hola">Saludos,</p>
                 <p class="hola">{{$empresa}}</p>    
                 <br>

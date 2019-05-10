@@ -1,10 +1,12 @@
 <?php
 
 namespace App\Console\Commands;
-
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Console\Command;
+use App\User;
 use App\Tarea;
 use App\AlumnoPago;
+use App\Mail\NotificacionTareas;
 
 class AsignarPagoTarea extends Command
 {
@@ -48,6 +50,21 @@ class AsignarPagoTarea extends Command
             if ($transfer != null)
             {
                 $dataTarea['estado'] = 'Aceptado';
+                $alumno = User::where('id', $item->user_id)->first();
+                $profesor = User::where('id', $item->user_id_pro)->first();
+                try 
+                {
+                    Mail::to($alumno->email)->send(new NotificacionTareas($item, $alumno->name, $profesor->name, 
+                                                    env('EMPRESA'), true));
+                    Mail::to($profesor->email)->send(new NotificacionTareas($item, $alumno->name, $profesor->name, 
+                                                    env('EMPRESA'), false));
+                }
+                catch (Exception $e) 
+                {
+                    return response()->json(
+                                ['success' => 'No se ha podido enviar el correo',
+                                'detalle' => $e->getMessage()], 200);
+                }
             }
             else
             {
