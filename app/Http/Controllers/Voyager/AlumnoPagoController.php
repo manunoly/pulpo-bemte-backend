@@ -13,6 +13,7 @@ use TCG\Voyager\Events\BreadDataUpdated;
 use TCG\Voyager\Events\BreadImagesDeleted;
 use TCG\Voyager\Facades\Voyager;
 use TCG\Voyager\Http\Controllers\Traits\BreadRelationshipParser;
+use App\Tarea;
 
 class AlumnoPagoController extends Controller
 {
@@ -290,7 +291,13 @@ class AlumnoPagoController extends Controller
             $messages["error"] = 'Por favor Apruebe o Rechace el pago';
             return redirect()->back()->withErrors($messages)->withInput();
         }
-
+        $tarea = Tarea::where('id', $data['tarea_id'])->first();
+        if (($tarea != null) && ($tarea->estado != 'Confirmado') && ($request['estado'] == 'Aprobado'))
+        {
+            $messages["error"] = 'La Tarea ya no permite la Aprobación del pago';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+        
         $this->insertUpdateData($request, $slug, $dataType->editRows, $data);
 
         event(new BreadDataUpdated($dataType, $data));
