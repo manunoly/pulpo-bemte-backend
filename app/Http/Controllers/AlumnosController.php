@@ -154,6 +154,7 @@ class AlumnosController extends Controller
         {
             if ($user->activo)
             {
+                $nombre = NULL;
                 if ($archivo != NULL)
                 {
                     $file = $request->file('archivo');
