@@ -32,7 +32,7 @@ class Profesores extends BaseDimmer
                         ['count' => $count, 'string' => Str::lower($string), 'plural' => Str::lower($plural)]),
             'button' => [
                 'text' => 'Ver todos los '.$plural,
-                'link' => route('voyager.combos.index'),
+                'link' => route('voyager.profesores.index'),
             ],
             'image' => env('APP_URL').'/images/profesor.png',
         ]));
