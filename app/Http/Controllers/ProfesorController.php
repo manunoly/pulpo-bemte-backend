@@ -157,7 +157,7 @@ class ProfesorController extends Controller
                 {
                     $coment = isset($request['comment']) ? $request['comment'] : NULL;
                     $calif = array("calificacion_profesor" => $request['calificacion'], 
-                                    "comentario_profesor" => $coment);
+                                    "comentario_profesor" => $coment, "estado" => "Calificado");
                     Tarea::where('id',$id_tarea)->update($calif);
                 }
                 else

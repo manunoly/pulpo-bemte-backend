@@ -11,7 +11,7 @@ class Tarea extends Model
 
     protected $fillable = [
         'user_id', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 'descripcion', 
-        'formato_entrega', 'estado',  
+        'formato_entrega', 'estado', 'activa', 
         'user_id_pro', 'tiempo_estimado', 'inversion', 
         'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor',
     ];

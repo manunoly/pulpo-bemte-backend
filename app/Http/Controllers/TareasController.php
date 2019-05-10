@@ -18,6 +18,7 @@ Solicitado
 Confirmado
 Aceptado (pagado)
 Terminado
+Calificado
 Cancelado
 Sin_Profesor
 Sin_Pago
@@ -69,7 +70,8 @@ class TareasController extends Controller
                 'hora_fin' => $request['hora_fin'],
                 'descripcion' => $request['descripcion'],
                 'formato_entrega' => $request['formato_entrega'],
-                'estado' => 'Solicitado'
+                'estado' => 'Solicitado',
+                'activa' => true
             ]);
 
             if( $tarea->id)
@@ -99,13 +101,17 @@ class TareasController extends Controller
         if( \Request::get('user_id') )
         {
             $search = \Request::get('user_id');
-            $tarea = Tarea::where('user_id', $search)->where('estado', '!=', 'Terminado')
-                        ->where('estado', '!=', 'Cancelado')
-                        ->where('estado', '!=', 'Sin_Profesor')->where('estado', '!=', 'Sin_Pago')
-                        ->select('user_id', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
+            $tarea = Tarea::where('user_id', $search)
+                        ->where('activa', true)
+                        ->select('id','user_id', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
                         'descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 
                         'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor')
                         ->first();
+            if (isset($tarea->user_id_pro) && $tarea->user_id_pro > 0)
+            {
+                $prof = User::where('id', $tarea->user_id_pro)->first();
+                $tarea['profesor'] = $prof->name;
+            }
             return response()->json($tarea, 200);
         }
         else
@@ -201,5 +207,39 @@ class TareasController extends Controller
         {
             return response()->json(['error' => 'No se encontró al Usuario para subir el Ejercicio'], 401);
         }
+    }
+
+
+    public function tareaTerminar(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'tarea_id' => 'required|numeric'
+        ]);
+        if ($validator->fails()) 
+        {
+            return response()->json(['error' => $validator->errors()], 406);
+        }
+        $tarea = Tarea::where('id', $request['tarea_id'])->first();
+        if ($tarea != null)
+        {
+            $data['activa'] = false;
+            if ($tarea->estado == 'Solicitado' || $tarea->estado == 'Confirmado')
+            {
+                $data['estado'] = 'Cancelado';
+            }
+            $actualizado = Tarea::where('id', $request['tarea_id'] )->update( $data );
+            if(!$actualizado )
+            {
+                return response()->json(['error' => 'Ocurrió un error al terminar la tarea.'], 401);
+            }
+            else
+            {
+                return response()->json(['success' => 'Tarea terminada exitosamente'], 200);
+            }  
+        }
+        else
+        {
+            return response()->json(['error' => 'No se encontró la Tarea'], 401);
+        }            
     }
 }
