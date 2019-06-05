@@ -52,6 +52,7 @@ Route::get('tarea-activa', 'TareasController@tareaActiva');
 Route::get('tareas-disponibles', 'TareasController@tareasDisponibles');
 Route::post('subir-ejercicio', 'TareasController@subirEjercicio');
 Route::post('tarea-terminar', 'TareasController@tareaTerminar');
+Route::get('lista-tareas', 'TareasController@listaTareas');
 
 
 Route::post('calificar-alumno', 'AlumnosController@calificarAlumno');

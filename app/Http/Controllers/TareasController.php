@@ -83,12 +83,6 @@ class TareasController extends Controller
             {
                 return response()->json(['error' => 'Lo sentimos, ocurrió un error al registrar!'], 401);
             }
-
-            // send email
-            /*
-            Mail::queue('emails.verify', $data, function($message) use ($data) {
-                $message->to($data['email'])->subject('Verify your email address');
-            });*/
         } 
         else 
         {
@@ -241,5 +235,43 @@ class TareasController extends Controller
         {
             return response()->json(['error' => 'No se encontró la Tarea'], 401);
         }            
+    }
+    
+    public function listaTareas()
+    {
+        if( \Request::get('user_id') )
+        {
+            $search = \Request::get('user_id');
+            $user = User::where('id', '=', $search )->first();
+            if ($user == null) 
+            {
+                return response()->json([ 'error' => 'El usuario no existe!'], 401);
+            }
+            if ($user['tipo'] == 'Alumno') 
+            {
+                $tareas = Tarea::join('users', 'users.id', '=', 'tareas.user_id_pro')
+                            ->where('user_id', $search)
+                            ->whereIn('estado', ['Aceptado', 'Terminado', 'Calificado'])
+                            ->select('tareas.id','users.name', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
+                            'descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 
+                            'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor')
+                            ->get();
+            }
+            else
+            {
+                $tareas = Tarea::join('users', 'users.id', '=', 'tareas.user_id')
+                            ->where('user_id_pro', $search)
+                            ->whereIn('estado', ['Aceptado', 'Terminado', 'Calificado'])
+                            ->select('tareas.id','users.name', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
+                            'descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 
+                            'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor')
+                            ->get();
+            }
+            return response()->json($tareas, 200);
+        }
+        else
+        {
+            return response()->json(['error' => 'Usuario no especificado'], 401);
+        }
     }
 }
