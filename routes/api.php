@@ -50,11 +50,23 @@ Route::post('aplicar-tarea', 'ProfesorController@aplicarTarea');
 Route::post('solicitar-tarea', 'TareasController@solicitarTarea');
 Route::get('tarea-activa', 'TareasController@tareaActiva');
 Route::get('tareas-disponibles', 'TareasController@tareasDisponibles');
-Route::post('subir-ejercicio', 'TareasController@subirEjercicio');
 Route::post('tarea-terminar', 'TareasController@tareaTerminar');
 Route::get('lista-tareas', 'TareasController@listaTareas');
 
 
 Route::post('calificar-alumno', 'AlumnosController@calificarAlumno');
-Route::post('subir-transferencia', 'AlumnosController@subirTransferencia');
 Route::post('pagar-con-combo', 'AlumnosController@pagarConCombo');
+Route::post('aplicar-profesor', 'AlumnosController@aplicarProfesor');
+
+
+Route::post('solicitar-clase', 'ClasesController@solicitarClase');
+Route::get('clase-activa', 'ClasesController@claseActiva');
+Route::get('clases-disponibles', 'ClasesController@clasesDisponibles');
+Route::post('clase-terminar', 'ClasesController@claseTerminar');
+Route::get('lista-clases', 'ClasesController@listaClases');
+Route::post('clase-confirmar', 'ClasesController@claseConfirmar');
+
+
+Route::post('subir-archivo', 'FicherosController@subirArchivo');
+Route::post('subir-ejercicio', 'FicherosController@subirEjercicio');
+Route::post('subir-transferencia', 'FicherosController@subirTransferencia');

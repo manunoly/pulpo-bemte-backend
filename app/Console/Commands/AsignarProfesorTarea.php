@@ -4,6 +4,8 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Tarea;
+use App\Pago;
+use App\Multa;
 use App\Profesore;
 use App\TareaProfesor;
 
@@ -47,8 +49,12 @@ class AsignarProfesorTarea extends Command
             $profesores = TareaProfesor::where('tarea_id', $item->id)->where('estado', 'Solicitado')->get();
             $profeSeleccionado = NULL;
             $propuestaSeleccionada = NULL;
+            $experienciaSeleccionada = 0;
             foreach($profesores as $aplica)
             {
+                $multas = Multa::where('user_id', $aplica->user_id)->count();
+                $experiencia = Pago::where('user_id', $aplica->user_id)->where('tarea_id', '>', 0)->count()
+                                - $multas;
                 $valoracion = 0;
                 $profe = Profesore::where('user_id', $aplica->user_id)->first();
                 if ($profe != null && $profe->activo && $profe->disponible && $profe->tareas)
@@ -58,9 +64,30 @@ class AsignarProfesorTarea extends Command
                         $profeSeleccionado = $profe;
                         $propuestaSeleccionada = $aplica;
                         $propuestaSeleccionada->tarea_id = $valoracion;
+                        $experienciaSeleccionada = $experiencia;
                     }
                     else 
                     {
+                        if ($experiencia == 0 && $multas == 0)
+                        {
+                            $valoracion += 3;
+                        }
+                        else if ($experiencia < 0)
+                        {
+                            $valoracion -= 2;
+                        }
+                        else if ($experiencia == 0)
+                        {
+                            $valoracion -= 1;
+                        }
+                        if ($experiencia >= $experienciaSeleccionada)
+                        {
+                            $valoracion += 2;
+                        }
+                        else
+                        {
+                            $valoracion -= 2;
+                        }
                         if ($aplica->tiempo < $propuestaSeleccionada->tiempo)
                         {
                             $valoracion += 2;
@@ -85,12 +112,13 @@ class AsignarProfesorTarea extends Command
                         {
                             $valoracion -= 2;
                         }
-                        $valoracion = $valoracion / 3;
+                        $valoracion = $valoracion / 5;
                         if ($propuestaSeleccionada->tarea_id < $valoracion)
                         {
                             $profeSeleccionado = $profe;
                             $propuestaSeleccionada = $aplica;
                             $propuestaSeleccionada->tarea_id = $valoracion;
+                            $experienciaSeleccionada = $experiencia;
                         }
                     }
                 }

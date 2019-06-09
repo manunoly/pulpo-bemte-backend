@@ -13,7 +13,6 @@ use Validator;
 use Hash;
 
 /* ESTADOS TAREA
-
 Solicitado
 Confirmado
 Aceptado (pagado)
@@ -22,7 +21,8 @@ Calificado
 Cancelado
 Sin_Profesor
 Sin_Pago
-
+Pago_Rechazado
+Confirmando_Pago
 */
 class TareasController extends Controller
 {
@@ -138,72 +138,6 @@ class TareasController extends Controller
         }
     }
 
-    
-    public function subirEjercicio(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'user_id' => 'required',
-            'tarea_id' => 'required|numeric'
-        ]);
-        if ($validator->fails()) 
-        {
-            return response()->json(['error' => $validator->errors()], 406);
-        }
-        $drive = isset($request['drive']) ? trim($request['drive']) : NULL;
-        $archivo = isset($request['archivo']) ? trim($request['archivo']) : NULL;
-        if (($drive == NULL) && ($archivo == NULL))
-        {
-            return response()->json(['error' => 'Archivo con ejercicio sin especificar'], 401);
-        }
-        $tarea = Tarea::where('id', $request['tarea_id'])->first();
-        if ($tarea == null)
-        {
-            return response()->json(['error' => 'No existe la tarea'], 401);
-        }
-        else if ($tarea->estado != 'Aceptado')
-        {
-            return response()->json(['error' => 'La Tarea no se encuentra Pagada'], 401);
-        }
-        else if (($tarea->user_id != $request['user_id']) && ($tarea->user_id_pro != $request['user_id']))
-        {
-            return response()->json(['error' => 'El usuario no tiene relación con la Tarea'], 401);
-        }
-        $alumno = Alumno::where('user_id', $request['user_id'])->first();
-        $profesor = Profesore::where('user_id', $request['user_id'])->first();
-        if (($alumno != null) || ($profesor != null))
-        {
-            if ((($alumno != null) && ($alumno->activo)) || (($profesor != null) && ($profesor->activo)))
-            {
-                if ($archivo != NULL)
-                {
-                    $file = $request->file('archivo');
-                    $nombre = $file->getClientOriginalName();
-                    \Storage::disk('local')->put($request['user_id'].'\\'.$nombre,  \File::get($file));
-                }
-                $aplica = TareaEjercicio::create([
-                    'user_id' => $request['user_id'],
-                    'tarea_id' => $request['tarea_id'],
-                    'archivo' => $nombre,
-                    'drive' => $drive
-                ]);
-                if (!$aplica->id)
-                {
-                    return response()->json(['error' => 'Ocurrió un error al registrar solicitud!'], 401);
-                }
-                return response()->json(['success' => 'Ejercicio guardado exitosamente'], 200);
-            }
-            else
-            {
-                return response()->json(['error' => 'El usuario no se encuentra activo'], 401);
-            }
-        }
-        else
-        {
-            return response()->json(['error' => 'No se encontró al Usuario para subir el Ejercicio'], 401);
-        }
-    }
-
-
     public function tareaTerminar(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -217,10 +151,7 @@ class TareasController extends Controller
         if ($tarea != null)
         {
             $data['activa'] = false;
-            if ($tarea->estado == 'Solicitado' || $tarea->estado == 'Confirmado')
-            {
-                $data['estado'] = 'Cancelado';
-            }
+            $data['fecha_canc'] = date("Y-m-d H:i:s");
             $actualizado = Tarea::where('id', $request['tarea_id'] )->update( $data );
             if(!$actualizado )
             {
@@ -251,20 +182,18 @@ class TareasController extends Controller
             {
                 $tareas = Tarea::join('users', 'users.id', '=', 'tareas.user_id_pro')
                             ->where('user_id', $search)
-                            ->whereIn('estado', ['Aceptado', 'Terminado', 'Calificado'])
                             ->select('tareas.id','users.name', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
                             'descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 
-                            'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor')
+                            'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor', 'fecha_canc')
                             ->get();
             }
             else
             {
                 $tareas = Tarea::join('users', 'users.id', '=', 'tareas.user_id')
                             ->where('user_id_pro', $search)
-                            ->whereIn('estado', ['Aceptado', 'Terminado', 'Calificado'])
                             ->select('tareas.id','users.name', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
                             'descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 
-                            'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor')
+                            'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor', 'fecha_canc')
                             ->get();
             }
             return response()->json($tareas, 200);

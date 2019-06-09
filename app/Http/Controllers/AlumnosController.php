@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Tarea;
+use App\Clase;
 use App\Alumno;
-use App\AlumnoPago;
-use App\AlumnoCompra;
+use App\Formulario;
 use App\AlumnoBilletera;
 use Validator;
 use Illuminate\Http\Request;
@@ -74,160 +74,60 @@ class AlumnosController extends Controller
         }
         return response()->json(['success' => 'Alumno calificado correctamente'], 200);
     }
-
-
-    public function subirTransferencia(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'user_id' => 'required',
-            'tarea_id' => 'required|numeric',
-            'clase_id' => 'required|numeric',
-            'combo_id' => 'required|numeric'
-        ]);
-        if ($validator->fails()) 
-        {
-            return response()->json(['error' => $validator->errors()], 406);
-        }
-        if (($request['tarea_id'] == 0) && ($request['clase_id'] == 0) && ($request['combo_id'] == 0))
-        {
-            return response()->json(['error' => 'Especifique una sola opción'], 401);
-        }
-        $drive = isset($request['drive']) ? trim($request['drive']) : NULL;
-        $archivo = isset($request['archivo']) ? trim($request['archivo']) : NULL;
-        if (($drive == NULL) && ($archivo == NULL))
-        {
-            return response()->json(['error' => 'Archivo de transferencia sin especificar'], 401);
-        }
-        $tarea = null;
-        if ($request['tarea_id'] > 0)
-        {
-            if (($request['clase_id'] > 0) || ($request['combo_id'] > 0))
-            {
-                return response()->json(['error' => 'Especifique una sola opción'], 401);
-            }
-            $tarea = Tarea::where('id', $request['tarea_id'])->first();
-            if ($tarea == null)
-            {
-                return response()->json(['error' => 'No existe la tarea a pagar'], 401);
-            }
-            else if ($tarea->estado != 'Confirmado')
-            {
-                return response()->json(['error' => 'La Tarea no se encuentra Confirmada para pagar'], 401);
-            }
-        }
-        $clase = null;
-        if ($request['clase_id'] > 0)
-        {
-            if (($request['tarea_id'] > 0) || ($request['combo_id'] > 0))
-            {
-                return response()->json(['error' => 'Especifique una sola opción'], 401);
-            }
-            $clase = Tarea::where('id', $request['clase_id'])->first();
-            if ($clase == null)
-            {
-                return response()->json(['error' => 'No existe la clase a pagar'], 401);
-            }
-            else if ($clase->estado != 'Confirmado')
-            {
-                return response()->json(['error' => 'La Clase no se encuentra Confirmada para pagar'], 401);
-            }
-        }
-        $combo = null;
-        if ($request['combo_id'] > 0)
-        {
-            if (($request['clase_id'] > 0) || ($request['tarea_id'] > 0))
-            {
-                return response()->json(['error' => 'Especifique una sola opción'], 401);
-            }
-            $combo = AlumnoCompra::where('id', $request['combo_id'])->first();
-            if ($combo == null)
-            {
-                return response()->json(['error' => 'No existe la solicitud de compra a pagar'], 401);
-            }
-            else if ($combo->estado != 'Solicitado')
-            {
-                return response()->json(['error' => 'La Solicitud ya fue procesada'], 401);
-            }
-        } 
-        $user = Alumno::where('user_id', $request['user_id'])->first();
-        if ($user != null)
-        {
-            if ($user->activo)
-            {
-                $nombre = NULL;
-                if ($archivo != NULL)
-                {
-                    $file = $request->file('archivo');
-                    $nombre = $file->getClientOriginalName();
-                    \Storage::disk('local')->put($request['user_id'].'\\'.$nombre,  \File::get($file));
-                }
-                $solicitud = AlumnoPago::where('user_id', $request['user_id'])
-                                        ->where('tarea_id', $request['tarea_id'])
-                                        ->where('clase_id', $request['clase_id'])
-                                        ->where('combo_id', $request['combo_id'])->first();
-                if ($solicitud == null)
-                {
-                    $aplica = AlumnoPago::create([
-                        'user_id' => $request['user_id'],
-                        'tarea_id' => $request['tarea_id'],
-                        'clase_id' => $request['clase_id'],
-                        'combo_id' => $request['combo_id'],
-                        'archivo' => $nombre,
-                        'drive' => $drive,
-                        'estado' => 'Solicitado'
-                    ]);
-                    if (!$aplica->id)
-                    {
-                        return response()->json(['error' => 'Ocurrió un error al registrar solicitud!'], 401);
-                    }
-                }
-                else
-                {
-                    $data['archivo'] = $nombre;
-                    $data['drive'] = $drive;
-                    $data['estado'] = 'Solicitado';
-                    $actualizado = AlumnoPago::where('id', $solicitud->id )->update( $data );
-                    if(!$actualizado )
-                    {
-                        return response()->json(['error' => 'Ocurrió un error al actualizar solicitud.'], 401);
-                    }
-                }
-                return response()->json(['success' => 'Archivo guardado exitosamente'], 200);
-            }
-            else
-            {
-                return response()->json(['error' => 'El alumno no se encuentra activo'], 401);
-            }
-        }
-        else
-        {
-            return response()->json(['error' => 'No se encontró al Alumno para subir Transferencia'], 401);
-        }
-    }
     
     public function pagarConCombo(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'user_id' => 'required',
             'tarea_id' => 'required|numeric',
+            'clase_id' => 'required|numeric',
             'combo' => 'required'
         ]);
         if ($validator->fails()) 
         {
             return response()->json(['error' => $validator->errors()], 406);
         }
-        $tarea = Tarea::where('id', $request['tarea_id'])->first();
-        if ($tarea == null)
+        $tarea = null;
+        if ($request['tarea_id'] > 0)
         {
-            return response()->json(['error' => 'No existe la tarea'], 401);
+            if ($request['clase_id'] > 0)
+            {
+                return response()->json(['error' => 'Especifique una sola opción'], 401);
+            }
+            $tarea = Tarea::where('id', $request['tarea_id'])->first();
+            if ($tarea == null)
+            {
+                return response()->json(['error' => 'No existe la Tarea'], 401);
+            }
+            else if ($tarea->estado != 'Confirmado')
+            {
+                return response()->json(['error' => 'La Tarea no se encuentra Confirmada para pagar'], 401);
+            }
+            else if ($tarea->user_id != $request['user_id'])
+            {
+                return response()->json(['error' => 'El usuario no tiene relación con la Tarea'], 401);
+            }
         }
-        else if ($tarea->estado != 'Confirmado')
+        $clase = null;
+        if ($request['clase_id'] > 0)
         {
-            return response()->json(['error' => 'La Tarea no se encuentra Confirmada para pagar'], 401);
-        }
-        else if ($tarea->user_id != $request['user_id'])
-        {
-            return response()->json(['error' => 'El usuario no tiene relación con la Tarea'], 401);
+            if ($request['tarea_id'] > 0)
+            {
+                return response()->json(['error' => 'Especifique una sola opción'], 401);
+            }
+            $clase = Clase::where('id', $request['clase_id'])->first();
+            if ($clase == null)
+            {
+                return response()->json(['error' => 'No existe la Clase'], 401);
+            }
+            else if ($clase->estado != 'Confirmado')
+            {
+                return response()->json(['error' => 'La Clase no se encuentra Confirmada para pagar'], 401);
+            }
+            else if ($clase->user_id != $request['user_id'])
+            {
+                return response()->json(['error' => 'El usuario no tiene relación con la Clase'], 401);
+            }
         }
         $combo = AlumnoBilletera::where('user_id', $request['user_id'])
                                     ->where('combo', $request['combo'])->first();
@@ -235,22 +135,48 @@ class AlumnosController extends Controller
         {
             return response()->json(['error' => 'Combo no disponible para pagar'], 401);
         }
-        else if ($combo->horas < $tarea->tiempo_estimado)
+        $duracion = 0;
+        if ($tarea != null)
         {
-            return response()->json(['error' => 'Combos sin horas para pagar'], 401);
+            if ($tarea != null && $combo->horas < $tarea->tiempo_estimado)
+            {
+                return response()->json(['error' => 'Combos sin horas para pagar'], 401);
+            }
+            $duracion = $tarea->tiempo_estimado;
+        }
+        if ($clase != null)
+        {
+            $duracion = $clase->duracion - ($clase->personas - 1);
+            if ($duracion < 2)
+                $duracion = 2;
+            if ($clase != null && $combo->horas < $duracion)
+            {
+                return response()->json(['error' => 'Combos sin horas para pagar'], 401);
+            }
         }
         $user = Alumno::where('user_id', $request['user_id'])->first();
         if ($user != null)
         {
             if ($user->activo)
             {
-                $dataTarea['estado'] = 'Aceptado';
-                $actTarea = Tarea::where('id', $tarea->id )->update( $dataTarea );
-                if(!$actTarea )
+                $data['estado'] = 'Aceptado';
+                if ($tarea != null)
                 {
-                    return response()->json(['error' => 'Ocurrió un error al actualizar la Tarea.'], 401);
+                    $actTarea = Tarea::where('id', $tarea->id )->update( $data );
+                    if(!$actTarea )
+                    {
+                        return response()->json(['error' => 'Ocurrió un error al actualizar la Tarea.'], 401);
+                    }
                 }
-                $dataCombo['horas'] = $combo->horas - $tarea->tiempo_estimado;
+                if ($clase != null)
+                {
+                    $actClase = Clase::where('id', $clase->id )->update( $data );
+                    if(!$actClase )
+                    {
+                        return response()->json(['error' => 'Ocurrió un error al actualizar la Clase.'], 401);
+                    }
+                }
+                $dataCombo['horas'] = $combo->horas - $duracion;
                 $actCombo = AlumnoBilletera::where('id', $combo->id )->update( $dataCombo );
                 if(!$actCombo )
                 {
@@ -267,5 +193,69 @@ class AlumnosController extends Controller
         {
             return response()->json(['error' => 'No se encontró al Alumno para subir el pago'], 401);
         }
+    }
+    
+    public function aplicarProfesor(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required',
+            'cedula' => 'required',
+            'clases' => 'required',
+            'tareas' => 'required'
+        ]);
+        if ($validator->fails()) 
+        {
+            return response()->json(['error' => $validator->errors()], 406);
+        } 
+        $cedula = isset($request['cedula']) ? trim($request['cedula']) : NULL;
+        if (strlen($cedula) != 10)
+        {
+            return response()->json(['error' => 'Cédula inválida'], 401);
+        }
+        if ($request['clases'] != 0 && $request['clases'] != 1)
+        {
+            return response()->json(['error' => 'Disponibilidad para las Clases Inválida'], 401);
+        }
+        if ($request['tareas'] != 0 && $request['tareas'] != 1)
+        {
+            return response()->json(['error' => 'Disponibilidad para las Tareas Inválida'], 401);
+        }
+        if ($request['clases'] == 0 && $request['tareas'] == 0)
+        {
+            return response()->json(['error' => 'Para solicitar ser Profesor debe tener al menos una Disponibilidad activa (Clases o Tareas)'], 401);
+        }
+        $alumno = Alumno::where('user_id', $request['user_id'])->first();
+        if ($alumno == null)
+        {
+            return response()->json(['error' => 'El usuario no es Alumno para solicitar ser Profesor'], 401);
+        }
+        $solicitud = Formulario::where('user_id', $request['user_id'])->where('estado', 'Solicitado')->first();
+        if ($solicitud != null)
+        {
+            return response()->json(['error' => 'El Alumno ya tiene una solicitud en Proceso'], 401);
+        }
+
+        $data['ser_profesor'] = true;
+        $act = Alumno::where('user_id', $request['user_id'])->update($data);
+        if(!$act )
+        {
+            return response()->json(['error' => 'Ocurrió un error al actualizar el Alumno.'], 401);
+        }
+        $hojaVida  = isset($request['hojaVida ']) ? trim($request['hojaVida ']) : NULL;
+        $titulo = isset($request['titulo']) ? trim($request['titulo']) : NULL;
+        $new = Formulario::create([
+            'user_id' => $request['user_id'],
+            'cedula' => $cedula,
+            'clases' => $request['clases'] == 1 ? true : false,
+            'tareas' => $request['tareas'] == 1 ? true : false,
+            'hoja_vida' => $hojaVida ,
+            'titulo' => $titulo,
+            'estado' => 'Solicitado'
+        ]);
+        if ($new == null || !$new->id)
+        {
+            return response()->json(['error' => 'Ocurrió un error al registrar solicitud!'], 401);
+        }
+        return response()->json(['success' => 'Solicitud ser Profesor realizada'], 200);
     }
 }
