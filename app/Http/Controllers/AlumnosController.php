@@ -133,12 +133,14 @@ class AlumnosController extends Controller
                                     ->where('combo', $request['combo'])->first();
         if ($combo == null)
         {
-            return response()->json(['error' => 'Combo no disponible para pagar'], 401);
+            $listaCombos = AlumnoBilletera::where('user_id', $request['user_id'])->orderBy('horas', 'desc')->get();
         }
         $duracion = 0;
         if ($tarea != null)
         {
-            if ($tarea != null && $combo->horas < $tarea->tiempo_estimado)
+            if ($tarea != null && 
+                (($combo != null && $combo->horas < $tarea->tiempo_estimado) ||
+                ($combo == null && $listaCombos->sum('horas') < $tarea->tiempo_estimado)))
             {
                 return response()->json(['error' => 'Combos sin horas para pagar'], 401);
             }
@@ -149,7 +151,9 @@ class AlumnosController extends Controller
             $duracion = $clase->duracion - ($clase->personas - 1);
             if ($duracion < 2)
                 $duracion = 2;
-            if ($clase != null && $combo->horas < $duracion)
+            if ($clase != null && 
+                (($combo != null && $combo->horas < $duracion) ||
+                ($combo == null && $listaCombos->sum('horas') < $duracion)))
             {
                 return response()->json(['error' => 'Combos sin horas para pagar'], 401);
             }
@@ -176,11 +180,36 @@ class AlumnosController extends Controller
                         return response()->json(['error' => 'Ocurrió un error al actualizar la Clase.'], 401);
                     }
                 }
-                $dataCombo['horas'] = $combo->horas - $duracion;
-                $actCombo = AlumnoBilletera::where('id', $combo->id )->update( $dataCombo );
-                if(!$actCombo )
+                if ($combo != null)
                 {
-                    return response()->json(['error' => 'Ocurrió un error al actualizar pago.'], 401);
+                    $dataCombo['horas'] = $combo->horas - $duracion;
+                    $actCombo = AlumnoBilletera::where('id', $combo->id )->update( $dataCombo );
+                    if(!$actCombo )
+                    {
+                        return response()->json(['error' => 'Ocurrió un error al actualizar pago.'], 401);
+                    }
+                }
+                else
+                {
+                    foreach($listaCombos as $item)
+                    {
+                        $restar = $duracion;
+                        if ($item->horas < $duracion)
+                        {
+                            $restar = $item->horas;
+                        }
+                        $dataCombo['horas'] = $combo->horas - $restar;
+                        $actCombo = AlumnoBilletera::where('id', $combo->id )->update( $dataCombo );
+                        if(!$actCombo )
+                        {
+                            return response()->json(['error' => 'Ocurrió un error al actualizar pago.'], 401);
+                        }
+                        $duracion = $duracion - $restar;
+                        if ($duracion == 0)
+                        {
+                            break;
+                        }
+                    }
                 }
                 return response()->json(['success' => 'Pago con Combo exitoso'], 200);
             }

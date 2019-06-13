@@ -349,7 +349,7 @@ class AlumnoPagoController extends Controller
                 $bill = AlumnoBilletera::create([
                     'user_id' => $data['user_id'],
                     'combo' => $compra->combo,
-                    'horas' => $compra->valor
+                    'horas' => $compra->horas
                 ]);
                 if (!$bill->id)
                 {
@@ -359,7 +359,7 @@ class AlumnoPagoController extends Controller
             }
             else
             {
-                $dataBill['horas'] = $billetera->horas + $compra->valor;
+                $dataBill['horas'] = $billetera->horas + $compra->horas;
                 $actualizado = AlumnoBilletera::where('id', $billetera->id )->update( $dataBill );
                 if(!$actualizado )
                 {

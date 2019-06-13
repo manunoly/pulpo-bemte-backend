@@ -119,4 +119,18 @@ class CombosController extends Controller
             return response()->json(['error' => 'Alumno no especificado'], 401);
         }
     }
+
+    public function horasTotales()
+    {
+        if( \Request::get('user_id') )
+        {
+            $alumno = \Request::get('user_id');
+            $horas = AlumnoBilletera::where('user_id', $alumno)->sum('horas');
+            return response()->json($horas, 200);
+        }
+        else
+        {
+            return response()->json(['error' => 'Alumno no especificado'], 401);
+        }
+    }
 }

@@ -17,6 +17,6 @@ class AlumnoCompra extends Model
     protected $table = 'alumno_compra';
 
     protected $fillable = [
-        'user_id', 'combo', 'valor', 'estado', 
+        'user_id', 'combo', 'valor', 'estado', 'horas', 
     ];
 }

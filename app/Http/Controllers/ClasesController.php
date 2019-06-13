@@ -87,6 +87,7 @@ class ClasesController extends Controller
             $hora1 = isset($request['hora1']) ? $request['hora1'] : NULL;
             $hora2 = isset($request['hora2']) ? $request['hora2'] : NULL;
             $horasCombo = isset($request['horasCombo']) ? $request['horasCombo'] : NULL;
+            $precioCombo = isset($request['precioCombo']) ? $request['precioCombo'] : NULL;
             $clase = Clase::create([
                 'user_id' => $request['user_id'],
                 'materia' => $request['materia'],
@@ -101,7 +102,8 @@ class ClasesController extends Controller
                 'estado' => 'Solicitado',
                 'seleccion_profesor' => $request['selProfesor'] == 1,
                 'activa' => true,
-                'horasCombo' => $horasCombo
+                'horasCombo' => $horasCombo,
+                'precioCombo' => $precioCombo
             ]);
 
             if ($clase->id)
@@ -147,7 +149,7 @@ class ClasesController extends Controller
             $clase = Clase::where('user_id', $search)
                         ->where('activa', true)
                         ->select('id', 'user_id', 'materia', 'tema', 'personas', 'duracion', 'hora1', 'hora2', 
-                        'combo', 'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'horasCombo',
+                        'combo', 'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'horasCombo', 'precioCombo',
                         'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 
                         'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor')
                         ->first();
@@ -237,7 +239,7 @@ class ClasesController extends Controller
                 $clases = Clase::leftJoin('users', 'users.id', '=', 'clases.user_id_pro')
                             ->where('user_id', $search)
                             ->select('clases.id','users.name', 'materia', 'tema', 'personas', 'duracion', 'hora1', 'hora2', 
-                            'combo', 'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc',
+                            'combo', 'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc', 'precioCombo',
                             'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 'horasCombo',
                             'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor')
                             ->get();
@@ -247,7 +249,7 @@ class ClasesController extends Controller
                 $clases = Clase::join('users', 'users.id', '=', 'clases.user_id_pro')
                             ->where('user_id_pro', $search)
                             ->select('clases.id','users.name', 'materia', 'tema', 'personas', 'duracion', 'hora1', 'hora2', 
-                            'combo', 'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc',
+                            'combo', 'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc', 'precioCombo',
                             'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 'horasCombo',
                             'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor')
                             ->get();

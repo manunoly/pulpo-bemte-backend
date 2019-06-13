@@ -39,6 +39,7 @@ Route::get('combo-horas', 'CombosController@listaCombosHoras');
 Route::post('combo-compra', 'CombosController@compraComboAlumno');
 Route::get('combo-alumno', 'CombosController@horasComboAlumno');
 Route::get('horas-alumno', 'CombosController@horasAlumno');
+Route::get('horas-totales', 'CombosController@horasTotales');
 
 
 Route::post('actualizar-tareas', 'ProfesorController@actualizarTareas');

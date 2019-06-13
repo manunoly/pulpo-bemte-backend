@@ -234,6 +234,7 @@ class FicherosController extends Controller
                         'user_id' => $request['user_id'],
                         'combo' => $request['combo_id'],
                         'valor' => $request['valor'],
+                        'horas' => $request['horas'],
                         'estado' => 'Solicitado'
                     ]);
                     if (!$combo->id)
@@ -241,17 +242,18 @@ class FicherosController extends Controller
                         return response()->json(['error' => 'Ocurrió un error al registrar solicitud!'], 401);
                     }
                 }
+                $idCombo = $combo != null ? $combo->id : 0;
                 $solicitud = AlumnoPago::where('user_id', $request['user_id'])
                                         ->where('tarea_id', $request['tarea_id'])
                                         ->where('clase_id', $request['clase_id'])
-                                        ->where('combo_id', $combo->id)->first();
+                                        ->where('combo_id', $idCombo)->first();
                 if ($solicitud == null)
                 {
                     $aplica = AlumnoPago::create([
                         'user_id' => $request['user_id'],
                         'tarea_id' => $request['tarea_id'],
                         'clase_id' => $request['clase_id'],
-                        'combo_id' => $combo->id,
+                        'combo_id' => $idCombo,
                         'archivo' => $archivo,
                         'drive' => $drive,
                         'estado' => 'Solicitado'
