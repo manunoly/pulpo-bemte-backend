@@ -38,6 +38,7 @@ Route::get('lista-combos', 'CombosController@listaCombos');
 Route::get('combo-horas', 'CombosController@listaCombosHoras');
 Route::post('combo-compra', 'CombosController@compraComboAlumno');
 Route::get('combo-alumno', 'CombosController@horasComboAlumno');
+Route::get('horas-alumno', 'CombosController@horasAlumno');
 
 
 Route::post('actualizar-tareas', 'ProfesorController@actualizarTareas');
@@ -45,6 +46,7 @@ Route::post('actualizar-clases', 'ProfesorController@actualizarClases');
 Route::post('actualizar-disponible', 'ProfesorController@actualizarDisponible');
 Route::post('calificar-profesor', 'ProfesorController@calificarProfesor');
 Route::post('aplicar-tarea', 'ProfesorController@aplicarTarea');
+Route::post('aplicar-clase', 'ProfesorController@aplicarClase');
 
 
 Route::post('solicitar-tarea', 'TareasController@solicitarTarea');

@@ -14,7 +14,7 @@ class CombosController extends Controller
 {
     public function listaCombos()
     {
-        $combos = Combo::where('activo', '1' )->select('nombre', 'descripcion', 'beneficios')->get();
+        $combos = Combo::where('activo', '1' )->select('nombre', 'descripcion', 'beneficios','direccion')->get();
         return response()->json($combos, 200);
     }
 
@@ -103,6 +103,20 @@ class CombosController extends Controller
         else
         {
             return response()->json(['error' => 'No existe el Alumno'], 401);
+        }
+    }
+
+    public function horasAlumno()
+    {
+        if( \Request::get('user_id') )
+        {
+            $alumno = \Request::get('user_id');
+            $horas = AlumnoBilletera::where('user_id', $alumno)->select('combo', 'horas')->get();
+            return response()->json($horas, 200);
+        }
+        else
+        {
+            return response()->json(['error' => 'Alumno no especificado'], 401);
         }
     }
 }

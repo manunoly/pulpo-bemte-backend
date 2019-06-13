@@ -77,6 +77,17 @@ class TareasController extends Controller
             if( $tarea->id)
             {
                 //lanzar notificaciones profesores
+                $profesores = Profesore::join('profesor_materia', 'profesor_materia.user_id', '=', 'profesores.user_id')
+                                    ->join('users', 'users.id', '=', 'profesores.user_id')
+                                    ->where('profesores.activo', true)
+                                    ->where('profesores.tareas', true)
+                                    ->where('profesores.disponible', true)
+                                    ->where('profesor_materia.activa', true)
+                                    ->where('profesor_materia.materia', $tarea->materia)
+                                    ->select('profesores.nombres', 'profesores.apellidos', 'profesores.correo', 
+                                                'users.token', 'users.sistema')
+                                    ->get();
+
                 return response()->json(['success'=> 'Su tarea ha sido solicitada. Por favor espera que validemos su información'], 200);
             }
             else
@@ -180,7 +191,7 @@ class TareasController extends Controller
             }
             if ($user['tipo'] == 'Alumno') 
             {
-                $tareas = Tarea::join('users', 'users.id', '=', 'tareas.user_id_pro')
+                $tareas = Tarea::leftJoin('users', 'users.id', '=', 'tareas.user_id_pro')
                             ->where('user_id', $search)
                             ->select('tareas.id','users.name', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
                             'descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 

@@ -5,7 +5,8 @@ namespace App\Console;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
-USE App\Tarea;
+use App\Tarea;
+use App\Clase;
 
 class Kernel extends ConsoleKernel
 {
@@ -29,7 +30,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('asignar:profesor:tarea')->everyMinute()
             ->when(function () 
             {
-                $newDate = date("Y-m-d H:i:s", strtotime(date("d/m/y H:i:s"). '-20 minutes'));
+                $newDate = date("Y-m-d H:i:s", strtotime(date("d/m/y H:i:s"). '-60 minutes'));
                 $tareas = Tarea::where('estado','Solicitado')->where('updated_at','<=', $newDate)->get();
                 return $tareas->count() > 0;
             })
@@ -39,12 +40,13 @@ class Kernel extends ConsoleKernel
             ->when(function () 
             {
                 $newDate = date("Y-m-d H:i:s", strtotime(date("d/m/y H:i:s"). '-20 minutes'));
-                $tareas = Tarea::where('estado','Confirmado')->where('updated_at','<=', $newDate)->get();
+                $tareas = Tarea::whereIn('estado', ['Confirmado','Confirmando_Pago'])
+                                ->where('updated_at','<=', $newDate)->get();
                 return $tareas->count() > 0;
             })
             ->sendOutputTo('C:\\virtual\\cron.txt');
         
-        $schedule->command('terminar:tarea')->everyMinute()
+        $schedule->command('terminar:tarea:clase')->everyMinute()
             ->when(function () 
             {
                 $newDate = date("Y-m-d");
@@ -59,9 +61,45 @@ class Kernel extends ConsoleKernel
                         $tareas[] = $item;
                     }
                 }
-                return count($tareas) > 0;
+                if (count($tareas) == 0)
+                {
+                    $listado = Clase::where('estado','Aceptado')->where('fecha','<=', $newDate)->get();
+                    $clases = [];
+                    foreach($listado as $item)
+                    {
+                        if (($item->fecha != $newDate) || (($item->fecha == $newDate)
+                                && ($item->hora_prof <= $newTime)))
+                        {
+                            $clases[] = $item;
+                        }
+                    }
+                    return count($clases) > 0;
+                }
+                else
+                {
+                    return true;
+                }
             })
             ->sendOutputTo('C:\\virtual\\cron.txt');
+
+        $schedule->command('notificar:profesor:clase')->everyMinute()
+            ->when(function () 
+            {
+                $newDate = date("Y-m-d H:i:s", strtotime(date("d/m/y H:i:s"). '-15 minutes'));
+                $clases = Clase::where('estado','Solicitado')->where('updated_at','<=', $newDate)->get();
+                return $clases->count() > 0;
+            })
+            ->sendOutputTo('C:\\virtual\\cron.txt');
+
+        $schedule->command('asignar:pago:clase')->everyMinute()
+        ->when(function () 
+        {
+            $newDate = date("Y-m-d H:i:s", strtotime(date("d/m/y H:i:s"). '-20 minutes'));
+            $clases = Clase::whereIn('estado', ['Confirmado','Confirmando_Pago'])
+                            ->where('updated_at','<=', $newDate)->get();
+            return $clases->count() > 0;
+        })
+        ->sendOutputTo('C:\\virtual\\cron.txt');    
     }
 
     /**

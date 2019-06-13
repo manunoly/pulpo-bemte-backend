@@ -4,25 +4,25 @@ namespace App\Console\Commands;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Console\Command;
 use App\User;
-use App\Tarea;
+use App\Clase;
 use App\AlumnoPago;
 use App\Mail\NotificacionTareas;
 
-class AsignarPagoTarea extends Command
+class AsignarPagoClase extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'asignar:pago:tarea';
+    protected $signature = 'asignar:pago:clase';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Comprobar el pago de la tarea al cumplirse el tiempo';
+    protected $description = 'Comprobar el pago de la clase al cumplirse el tiempo';
 
     /**
      * Create a new command instance.
@@ -42,15 +42,15 @@ class AsignarPagoTarea extends Command
     public function handle()
     {
         $newDate = date("Y-m-d H:i:s", strtotime(date("d/m/y H:i:s"). '-20 minutes'));
-        $tareas = Tarea::whereIn('estado', ['Confirmado','Confirmando_Pago'])->where('updated_at','<=', $newDate)->get();
-        foreach($tareas as $item)
+        $clases = Clase::whereIn('estado', ['Confirmado','Confirmando_Pago'])->where('updated_at','<=', $newDate)->get();
+        foreach($clases as $item)
         {
-            $transfer = AlumnoPago::where('user_id', $item->user_id)->where('tarea_id', $item->id)->first();
+            $transfer = AlumnoPago::where('user_id', $item->user_id)->where('clase_id', $item->id)->first();
             if ($transfer != null)
             {
                 if ($transfer->estado == 'Aprobado')
                 {
-                    $dataTarea['estado'] = 'Aceptado';
+                    $dataClase['estado'] = 'Aceptado';
                     $alumno = User::where('id', $item->user_id)->first();
                     $profesor = User::where('id', $item->user_id_pro)->first();
                     try 
@@ -69,14 +69,14 @@ class AsignarPagoTarea extends Command
                 }
                 else
                 {
-                    $dataTarea['estado'] = 'Pago_Rechazado';
+                    $dataClase['estado'] = 'Pago_Rechazado';
                 }
             }
             else
             {
-                $dataTarea['estado'] = 'Sin_Pago';
+                $dataClase['estado'] = 'Sin_Pago';
             }
-            Tarea::where('id', $item->id )->update( $dataTarea );
+            Clase::where('id', $item->id )->update( $dataClase );
         }
     }
 }

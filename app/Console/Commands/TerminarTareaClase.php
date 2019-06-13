@@ -4,22 +4,23 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Tarea;
+use App\Clase;
 
-class TerminarTarea extends Command
+class TerminarTareaClase extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'terminar:tarea';
+    protected $signature = 'terminar:tarea:clase';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Al pasar la fecha de entrega de la tarea se procede a Terminarla';
+    protected $description = 'Al pasar la fecha de entrega de la tarea o clase se procede a Terminarla';
 
     /**
      * Create a new command instance.
@@ -37,7 +38,8 @@ class TerminarTarea extends Command
      * @return mixed
      */
     public function handle()
-    { $newDate = date("Y-m-d");
+    { 
+        $newDate = date("Y-m-d");
         $newTime = date("H:i:s");
         $listado = Tarea::where('estado','Aceptado')->where('fecha_entrega','<=', $newDate)->get();
         $tareas = [];
@@ -53,6 +55,21 @@ class TerminarTarea extends Command
         {
             $dataTarea['estado'] = 'Terminado';
             Tarea::where('id', $item->id )->update( $dataTarea );
+        }
+        $listado = Clase::where('estado','Aceptado')->where('fecha','<=', $newDate)->get();
+        $clases = [];
+        foreach($listado as $item)
+        {
+            if (($item->fecha != $newDate) || (($item->fecha == $newDate)
+                    && ($item->hora_prof <= $newTime)))
+            {
+                $clases[] = $item;
+            }
+        }
+        foreach($clases as $item)
+        {
+            $dataClase['estado'] = 'Terminado';
+            Clase::where('id', $item->id )->update( $dataClase );
         }
     }
 }

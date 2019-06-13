@@ -160,7 +160,7 @@ class FicherosController extends Controller
             'user_id' => 'required',
             'tarea_id' => 'required|numeric',
             'clase_id' => 'required|numeric',
-            'combo_id' => 'required|numeric'
+            'combo_id' => 'required'
         ]);
         if ($validator->fails()) 
         {
@@ -179,7 +179,7 @@ class FicherosController extends Controller
         $tarea = null;
         if ($request['tarea_id'] > 0)
         {
-            if (($request['clase_id'] > 0) || ($request['combo_id'] > 0))
+            if (($request['clase_id'] > 0) || ($request['combo_id'] != '0'))
             {
                 return response()->json(['error' => 'Especifique una sola opción'], 401);
             }
@@ -196,7 +196,7 @@ class FicherosController extends Controller
         $clase = null;
         if ($request['clase_id'] > 0)
         {
-            if (($request['tarea_id'] > 0) || ($request['combo_id'] > 0))
+            if ($request['tarea_id'] > 0)
             {
                 return response()->json(['error' => 'Especifique una sola opción'], 401);
             }
@@ -211,18 +211,14 @@ class FicherosController extends Controller
             }
         }
         $combo = null;
-        if ($request['combo_id'] > 0)
+        if ($request['combo_id'] != '0')
         {
-            if (($request['clase_id'] > 0) || ($request['tarea_id'] > 0))
+            if ($request['tarea_id'] > 0)
             {
                 return response()->json(['error' => 'Especifique una sola opción'], 401);
             }
-            $combo = AlumnoCompra::where('id', $request['combo_id'])->first();
-            if ($combo == null)
-            {
-                return response()->json(['error' => 'No existe la solicitud de compra a pagar'], 401);
-            }
-            else if ($combo->estado != 'Solicitado')
+            $combo = AlumnoCompra::where('combo', $request['combo_id'])->where('user_id', ['user_id'])->first();
+            if ($combo != null && $combo->estado != 'Solicitado')
             {
                 return response()->json(['error' => 'La Solicitud ya fue procesada'], 401);
             }
@@ -232,17 +228,30 @@ class FicherosController extends Controller
         {
             if ($user->activo)
             {
+                if ($request['combo_id'] != '0' && $combo == null)
+                {
+                    $combo = AlumnoCompra::create([
+                        'user_id' => $request['user_id'],
+                        'combo' => $request['combo_id'],
+                        'valor' => $request['valor'],
+                        'estado' => 'Solicitado'
+                    ]);
+                    if (!$combo->id)
+                    {
+                        return response()->json(['error' => 'Ocurrió un error al registrar solicitud!'], 401);
+                    }
+                }
                 $solicitud = AlumnoPago::where('user_id', $request['user_id'])
                                         ->where('tarea_id', $request['tarea_id'])
                                         ->where('clase_id', $request['clase_id'])
-                                        ->where('combo_id', $request['combo_id'])->first();
+                                        ->where('combo_id', $combo->id)->first();
                 if ($solicitud == null)
                 {
                     $aplica = AlumnoPago::create([
                         'user_id' => $request['user_id'],
                         'tarea_id' => $request['tarea_id'],
                         'clase_id' => $request['clase_id'],
-                        'combo_id' => $request['combo_id'],
+                        'combo_id' => $combo->id,
                         'archivo' => $archivo,
                         'drive' => $drive,
                         'estado' => 'Solicitado'
@@ -258,6 +267,24 @@ class FicherosController extends Controller
                     $data['drive'] = $drive;
                     $data['estado'] = 'Solicitado';
                     $actualizado = AlumnoPago::where('id', $solicitud->id )->update( $data );
+                    if(!$actualizado )
+                    {
+                        return response()->json(['error' => 'Ocurrió un error al actualizar solicitud.'], 401);
+                    }
+                }
+                if ($clase != null)
+                {
+                    $dataClase['estado'] = 'Confirmando_Pago';
+                    $actualizado = Clase::where('id', $clase->id )->update( $dataClase );
+                    if(!$actualizado )
+                    {
+                        return response()->json(['error' => 'Ocurrió un error al actualizar solicitud.'], 401);
+                    }
+                }
+                if ($tarea != null)
+                {
+                    $dataTarea['estado'] = 'Confirmando_Pago';
+                    $actualizado = Tarea::where('id', $tarea->id )->update( $dataTarea );
                     if(!$actualizado )
                     {
                         return response()->json(['error' => 'Ocurrió un error al actualizar solicitud.'], 401);

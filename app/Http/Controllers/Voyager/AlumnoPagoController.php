@@ -14,6 +14,10 @@ use TCG\Voyager\Events\BreadImagesDeleted;
 use TCG\Voyager\Facades\Voyager;
 use TCG\Voyager\Http\Controllers\Traits\BreadRelationshipParser;
 use App\Tarea;
+use App\Clase;
+use App\Combo;
+use App\AlumnoCompra;
+use App\AlumnoBilletera;
 
 class AlumnoPagoController extends Controller
 {
@@ -291,11 +295,78 @@ class AlumnoPagoController extends Controller
             $messages["error"] = 'Por favor Apruebe o Rechace el pago';
             return redirect()->back()->withErrors($messages)->withInput();
         }
+        $dataAct['estado'] = 'Aceptado';
         $tarea = Tarea::where('id', $data['tarea_id'])->first();
-        if (($tarea != null) && ($tarea->estado != 'Confirmado') && ($request['estado'] == 'Aprobado'))
+        if (($tarea != null) && ($tarea->estado != 'Confirmando_Pago') && ($request['estado'] == 'Aprobado'))
         {
             $messages["error"] = 'La Tarea ya no permite la Aprobación del pago';
             return redirect()->back()->withErrors($messages)->withInput();
+        }
+        else if ($tarea != null)
+        {
+            $actualizado = Tarea::where('id', $tarea->id )->update( $dataAct );
+            if(!$actualizado )
+            {
+                $messages["error"] = 'Ocurrió un error al actualizar Tarea';
+                return redirect()->back()->withErrors($messages)->withInput();
+            }
+        }
+        $clase = Clase::where('id', $data['clase_id'])->first();
+        if (($clase != null) && ($clase->estado != 'Confirmando_Pago') && ($request['estado'] == 'Aprobado'))
+        {
+            $messages["error"] = 'La Clase ya no permite la Aprobación del pago';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+        else if ($clase != null)
+        {
+            $combo = Combo::where('nombre', $clase->combo)->first();
+            if ($combo->direccion)
+                $dataAct['estado'] = 'Pago_Aprobado';
+            $actualizado = Clase::where('id', $clase->id )->update( $dataAct );
+            if(!$actualizado )
+            {
+                $messages["error"] = 'Ocurrió un error al actualizar Clase';
+                return redirect()->back()->withErrors($messages)->withInput();
+            }
+        }
+        $compra = AlumnoCompra::where('id', $data['combo_id'])->first();
+        if (($compra != null) && ($compra->estado != 'Solicitado') && ($request['estado'] == 'Aprobado'))
+        {
+            $messages["error"] = 'La Compra del combo ya no permite la Aprobación del pago';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+        else if ($compra != null)
+        {
+            $actualizado = AlumnoCompra::where('id', $compra->id )->update( $dataAct );
+            if(!$actualizado )
+            {
+                $messages["error"] = 'Ocurrió un error al actualizar Compra';
+                return redirect()->back()->withErrors($messages)->withInput();
+            }
+            $billetera = AlumnoBilletera::where('user_id', $data['user_id'])->where('combo', $compra->combo)->first();
+            if ($billetera == null)
+            {
+                $bill = AlumnoBilletera::create([
+                    'user_id' => $data['user_id'],
+                    'combo' => $compra->combo,
+                    'horas' => $compra->valor
+                ]);
+                if (!$bill->id)
+                {
+                    $messages["error"] = 'Ocurrió un error al crear Billetera';
+                    return redirect()->back()->withErrors($messages)->withInput();
+                }
+            }
+            else
+            {
+                $dataBill['horas'] = $billetera->horas + $compra->valor;
+                $actualizado = AlumnoBilletera::where('id', $billetera->id )->update( $dataBill );
+                if(!$actualizado )
+                {
+                    $messages["error"] = 'Ocurrió un error al actualizar Billetera';
+                    return redirect()->back()->withErrors($messages)->withInput();
+                }
+            }
         }
         
         $this->insertUpdateData($request, $slug, $dataType->editRows, $data);

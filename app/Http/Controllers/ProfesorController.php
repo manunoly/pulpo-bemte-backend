@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Tarea;
+use App\Clase;
 use App\Profesore;
 use App\TareaProfesor;
 use Illuminate\Http\Request;
@@ -272,6 +273,62 @@ class ProfesorController extends Controller
         else
         {
             return response()->json(['error' => 'No se encontró la Tarea para aplicar'], 401);
+        }
+    }
+    
+    public function aplicarClase(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required',
+            'clase_id' => 'required',
+            'hora' => 'required'
+        ]);
+        if ($validator->fails()) 
+        {
+            return response()->json(['error' => $validator->errors()], 406);
+        } 
+
+        $clase = Clase::where('id', $request['clase_id'])->first();
+        if ($clase != null)
+        {
+            if ($clase->estado == 'Solicitado')
+            {
+                $profe = Profesore::where('user_id', $request['user_id'])->first();
+                if ($profe != null)
+                {
+                    if ($profe->activo && $profe->disponible && $profe->clases)
+                    {
+                        $data['user_id_pro'] = $profe->user_id;
+                        $data['hora_prof'] = $request['hora'];
+                        $data['estado'] = 'Confirmado';
+                        $actualizado = Clase::where('id', $clase->id )->update( $data );
+                        if($actualizado)
+                        {
+                            return response()->json(['success' => 'Clase Solicitada'], 200);
+                        }
+                        else
+                        {
+                            return response()->json(['error' => 'Solicitud para la Clase no se pudo actualizar'], 401);
+                        }
+                    }
+                    else
+                    {
+                        return response()->json(['error' => 'El profesor no se encuentra disponible para la clase'], 401);
+                    }
+                }
+                else
+                {
+                    return response()->json(['error' => 'No se encontró al Profesor para aplicar'], 401);
+                }
+            }
+            else
+            {
+                return response()->json(['error' => 'Clase no disponible'], 401);
+            }
+        }
+        else
+        {
+            return response()->json(['error' => 'No se encontró la Clase para aplicar'], 401);
         }
     }
 }

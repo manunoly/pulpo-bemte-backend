@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Materia;
 use App\User;
+use App\Sede;
 use App\Alumno;
 use App\Profesore;
 use App\Clase;
@@ -70,6 +71,11 @@ class ClasesController extends Controller
             {
                 return response()->json(['error' => 'El Combo enviado no es válido'], 401);
             }
+            $sede = Sede::where('nombre', $request['ubicacion'])->where('activa', true)->select('ciudad')->first();
+            if ($sede == null)
+            {
+                return response()->json(['error' => 'La sede enviada no es válida'], 401);
+            }
             $claseAnterior = Clase::where('user_id', $request['user_id'])
                             ->whereIn('estado', ['Aceptado', 'Terminado', 'Calificado'])
                             ->orderBy('id', 'desc')->first();
@@ -80,6 +86,7 @@ class ClasesController extends Controller
 
             $hora1 = isset($request['hora1']) ? $request['hora1'] : NULL;
             $hora2 = isset($request['hora2']) ? $request['hora2'] : NULL;
+            $horasCombo = isset($request['horasCombo']) ? $request['horasCombo'] : NULL;
             $clase = Clase::create([
                 'user_id' => $request['user_id'],
                 'materia' => $request['materia'],
@@ -93,20 +100,32 @@ class ClasesController extends Controller
                 'ubicacion' => $request['ubicacion'],
                 'estado' => 'Solicitado',
                 'seleccion_profesor' => $request['selProfesor'] == 1,
-                'activa' => true
+                'activa' => true,
+                'horasCombo' => $horasCombo
             ]);
 
             if ($clase->id)
             {
-                if ($request['selProfesor'] == 0)
+                $profesores = Profesore::join('profesor_materia', 'profesor_materia.user_id', '=', 'profesores.user_id')
+                                        ->join('users', 'users.id', '=', 'profesores.user_id')
+                                        ->where('profesores.activo', true)
+                                        ->where('profesores.clases', true)
+                                        ->where('profesores.disponible', true)
+                                        ->where('profesores.ciudad', $sede)
+                                        ->where('profesor_materia.activa', true)
+                                        ->where('profesor_materia.materia', $clase->materia)
+                                        ->select('profesores.nombres', 'profesores.apellidos', 'profesores.correo', 
+                                                    'users.token', 'users.sistema', 'users.id')
+                                        ->get();
+                if ($clase->seleccion_profesor)
                 {
-                    //lanzar notificaciones a todos los profesores
+                    $profSelccionado = $profesores->where('id', $claseAnterior->user_id_pro)->firts();
+                    if ($profSelccionado != null)
+                    {
+                        $profesores = $profSelccionado;
+                    }
                 }
-                else
-                {
-                    //lanzar notificaciones al profesor de la clase anterior
-                    //$claseAnterior
-                }
+                //lanzar notificaciones a los profesores
                 return response()->json(['success'=> 'Su Clase ha sido solicitada. Por favor espera que validemos su información'], 200);
             }
             else
@@ -128,7 +147,7 @@ class ClasesController extends Controller
             $clase = Clase::where('user_id', $search)
                         ->where('activa', true)
                         ->select('id', 'user_id', 'materia', 'tema', 'personas', 'duracion', 'hora1', 'hora2', 
-                        'combo', 'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof',
+                        'combo', 'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'horasCombo',
                         'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 
                         'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor')
                         ->first();
@@ -215,11 +234,11 @@ class ClasesController extends Controller
             }
             if ($user['tipo'] == 'Alumno') 
             {
-                $clases = Clase::join('users', 'users.id', '=', 'clases.user_id_pro')
+                $clases = Clase::leftJoin('users', 'users.id', '=', 'clases.user_id_pro')
                             ->where('user_id', $search)
                             ->select('clases.id','users.name', 'materia', 'tema', 'personas', 'duracion', 'hora1', 'hora2', 
                             'combo', 'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc',
-                            'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 
+                            'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 'horasCombo',
                             'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor')
                             ->get();
             }
@@ -229,7 +248,7 @@ class ClasesController extends Controller
                             ->where('user_id_pro', $search)
                             ->select('clases.id','users.name', 'materia', 'tema', 'personas', 'duracion', 'hora1', 'hora2', 
                             'combo', 'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc',
-                            'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 
+                            'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 'horasCombo',
                             'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor')
                             ->get();
             }
