@@ -131,7 +131,7 @@ class RegistroController extends Controller
                     $dataUser['cedula'] = $cedula;
                     if ( isset($request['hojaVida']) )
                     {
-                        $dataUser['hojaVida'] = 'users/'.$request['hojaVida'];
+                        $dataUser['hoja_vida'] = 'users/'.$request['hojaVida'];
                     }
                     if ( isset($request['titulo']) )
                     {
