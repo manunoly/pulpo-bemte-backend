@@ -12,12 +12,18 @@ use TCG\Voyager\Events\BreadDataRestored;
 use TCG\Voyager\Events\BreadDataUpdated;
 use TCG\Voyager\Events\BreadImagesDeleted;
 use TCG\Voyager\Facades\Voyager;
+use Illuminate\Support\Facades\Mail;
 use TCG\Voyager\Http\Controllers\Traits\BreadRelationshipParser;
+
+use App\User;
 use App\Tarea;
 use App\Clase;
 use App\Combo;
 use App\AlumnoCompra;
+use App\AlumnoPago;
 use App\AlumnoBilletera;
+use App\Mail\NotificacionClases;
+use App\Mail\NotificacionTareas;
 
 class AlumnoPagoController extends Controller
 {
@@ -295,76 +301,177 @@ class AlumnoPagoController extends Controller
             $messages["error"] = 'Por favor Apruebe o Rechace el pago';
             return redirect()->back()->withErrors($messages)->withInput();
         }
-        $dataAct['estado'] = 'Aceptado';
+        $pago = AlumnoPago::where('id', $id)->first();
+        if ($pago != null && ($pago->estado == 'Aprobado' || $pago->estado == 'Rechazado'))
+        {
+            $messages["error"] = 'El Pago ya fue procesado';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+        else if ($pago == null)
+        {
+            $messages["error"] = 'El Pago no existe';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+        $duracion = 0;
         $tarea = Tarea::where('id', $data['tarea_id'])->first();
-        if (($tarea != null) && ($tarea->estado != 'Confirmando_Pago') && ($request['estado'] == 'Aprobado'))
+        if (($tarea != null) && ($tarea->estado != 'Confirmando_Pago'))
         {
             $messages["error"] = 'La Tarea ya no permite la Aprobación del pago';
             return redirect()->back()->withErrors($messages)->withInput();
         }
         else if ($tarea != null)
         {
-            $actualizado = Tarea::where('id', $tarea->id )->update( $dataAct );
-            if(!$actualizado )
-            {
-                $messages["error"] = 'Ocurrió un error al actualizar Tarea';
-                return redirect()->back()->withErrors($messages)->withInput();
-            }
+            $duracion = $tarea->tiempo_estimado;
+        }
+        else if ($data['tarea_id'] > 0)
+        {
+            $messages["error"] = 'La Tarea no existe';
+            return redirect()->back()->withErrors($messages)->withInput();
         }
         $clase = Clase::where('id', $data['clase_id'])->first();
-        if (($clase != null) && ($clase->estado != 'Confirmando_Pago') && ($request['estado'] == 'Aprobado'))
+        if (($clase != null) && ($clase->estado != 'Confirmando_Pago'))
         {
             $messages["error"] = 'La Clase ya no permite la Aprobación del pago';
             return redirect()->back()->withErrors($messages)->withInput();
         }
         else if ($clase != null)
         {
-            $combo = Combo::where('nombre', $clase->combo)->first();
-            if ($combo->direccion)
-                $dataAct['estado'] = 'Pago_Aprobado';
-            $actualizado = Clase::where('id', $clase->id )->update( $dataAct );
-            if(!$actualizado )
-            {
-                $messages["error"] = 'Ocurrió un error al actualizar Clase';
-                return redirect()->back()->withErrors($messages)->withInput();
-            }
+            $duracion = $clase->duracion - ($clase->personas - 1);
+            if ($duracion < 2)
+                $duracion = 2;
         }
+        else if ($data['clase_id'] > 0)
+        {
+            $messages["error"] = 'La Clase no existe';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+        $billetera = null;
         $compra = AlumnoCompra::where('id', $data['combo_id'])->first();
-        if (($compra != null) && ($compra->estado != 'Solicitado') && ($request['estado'] == 'Aprobado'))
+        if (($compra != null) && ($compra->estado != 'Solicitado'))
         {
             $messages["error"] = 'La Compra del combo ya no permite la Aprobación del pago';
             return redirect()->back()->withErrors($messages)->withInput();
         }
         else if ($compra != null)
         {
+            $billetera = AlumnoBilletera::where('user_id', $data['user_id'])->where('combo', $compra->combo)->first();
+            if ($billetera == null && $duracion > $compra->horas)
+            {
+                $messages["error"] = 'La Horas compradas del combo no son suficientes para pagar';
+                return redirect()->back()->withErrors($messages)->withInput();
+            }
+            else if ($billetera != null && $billetera->horas + $compra->horas - $duracion < 0)
+            {
+                $messages["error"] = 'La Horas compradas del combo no son suficientes para pagar';
+                return redirect()->back()->withErrors($messages)->withInput();
+            }
+        }
+        elseif ($data['combo_id'] > 0)
+        {
+            $messages["error"] = 'La Compra del Combo no existe';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+        $dataAct['estado'] = 'Aceptado';
+        if ($tarea != null)
+        {
+            if ($request['estado'] != 'Aprobado')
+                $dataAct['estado'] = 'Pago_Rechazado';
+            $actualizado = Tarea::where('id', $tarea->id )->update( $dataAct );
+            if(!$actualizado )
+            {
+                $messages["error"] = 'Ocurrió un error al actualizar Tarea';
+                return redirect()->back()->withErrors($messages)->withInput();
+            }
+            if ($request['estado'] == 'Aprobado')
+            {
+                try 
+                {
+                    $userAlumno = User::where('id', $tarea->user_id)->first();
+                    $userProf = User::where('id', $tarea->user_id_pro)->first();
+                    Mail::to($userAlumno->email)->send(new NotificacionTareas($tarea, $userAlumno->name, $userProf->name, 
+                                                    env('EMPRESA'), true));
+                    Mail::to($userProf->email)->send(new NotificacionTareas($tarea, $userAlumno->name, $userProf->name, 
+                                                    env('EMPRESA'), false));
+                }
+                catch (Exception $e) 
+                {
+                    $messages["error"] = 'No se ha podido enviar el correo';
+                    return redirect()->back()->withErrors($messages)->withInput();
+                } 
+            }
+        }
+        if ($clase != null)
+        {
+            if ($request['estado'] != 'Aprobado')
+            {
+                $dataAct['estado'] = 'Pago_Rechazado';
+            }
+            else
+            {
+                $combo = Combo::where('nombre', $clase->combo)->first();
+                if ($combo->direccion)
+                    $dataAct['estado'] = 'Pago_Aprobado';
+            }
+            $actualizado = Clase::where('id', $clase->id )->update( $dataAct );
+            if(!$actualizado )
+            {
+                $messages["error"] = 'Ocurrió un error al actualizar Clase';
+                return redirect()->back()->withErrors($messages)->withInput();
+            }
+            if ($request['estado'] == 'Aprobado')
+            {
+                try 
+                {
+                    $userAlumno = User::where('id', $clase->user_id)->first();
+                    $userProf = User::where('id', $clase->user_id_pro)->first();
+                    Mail::to($userAlumno->email)->send(new NotificacionClases($clase, $userAlumno->name, $userProf->name, 
+                                                    env('EMPRESA'), true));
+                    Mail::to($userProf->email)->send(new NotificacionClases($clase, $userAlumno->name, $userProf->name, 
+                                                    env('EMPRESA'), false));
+                }
+                catch (Exception $e) 
+                {
+                    $messages["error"] = 'No se ha podido enviar el correo';
+                    return redirect()->back()->withErrors($messages)->withInput();
+                }
+            }
+        }
+        if ($compra != null)
+        {
+            if ($request['estado'] != 'Aprobado')
+                $dataAct['estado'] = 'Rechazado';
+            else
+                $dataAct['estado'] = 'Aceptado';
             $actualizado = AlumnoCompra::where('id', $compra->id )->update( $dataAct );
             if(!$actualizado )
             {
                 $messages["error"] = 'Ocurrió un error al actualizar Compra';
                 return redirect()->back()->withErrors($messages)->withInput();
             }
-            $billetera = AlumnoBilletera::where('user_id', $data['user_id'])->where('combo', $compra->combo)->first();
-            if ($billetera == null)
+            if ($request['estado'] == 'Aprobado')
             {
-                $bill = AlumnoBilletera::create([
-                    'user_id' => $data['user_id'],
-                    'combo' => $compra->combo,
-                    'horas' => $compra->horas
-                ]);
-                if (!$bill->id)
+                if ($billetera == null)
                 {
-                    $messages["error"] = 'Ocurrió un error al crear Billetera';
-                    return redirect()->back()->withErrors($messages)->withInput();
+                    $bill = AlumnoBilletera::create([
+                        'user_id' => $data['user_id'],
+                        'combo' => $compra->combo,
+                        'horas' => $compra->horas - $duracion
+                    ]);
+                    if (!$bill->id)
+                    {
+                        $messages["error"] = 'Ocurrió un error al crear Billetera';
+                        return redirect()->back()->withErrors($messages)->withInput();
+                    }
                 }
-            }
-            else
-            {
-                $dataBill['horas'] = $billetera->horas + $compra->horas;
-                $actualizado = AlumnoBilletera::where('id', $billetera->id )->update( $dataBill );
-                if(!$actualizado )
+                else
                 {
-                    $messages["error"] = 'Ocurrió un error al actualizar Billetera';
-                    return redirect()->back()->withErrors($messages)->withInput();
+                    $dataBill['horas'] = $billetera->horas + $compra->horas - $duracion;
+                    $actualizado = AlumnoBilletera::where('id', $billetera->id )->update( $dataBill );
+                    if(!$actualizado )
+                    {
+                        $messages["error"] = 'Ocurrió un error al actualizar Billetera';
+                        return redirect()->back()->withErrors($messages)->withInput();
+                    }
                 }
             }
         }

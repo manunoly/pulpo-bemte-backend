@@ -6,7 +6,7 @@ use Illuminate\Console\Command;
 use App\User;
 use App\Clase;
 use App\AlumnoPago;
-use App\Mail\NotificacionTareas;
+use App\Mail\NotificacionClases;
 
 class AsignarPagoClase extends Command
 {
@@ -55,9 +55,9 @@ class AsignarPagoClase extends Command
                     $profesor = User::where('id', $item->user_id_pro)->first();
                     try 
                     {
-                        Mail::to($alumno->email)->send(new NotificacionTareas($item, $alumno->name, $profesor->name, 
+                        Mail::to($alumno->email)->send(new NotificacionClases($item, $alumno->name, $profesor->name, 
                                                         env('EMPRESA'), true));
-                        Mail::to($profesor->email)->send(new NotificacionTareas($item, $alumno->name, $profesor->name, 
+                        Mail::to($profesor->email)->send(new NotificacionClases($item, $alumno->name, $profesor->name, 
                                                         env('EMPRESA'), false));
                     }
                     catch (Exception $e) 

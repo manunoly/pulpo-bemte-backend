@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\User;
 use App\Tarea;
 use App\Clase;
 use App\Alumno;
@@ -10,6 +11,9 @@ use App\AlumnoBilletera;
 use Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\NotificacionClases;
+use App\Mail\NotificacionTareas;
 
 class AlumnosController extends Controller
 {
@@ -171,6 +175,20 @@ class AlumnosController extends Controller
                     {
                         return response()->json(['error' => 'Ocurrió un error al actualizar la Tarea.'], 401);
                     }
+                    try 
+                    {
+                        $userAlum = User::where('id', $tarea->user_id)->first();
+                        $userProf = User::where('id', $tarea->user_id_pro)->first();
+                        Mail::to($userAlum->email)->send(new NotificacionTareas($tarea, $userAlum->name, $userProf->name, 
+                                                        env('EMPRESA'), true));
+                        Mail::to($userProf->email)->send(new NotificacionTareas($tarea, $userAlum->name, $userProf->name, 
+                                                        env('EMPRESA'), false));
+                    }
+                    catch (Exception $e) 
+                    {
+                        return response()->json(['success' => 'No se ha podido enviar el correo',
+                                    'detalle' => $e->getMessage()], 200);
+                    }
                 }
                 if ($clase != null)
                 {
@@ -178,6 +196,20 @@ class AlumnosController extends Controller
                     if(!$actClase )
                     {
                         return response()->json(['error' => 'Ocurrió un error al actualizar la Clase.'], 401);
+                    }
+                    try 
+                    {
+                        $userAlum = User::where('id', $clase->user_id)->first();
+                        $userProf = User::where('id', $clase->user_id_pro)->first();
+                        Mail::to($userAlum->email)->send(new NotificacionClases($clase, $userAlum->name, $userProf->name, 
+                                                        env('EMPRESA'), true));
+                        Mail::to($userProf->email)->send(new NotificacionClases($clase, $userAlum->name, $userProf->name, 
+                                                        env('EMPRESA'), false));
+                    }
+                    catch (Exception $e) 
+                    {
+                        return response()->json(['success' => 'No se ha podido enviar el correo',
+                                    'detalle' => $e->getMessage()], 200);
                     }
                 }
                 if ($combo != null)
@@ -279,7 +311,7 @@ class AlumnosController extends Controller
             'tareas' => $request['tareas'] == 1 ? true : false,
             'hoja_vida' => $hojaVida ,
             'titulo' => $titulo,
-            'estado' => 'Solicitado'
+            'estado' => 'Solicitada'
         ]);
         if ($new == null || !$new->id)
         {
