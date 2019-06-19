@@ -14,11 +14,13 @@ use TCG\Voyager\Events\BreadImagesDeleted;
 use TCG\Voyager\Facades\Voyager;
 use Illuminate\Support\Facades\Mail;
 use TCG\Voyager\Http\Controllers\Traits\BreadRelationshipParser;
-
 use App\User;
+use App\Alumno;
+use App\Profesore;
+use App\Formulario;
 use App\Mail\Notificacion;
 
-class ProfesoresController extends Controller
+class FormularioController extends Controller
 {
     use BreadRelationshipParser;
 
@@ -288,41 +290,98 @@ class ProfesoresController extends Controller
 
         // Validate fields with ajax
         $val = $this->validateBread($request->all(), $dataType->editRows, $dataType->name, $id)->validate();
-        $this->insertUpdateData($request, $slug, $dataType->editRows, $data);
-        event(new BreadDataUpdated($dataType, $data));
-
-        $v = \Validator::make($request->all(), [
-            'correo'    => 'required|email',
-        ]);
-        if ($v->fails())
+        
+        if (($request['estado'] == null) || ($request['estado'] == 'Solicitada'))
         {
-            $messages["error"] = 'Correo electrónico Inválido';
+            $messages["error"] = 'Por favor Apruebe o Rechace la Solicitud';
             return redirect()->back()->withErrors($messages)->withInput();
         }
-        $user = User::where('email', $data['correo'])->select('*')->first();
-        if ($user != null && $user->id != $id)
+        $dataAct['estado'] = $request['estado'];
+        $solicitud = Formulario::where('id', $data['id'])->first();
+        if (($solicitud != null) && ($solicitud->estado != 'Solicitada'))
         {
-            $messages["error"] = 'Correo electrónico no disponible';
+            $messages["error"] = 'La Solicitud ya no permite la Aprobación';
             return redirect()->back()->withErrors($messages)->withInput();
         }
-        $user = User::where('id', $id)->select('*')->first();
-        $dataUser = [
-            "name" => $data['nombres'].' '.$data['apellidos'], "email" => $data['correo'],
-        ];
-        $actualizado = User::where('id', $id )->update( $dataUser );
-        if ($data['activo'] == 1)
+        else if ($solicitud != null)
         {
+            $actualizado = Formulario::where('id', $solicitud->id )->update( $dataAct );
+            if(!$actualizado )
+            {
+                $messages["error"] = 'Ocurrió un error al actualizar Solicitud';
+                return redirect()->back()->withErrors($messages)->withInput();
+            }
+            $alumno = Alumno::where('user_id', $solicitud->user_id)->first();
+            if ($request['estado'] == 'Aprobada')
+            {
+                $dataUser['tipo'] = 'Profesor';
+                User::where('id', $solicitud->user_id)->update($dataUser);
+                $profesor = Profesore::where('user_id', $solicitud->user_id)->first();
+                if ($profesor != null)
+                {
+                    $dataPro['clases'] = $solicitud->clases;
+                    $dataPro['tareas'] = $solicitud->tareas;
+                    $dataPro['hoja_vida'] = $solicitud->hoja_vida;
+                    $dataPro['titulo'] = $solicitud->titulo;
+                    $dataPro['cedula'] = $solicitud->cedula;
+                    $dataPro['disponible'] = true;
+                    $dataPro['activo'] = true;
+                    $profesor = Profesore::where('user_id', $solicitud->user_id )->update( $dataPro );
+                    if(!$profesor)
+                    {
+                        $messages["error"] = 'No se pudo crear como Profesor';
+                        return redirect()->back()->withErrors($messages)->withInput();
+                    }
+                }
+                else
+                {
+                    $profesor = Profesore::create([
+                        'user_id' => $solicitud->user_id,
+                        'celular' => $alumno->celular,
+                        'correo' => $alumno->correo,
+                        'nombres' => $alumno->nombres,
+                        'apellidos' => $alumno->apellidos,
+                        'cedula' => $solicitud->cedula,
+                        'apodo' => $alumno->apodo,
+                        'ubicacion' => $alumno->ubicacion,
+                        'ciudad' => $alumno->ciudad,
+                        'clases' => $solicitud->clases,
+                        'tareas' => $solicitud->tareas,
+                        'disponible' => true,
+                        'hoja_vida' => $solicitud->hoja_vida,
+                        'titulo' => $solicitud->titulo,
+                        'activo' => true
+                    ]);
+                    if(!$profesor)
+                    {
+                        $messages["error"] = 'No se pudo crear como Profesor';
+                        return redirect()->back()->withErrors($messages)->withInput();
+                    }
+                }
+                $dataAlumno['activo'] = false;
+            }
+            else
+            {
+                $dataAlumno['ser_profesor'] = false;
+            }
+            Alumno::where('user_id', $solicitud->user_id)->update($dataAlumno);
             try 
             {
-                Mail::to($data['correo'])->send(new Notificacion($data['nombres'], 
-                        'Su registro como Profesor ha sido ', 'Aprobado', 'Bienvenido!', env('EMPRESA')));
+                $texto = $request['estado'] == 'Aprobada' ? 'Bienvenido!' : 'Por favor, comunicarse con el Administrador para más información';
+                Mail::to($alumno->correo)->send(new Notificacion($alumno->nombres, 
+                        'Su solicitud para ser Profesor ha sido ',
+                        $request['estado'], $texto, env('EMPRESA')));
             }
             catch (Exception $e) 
             {
                 $messages["error"] = 'Actualización realizada pero No se ha podido enviar el correo';
                 return redirect()->back()->withErrors($messages)->withInput();
-            }
+            } 
         }
+        
+        $this->insertUpdateData($request, $slug, $dataType->editRows, $data);
+
+        event(new BreadDataUpdated($dataType, $data));
 
         return redirect()
         ->route("voyager.{$dataType->slug}.index")
@@ -330,7 +389,6 @@ class ProfesoresController extends Controller
             'message'    => __('voyager::generic.successfully_updated')." {$dataType->display_name_singular}",
             'alert-type' => 'success',
         ]);
-       
     }
 
     //***************************************

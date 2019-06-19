@@ -101,18 +101,16 @@
 <body>
     <table>
         <tr>
-            <td class="titulo" colspan="3"><h2>{{$empresa_name}}<h2></td>
+            <td class="titulo" colspan="3"><h2>{{$empresa}}<h2></td>
         </tr>
         <tr>
             <td ></td> 
             <td class="cuerpo">
-                <p class="hola">Hola!</p>
-                <p>{{$viaje}}<p>
-                <p>{{$usuario}}<p>
-                <p>Ha agregado un viaje con más de 4 acompañantes.<p>
-                <p>Por favor, comunicarse con el cliente para registrar los datos de los acompañantes.<p>
+                <p class="hola">Hola {{$persona}}!</p>
+                <p>{{$solicitud}} {{$estado}}<p>
+                <p>{{$texto}}<p>
                 <p class="hola">Saludos,</p>
-                <p class="hola">{{$empresa_name}}</p>    
+                <p class="hola">{{$empresa}}</p>    
                 <br>
                 <hr/>
                 <br>
@@ -120,7 +118,7 @@
             <td ></td>
         </tr>
         <tr>
-            <td  class="footer" colspan="3">© 2018 {{$empresa_name}}. Todos los derechos reservados.</td>
+            <td  class="footer" colspan="3">© 2019 {{$empresa}}. Todos los derechos reservados.</td>
         </tr>
     </table>
 </body>
