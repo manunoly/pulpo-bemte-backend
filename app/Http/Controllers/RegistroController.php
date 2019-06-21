@@ -131,11 +131,11 @@ class RegistroController extends Controller
                     $dataUser['cedula'] = $cedula;
                     if ( isset($request['hojaVida']) )
                     {
-                        $dataUser['hoja_vida'] = 'users/'.$request['hojaVida'];
+                        $dataUser['hoja_vida'] = $request['hojaVida'];
                     }
                     if ( isset($request['titulo']) )
                     {
-                        $dataUser['titulo'] = 'users/'.$request['titulo'];
+                        $dataUser['titulo'] = $request['titulo'];
                     }
                     $actualizado = Profesore::where('user_id', $id_usuario )->update( $dataUser );
                     if ($actualizado)
@@ -396,8 +396,8 @@ class RegistroController extends Controller
                 }
                 else
                 {
-                    $hojaVida = isset($request['hojaVida']) ? 'users/'.$request['hojaVida'] : NULL;
-                    $titulo = isset($request['titulo']) ? 'users/'.$request['titulo'] : NULL;
+                    $hojaVida = isset($request['hojaVida']) ? $request['hojaVida'] : NULL;
+                    $titulo = isset($request['titulo']) ? $request['titulo'] : NULL;
                     $profesor = Profesore::create([
                         'user_id' => $user->id,
                         'celular' => $request['celular'],

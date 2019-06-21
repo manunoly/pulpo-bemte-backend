@@ -61,6 +61,7 @@ class TareasController extends Controller
                 return response()->json(['error' => 'La Materia enviada no es válida'], 401);
             }
 
+            $archivo = isset($request['archivo']) ? $request['archivo'] : NULL;
             $tarea = Tarea::create([
                 'user_id' => $request['user_id'],
                 'materia' => $request['materia'],
@@ -71,7 +72,8 @@ class TareasController extends Controller
                 'descripcion' => $request['descripcion'],
                 'formato_entrega' => $request['formato_entrega'],
                 'estado' => 'Solicitado',
-                'activa' => true
+                'activa' => true,
+                'archivo' => $archivo
             ]);
 
             if( $tarea->id)
@@ -107,11 +109,7 @@ class TareasController extends Controller
         {
             $search = \Request::get('user_id');
             $tarea = Tarea::where('user_id', $search)
-                        ->where('activa', true)
-                        ->select('id','user_id', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
-                        'descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 
-                        'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor')
-                        ->first();
+                        ->where('activa', true)->first();
             if (isset($tarea->user_id_pro) && $tarea->user_id_pro > 0)
             {
                 $prof = User::where('id', $tarea->user_id_pro)->first();
@@ -140,7 +138,7 @@ class TareasController extends Controller
                         ->where('profesores.tareas', true)
                         ->select('tareas.id', 'tareas.user_id', 'tareas.materia', 'tareas.tema', 
                         'tareas.fecha_entrega', 'tareas.hora_inicio', 'tareas.hora_fin', 
-                        'tareas.descripcion', 'tareas.formato_entrega')->get();
+                        'tareas.descripcion', 'tareas.formato_entrega', 'tareas.archivo')->get();
             return response()->json($tarea, 200);
         }
         else
@@ -194,7 +192,7 @@ class TareasController extends Controller
                 $tareas = Tarea::leftJoin('users', 'users.id', '=', 'tareas.user_id_pro')
                             ->where('user_id', $search)
                             ->select('tareas.id','users.name', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
-                            'descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 
+                            'descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 'archivo',
                             'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor', 'fecha_canc')
                             ->get();
             }
@@ -203,7 +201,7 @@ class TareasController extends Controller
                 $tareas = Tarea::join('users', 'users.id', '=', 'tareas.user_id')
                             ->where('user_id_pro', $search)
                             ->select('tareas.id','users.name', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
-                            'descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 
+                            'descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 'archivo',
                             'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor', 'fecha_canc')
                             ->get();
             }
