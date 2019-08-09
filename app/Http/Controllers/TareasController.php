@@ -150,7 +150,10 @@ class TareasController extends Controller
     public function tareaTerminar(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'tarea_id' => 'required|numeric'
+            'tarea_id' => 'required|numeric',
+            'user_id' => 'required|numeric',
+            'profesor' => 'required',
+            'cancelar' => 'required'
         ]);
         if ($validator->fails()) 
         {
@@ -159,17 +162,25 @@ class TareasController extends Controller
         $tarea = Tarea::where('id', $request['tarea_id'])->first();
         if ($tarea != null)
         {
-            $data['activa'] = false;
-            $data['fecha_canc'] = date("Y-m-d H:i:s");
-            $actualizado = Tarea::where('id', $request['tarea_id'] )->update( $data );
-            if(!$actualizado )
+            if ($tarea->estado == 'Sin_Profesor' || $tarea->estado == 'Pago_Rechazado' ||
+                $tarea->estado == 'Sin_Pago' || $tarea->estado == 'Terminado' || $tarea->estado == 'Calificado')
+                return response()->json(['error' => 'La Tarea ya no permite modificación'], 401);
+            
+            if ($request['cancelar'] == 1)
             {
-                return response()->json(['error' => 'Ocurrió un error al terminar la tarea.'], 401);
+                $data['activa'] = false;
+                $data['fecha_canc'] = date("Y-m-d H:i:s");
+                $data['user_canc'] = $request['user_id'];
+                $actualizado = Tarea::where('id', $request['tarea_id'] )->update( $data );
+                if(!$actualizado )
+                {
+                    return response()->json(['error' => 'Ocurrió un error al terminar la tarea.'], 401);
+                }
+                else
+                {
+                    return response()->json(['success' => 'Tarea terminada exitosamente'], 200);
+                }  
             }
-            else
-            {
-                return response()->json(['success' => 'Tarea terminada exitosamente'], 200);
-            }  
         }
         else
         {

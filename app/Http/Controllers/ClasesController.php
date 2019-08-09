@@ -207,7 +207,10 @@ class ClasesController extends Controller
     public function claseTerminar(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'clase_id' => 'required|numeric'
+            'clase_id' => 'required|numeric',
+            'user_id' => 'required|numeric',
+            'profesor' => 'required',
+            'cancelar' => 'required'
         ]);
         if ($validator->fails()) 
         {
@@ -216,16 +219,59 @@ class ClasesController extends Controller
         $clase = Clase::where('id', $request['clase_id'])->first();
         if ($clase != null)
         {
-            $data['activa'] = false;
-            $data['fecha_canc'] = date("Y-m-d H:i:s");
-            $actualizado = Clase::where('id', $request['clase_id'] )->update( $data );
-            if(!$actualizado )
+            if ($clase->estado == 'Sin_Profesor' || $clase->estado == 'Pago_Rechazado' ||
+                $clase->estado == 'Sin_Pago' || $clase->estado == 'Terminado' || $clase->estado == 'Calificado')
+                return response()->json(['error' => 'La Clase ya no permite modificación'], 401);
+            
+            if ($request['cancelar'] == 1)
             {
-                return response()->json(['error' => 'Ocurrió un error al terminar la Clase.'], 401);
+                $data['activa'] = false;
+                $data['fecha_canc'] = date("Y-m-d H:i:s");
+                $data['user_canc'] = $request['user_id'];
+                $actualizado = Clase::where('id', $request['clase_id'] )->update( $data );
+                if(!$actualizado )
+                {
+                    return response()->json(['error' => 'Ocurrió un error al terminar la Clase.'], 401);
+                }
+                else
+                {
+                    /*
+                    if ($request['profesor'] == 1)
+                    {
+                        $dateTime = date("Y-m-d H:i:s");
+                        $limit = date("Y-m-d H:i:s", strtotime(date("d/m/y H:i:s"). '-24*60 minutes'));
+                        $newDate = date("Y-m-d", $dateTime);
+                        $newTime = date("H:i:s", $dateTime);
+                        if (!(($clase->fecha < $newDate) || (($clase->fecha == $newDate)
+                            && ($clase->hora_prof <= $newTime))))
+                        {
+                            //penalizar 1 hora al profesor
+                        }
+                    }
+                    else
+                    {
+                        $dateTime = date("Y-m-d H:i:s", strtotime(date("d/m/y H:i:s"). '-3*60 minutes'));
+                        $newDate = date("Y-m-d", $dateTime);
+                        $newTime = date("H:i:s", $dateTime);
+                        if (($clase->fecha < $newDate) || (($clase->fecha == $newDate)
+                            && ($clase->hora_prof <= $newTime)))
+                        {
+                            //penalizar 1 hora al profesor
+                        }
+
+                    }
+                    */
+                    return response()->json(['success' => 'Clase terminada exitosamente'], 200);
+                }
             }
             else
-            {
-                return response()->json(['success' => 'Clase terminada exitosamente'], 200);
+            {            
+                $data['estado'] = 'Terminado';
+                $actualizado = Clase::where('id', $request['clase_id'] )->update( $data );
+                if(!$actualizado )
+                    return response()->json(['error' => 'Ocurrió un error al Finalizar la Clase.'], 401);
+                else
+                    return response()->json(['success' => 'Clase Finalizada exitosamente'], 200);
             }  
         }
         else
