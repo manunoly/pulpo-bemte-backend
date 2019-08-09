@@ -108,12 +108,6 @@ class FicherosController extends Controller
         {
             if ((($alumno != null) && ($alumno->activo)) || (($profesor != null) && ($profesor->activo)))
             {
-                if ($archivo != NULL)
-                {
-                    $file = $request->file('archivo');
-                    $nombre = $file->getClientOriginalName();
-                    \Storage::disk('local')->put($request['user_id'].'\\'.$nombre,  \File::get($file));
-                }
                 if ($tarea != null)
                 {
                     $aplica = TareaEjercicio::create([

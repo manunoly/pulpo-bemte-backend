@@ -76,12 +76,14 @@ class ClasesController extends Controller
             {
                 return response()->json(['error' => 'La sede enviada no es válida'], 401);
             }
-            $claseAnterior = Clase::where('user_id', $request['user_id'])
-                            ->whereIn('estado', ['Aceptado', 'Terminado', 'Calificado'])
-                            ->orderBy('id', 'desc')->first();
-            if ($request['selProfesor']==1 && $claseAnterior == nul)
+            $claseAnterior = null;
+            if ($request['selProfesor']==1)
             {
-                return response()->json(['error' => 'No existe una Clase anterior para seleccionar al Profesor'], 401);
+                $claseAnterior = Clase::where('user_id', $request['user_id'])
+                                ->whereIn('estado', ['Aceptado', 'Terminado', 'Calificado'])
+                                ->orderBy('id', 'desc')->first();
+                if ($claseAnterior == nul)
+                    return response()->json(['error' => 'No existe una Clase anterior para seleccionar al Profesor'], 401);
             }
 
             $hora1 = isset($request['hora1']) ? $request['hora1'] : NULL;
@@ -119,7 +121,7 @@ class ClasesController extends Controller
                                         ->select('profesores.nombres', 'profesores.apellidos', 'profesores.correo', 
                                                     'users.token', 'users.sistema', 'users.id')
                                         ->get();
-                if ($clase->seleccion_profesor)
+                if ($claseAnterior != nul)
                 {
                     $profSelccionado = $profesores->where('id', $claseAnterior->user_id_pro)->firts();
                     if ($profSelccionado != null)
@@ -246,7 +248,7 @@ class ClasesController extends Controller
             }
             else
             {
-                $clases = Clase::join('users', 'users.id', '=', 'clases.user_id_pro')
+                $clases = Clase::join('users', 'users.id', '=', 'clases.user_id')
                             ->where('user_id_pro', $search)
                             ->select('clases.id','users.name', 'materia', 'tema', 'personas', 'duracion', 'hora1', 'hora2', 
                             'combo', 'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc', 'precioCombo',
