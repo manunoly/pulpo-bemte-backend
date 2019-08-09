@@ -145,6 +145,10 @@ class RegistroController extends Controller
                     {
                         $dataUser['banco'] = $request['banco'];
                     }
+                    if ( isset($request['tipoCuenta']) )
+                    {
+                        $dataUser['tipo_cuenta'] = $request['tipoCuenta'];
+                    }
                     $actualizado = Profesore::where('user_id', $id_usuario )->update( $dataUser );
                     if ($actualizado)
                     {
@@ -408,6 +412,7 @@ class RegistroController extends Controller
                     $titulo = isset($request['titulo']) ? $request['titulo'] : NULL;
                     $cuenta = isset($request['cuenta']) ? $request['cuenta'] : NULL;
                     $banco = isset($request['banco']) ? $request['banco'] : NULL;
+                    $banco = isset($request['tipoCuenta']) ? $request['tipoCuenta'] : NULL;
                     $profesor = Profesore::create([
                         'user_id' => $user->id,
                         'celular' => $request['celular'],
@@ -427,7 +432,8 @@ class RegistroController extends Controller
                         'created_at' => $request['created_at'],
                         'updated_at' => $request['created_at'],
                         'cuenta' => $cuenta,
-                        'banco' => $banco
+                        'banco' => $banco,
+                        'tipo_cuenta' => $tipo_cuenta
                     ]);
                     if($profesor)
                     {

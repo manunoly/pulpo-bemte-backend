@@ -362,7 +362,8 @@ class ProfesorController extends Controller
         $validator = Validator::make($request->all(), [
             'user_id' => 'required',
             'banco' => 'required',
-            'numero' => 'required'
+            'numero' => 'required',
+            'tipo' => 'required'
         ]);
         if ($validator->fails()) 
         {
@@ -374,6 +375,7 @@ class ProfesorController extends Controller
         {
             $data['cuenta'] = $request['numero'];
             $data['banco'] = $request['banco'];
+            $data['tipo_cuenta'] = $request['tipo'];
             $actualizado = Profesore::where('user_id', $id_usuario )->update( $data );
             if( $actualizado )
             {

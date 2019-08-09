@@ -13,6 +13,6 @@ class Profesore extends Model
     
     protected $fillable = [
         'user_id', 'celular', 'correo', 'nombres', 'apellidos', 'cedula', 'correo', 'apodo', 'ubicacion', 'ciudad', 
-        'clases', 'tareas', 'disponible', 'hoja_vida', 'titulo', 'activo', 'cuenta', 'banco', 
+        'clases', 'tareas', 'disponible', 'hoja_vida', 'titulo', 'activo', 'cuenta', 'banco', 'tipo_cuenta',
     ];
 }
