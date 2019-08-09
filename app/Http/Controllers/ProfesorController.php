@@ -356,4 +356,37 @@ class ProfesorController extends Controller
             return response()->json(['error' => 'No se encontró la Clase para aplicar'], 401);
         }
     }
+
+    public function actualizaCuenta(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required',
+            'banco' => 'required',
+            'numero' => 'required'
+        ]);
+        if ($validator->fails()) 
+        {
+            return response()->json(['error' => $validator->errors()], 406);
+        }  
+        $id_usuario = $request['user_id'];
+        $profesor = Profesore::where('user_id', $id_usuario)->select('*')->first();
+        if ($profesor)
+        {
+            $data['cuenta'] = $request['numero'];
+            $data['banco'] = $request['banco'];
+            $actualizado = Profesore::where('user_id', $id_usuario )->update( $data );
+            if( $actualizado )
+            {
+                return response()->json(['success' => 'Datos actualizados correctamente'], 200);
+            }
+            else
+            {
+                return response()->json(['error' => 'Ocurrió un error al actualizar.'], 401);
+            }
+        }
+        else
+        {
+            return response()->json(['error' => 'No se encontró el usuario'], 401);
+        }
+    }
 }
