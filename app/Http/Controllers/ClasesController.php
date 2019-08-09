@@ -72,7 +72,7 @@ class ClasesController extends Controller
                 return response()->json(['error' => 'El Combo enviado no es válido'], 401);
             }
             $sede = Sede::where('nombre', $request['ubicacion'])->where('activa', true)->select('ciudad')->first();
-            if ($sede == null)
+            if ($sede == null && !$combo->direccion)
             {
                 return response()->json(['error' => 'La sede enviada no es válida'], 401);
             }
