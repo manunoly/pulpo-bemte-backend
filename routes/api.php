@@ -22,8 +22,8 @@ Route::post('login', 'RegistroController@login');
 Route::post('registro', 'RegistroController@registro');
 Route::post('actualizar-cuenta', 'RegistroController@actualizarCuenta');
 Route::post('actualizar-celular', 'RegistroController@actualizarCelular');
-
 Route::get('eliminar-cuenta', 'RegistroController@eliminarCuenta');
+
 Route::post('reset', 'RegistroController@resetPassword');
 Route::get('reset/{confirmation_code}/{email}', 'RegistroController@validar'); 
 Route::post('reset_pw', 'RegistroController@actualizarPW');

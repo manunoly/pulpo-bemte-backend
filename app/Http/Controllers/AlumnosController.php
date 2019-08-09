@@ -47,6 +47,7 @@ class AlumnosController extends Controller
         {
             return response()->json(['error' => 'No se puede calificar al mismo usuario'], 401);
         }
+        $coment = isset($request['comment']) ? $request['comment'] : NULL;
         if ($id_tarea != 0)
         {
             $tarea = Tarea::where('id', $id_tarea)->first();
@@ -54,7 +55,6 @@ class AlumnosController extends Controller
             {
                 if ($id_calificado == $tarea->user_id && $id_usuario == $tarea->user_id_pro)
                 {
-                    $coment = isset($request['comment']) ? $request['comment'] : NULL;
                     $calif = array("califacion_alumno" => $request['calificacion'], 
                                     "comentario_alumno" => $coment);
                     Tarea::where('id',$id_tarea)->update($calif);
@@ -69,11 +69,36 @@ class AlumnosController extends Controller
                 return response()->json(['error' => 'No se encontró la tarea a calificar'], 401);
             }
         }
+        if ($id_clase != 0)
+        {
+            $clase = Clase::where('id', $id_clase)->first();
+            if ($clase != null)
+            {
+                if ($id_calificado == $clase->user_id && $id_usuario == $clase->user_id_pro)
+                {
+                    $calif = array("califacion_alumno" => $request['calificacion'], 
+                                    "comentario_alumno" => $coment);
+                    Clase::where('id',$id_clase)->update($calif);
+                }
+                else
+                {
+                    return response()->json(['error' => 'Los usuarios no coinciden con la Clase especificada'], 401);
+                }
+            }
+            else
+            {
+                return response()->json(['error' => 'No se encontró la Clase a calificar'], 401);
+            }
+        }
         $tareas_est = Tarea::where('user_id', $id_calificado)->where('estado', 'Terminado')
                                 ->where('califacion_alumno', '!=',NULL)->get();
-        if ($tareas_est->count() > 0)
+        $clases_est = Clase::where('user_id', $id_calificado)->where('estado', 'Terminado')
+                                ->where('califacion_alumno', '!=',NULL)->get();
+        if ($tareas_est->count() + $clases_est->count() > 10)
         {
-            $calif_est = array("calificacion" => $tareas_est->sum('califacion_alumno')/$tareas_est->count());
+            $calif_est = array("calificacion" => 
+                ($tareas_est->sum('califacion_alumno') + $clases_est->sum('califacion_alumno'))
+                / ($tareas_est->count() + $clases_est->count()));
             Alumno::where('user_id',$id_calificado)->update($calif_est);
         }
         return response()->json(['success' => 'Alumno calificado correctamente'], 200);
