@@ -76,6 +76,13 @@ class ClasesController extends Controller
             {
                 return response()->json(['error' => 'La sede enviada no es válida'], 401);
             }
+            $coordenadas = isset($request['coordenadas']) ? $request['coordenadas'] : NULL;
+            if ($sede == null)
+            {
+                $sede = $request['ubicacion'];
+                if ($coordenadas == null)
+                    return response()->json(['error' => 'Las coordenadas deben ser especificadas'], 401);
+            }
             $claseAnterior = null;
             if ($request['selProfesor']==1)
             {
@@ -101,6 +108,7 @@ class ClasesController extends Controller
                 'duracion' => $request['duracion'],
                 'combo' => $request['combo'],
                 'ubicacion' => $request['ubicacion'],
+                'coordenadas' => $coordenadas,
                 'estado' => 'Solicitado',
                 'seleccion_profesor' => $request['selProfesor'] == 1,
                 'activa' => true,
@@ -152,7 +160,7 @@ class ClasesController extends Controller
                         ->where('activa', true)
                         ->select('id', 'user_id', 'materia', 'tema', 'personas', 'duracion', 'hora1', 'hora2', 
                         'combo', 'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'horasCombo', 'precioCombo',
-                        'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 
+                        'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 'coordenadas',
                         'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor')
                         ->first();
             if (isset($clase->user_id_pro) && $clase->user_id_pro > 0)
@@ -187,7 +195,7 @@ class ClasesController extends Controller
                         ->where('profesores.clases', true)
                         ->select('clases.id', 'clases.user_id', 'clases.materia', 'clases.tema', 
                         'clases.personas', 'clases.duracion', 'clases.hora1', 'clases.hora2', 'fecha',
-                        'clases.combo', 'clases.ubicacion', 'clases.seleccion_profesor')->get();
+                        'clases.combo', 'clases.ubicacion', 'clases.coordenadas', 'clases.seleccion_profesor')->get();
             return response()->json($clases, 200);
         }
         else
@@ -243,7 +251,8 @@ class ClasesController extends Controller
                             ->select('clases.id','users.name', 'materia', 'tema', 'personas', 'duracion', 'hora1', 'hora2', 
                             'combo', 'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc', 'precioCombo',
                             'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 'horasCombo',
-                            'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor')
+                            'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor',
+                            'coordenadas')
                             ->get();
             }
             else
@@ -253,7 +262,8 @@ class ClasesController extends Controller
                             ->select('clases.id','users.name', 'materia', 'tema', 'personas', 'duracion', 'hora1', 'hora2', 
                             'combo', 'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc', 'precioCombo',
                             'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 'horasCombo',
-                            'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor')
+                            'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor',
+                            'coordenadas')
                             ->get();
             }
             return response()->json($clases, 200);
