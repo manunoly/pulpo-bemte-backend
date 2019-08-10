@@ -492,4 +492,43 @@ class RegistroController extends Controller
             return response()->json(['error' => 'No se encontró el usuario.'], 401);
         }
     }
+
+
+    public function devuelveUsuario()
+    {
+        if( \Request::get('user_id') )
+        {
+            $search = \Request::get('user_id');
+            $user = User::where('id', $search)->select('*')->first();
+            if($user)
+            {
+                $avatar = $user['avatar'];
+                if ($user['tipo'] == 'Alumno')
+                {
+                    $user = Alumno::where('user_id', $user['id'])->select('*')->first();
+                    $user['tipo'] = 'Alumno';
+                    $user['avatar'] = $avatar;
+                }
+                else if ($user['tipo'] == 'Profesor')
+                {
+                    $user = Profesore::where('user_id', $user['id'])->select('*')->first();
+                    $user['tipo'] = 'Profesor';
+                    $user['avatar'] = $avatar;
+                }
+                else
+                {
+                    return response()->json(['error' => 'Usuario no Autorizado en App'], 401);
+                }
+                return response()->json(['success' => 'Login OK', 'profile' => $user], 200);
+            }
+            else
+            {
+                return response()->json(['error' => 'Usuario no registrado.'], 401);
+            }
+        }
+        else
+        {
+            return response()->json(['error' => 'Usuario no especificado'], 401);
+        }
+    }
 }
