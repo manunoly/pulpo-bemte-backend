@@ -211,10 +211,13 @@ class FicherosController extends Controller
             {
                 return response()->json(['error' => 'Especifique una sola opción para el Combo'], 401);
             }
-            $combo = AlumnoCompra::where('combo', $request['combo_id'])->where('user_id', $request['user_id'])->first();
-            if ($combo != null && $combo->estado != 'Solicitado')
+            if (is_numeric($request['combo_id']))
             {
-                return response()->json(['error' => 'La Solicitud ya fue procesada'], 401);
+                $combo = AlumnoCompra::where('id', $request['combo_id'])->where('user_id', $request['user_id'])->first();
+                if ($combo != null && $combo->estado != 'Solicitado')
+                {
+                    return response()->json(['error' => 'La Solicitud ya fue procesada'], 401);
+                }
             }
         } 
         $user = Alumno::where('user_id', $request['user_id'])->first();
@@ -236,18 +239,17 @@ class FicherosController extends Controller
                         return response()->json(['error' => 'Ocurrió un error al registrar solicitud!'], 401);
                     }
                 }
-                $idCombo = $combo != null ? $combo->id : 0;
                 $solicitud = AlumnoPago::where('user_id', $request['user_id'])
                                         ->where('tarea_id', $request['tarea_id'])
                                         ->where('clase_id', $request['clase_id'])
-                                        ->where('combo_id', $idCombo)->first();
+                                        ->where('combo_id', $combo->id)->first();
                 if ($solicitud == null)
                 {
                     $aplica = AlumnoPago::create([
                         'user_id' => $request['user_id'],
                         'tarea_id' => $request['tarea_id'],
                         'clase_id' => $request['clase_id'],
-                        'combo_id' => $idCombo,
+                        'combo_id' => $combo->id,
                         'archivo' => $archivo,
                         'drive' => $drive,
                         'estado' => 'Solicitado'
