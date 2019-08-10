@@ -49,6 +49,7 @@ Route::post('calificar-profesor', 'ProfesorController@calificarProfesor');
 Route::post('aplicar-tarea', 'ProfesorController@aplicarTarea');
 Route::post('aplicar-clase', 'ProfesorController@aplicarClase');
 Route::post('actualiza-cuenta', 'ProfesorController@actualizaCuenta');
+Route::get('cuenta-profesor', 'ProfesorController@cuentaProfesor');
 
 
 Route::post('solicitar-tarea', 'TareasController@solicitarTarea');

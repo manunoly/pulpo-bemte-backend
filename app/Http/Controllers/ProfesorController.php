@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Tarea;
 use App\Clase;
+use App\Pago;
 use App\Profesore;
 use App\TareaProfesor;
 use Illuminate\Http\Request;
@@ -389,6 +390,33 @@ class ProfesorController extends Controller
         else
         {
             return response()->json(['error' => 'No se encontró el usuario'], 401);
+        }
+    }
+
+    public function cuentaProfesor()
+    {
+        if( \Request::get('user_id') )
+        {
+            $search = \Request::get('user_id');
+            $clases = Pago::join('clases', 'pagos.clase_id', '=', 'clases.id')
+                        ->where('pagos.user_id', $search)
+                        ->where('clases.user_id_pro', $search)
+                        ->select('clases.id', 'clases.materia', 'clases.personas', 
+                        'clases.duracion', 'clases.fecha',
+                        'pagos.valor', 'pagos.created_at')->get();
+            $tareas = Pago::join('tareas', 'pagos.tarea_id', '=', 'tareas.id')
+                        ->where('pagos.user_id', $search)
+                        ->where('tareas.user_id_pro', $search)
+                        ->select('tareas.id', 'tareas.materia', 'tareas.tiempo_estimado', 
+                        'tareas.fecha_entrega', 'pagos.valor', 'pagos.created_at')->get();
+            $respuesta['total'] = round(($clases->sum('valor') + $tareas->sum('valor')), 2);
+            $respuesta['clases'] = $clases;
+            $respuesta['tareas'] = $tareas;
+            return response()->json($respuesta, 200);
+        }
+        else
+        {
+            return response()->json(['error' => 'Usuario no especificado'], 401);
         }
     }
 }
