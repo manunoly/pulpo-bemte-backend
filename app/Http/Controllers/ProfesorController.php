@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Tarea;
 use App\Clase;
 use App\Pago;
+use App\Multa;
 use App\Profesore;
 use App\TareaProfesor;
 use Illuminate\Http\Request;
@@ -402,16 +403,20 @@ class ProfesorController extends Controller
                         ->where('pagos.user_id', $search)
                         ->where('clases.user_id_pro', $search)
                         ->select('clases.id', 'clases.materia', 'clases.personas', 
-                        'clases.duracion', 'clases.fecha',
-                        'pagos.valor', 'pagos.created_at')->get();
+                        'clases.duracion', 'clases.fecha', 'pagos.horas',
+                        'pagos.valor', 'pagos.created_at', 'pagos.estado')->get();
             $tareas = Pago::join('tareas', 'pagos.tarea_id', '=', 'tareas.id')
                         ->where('pagos.user_id', $search)
                         ->where('tareas.user_id_pro', $search)
-                        ->select('tareas.id', 'tareas.materia', 'tareas.tiempo_estimado', 
-                        'tareas.fecha_entrega', 'pagos.valor', 'pagos.created_at')->get();
-            $respuesta['total'] = round(($clases->sum('valor') + $tareas->sum('valor')), 2);
+                        ->select('tareas.id', 'tareas.materia', 'tareas.tiempo_estimado',  'pagos.horas',
+                        'tareas.fecha_entrega', 'pagos.valor', 'pagos.created_at', 'pagos.estado')->get();
+            $multas = Multa::where('multas.user_id', $search)
+                        ->select('multas.clase_id', 'multas.tarea_id', 'multas.valor', 
+                        'multas.comentario', 'multas.created_at', 'multas.estado')->get();
+            $respuesta['total'] = $clases->sum('valor') + $tareas->sum('valor') - $multas->sum('valor');
             $respuesta['clases'] = $clases;
             $respuesta['tareas'] = $tareas;
+            $respuesta['multas'] = $multas;
             return response()->json($respuesta, 200);
         }
         else
