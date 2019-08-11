@@ -96,6 +96,8 @@ class RegistroController extends Controller
 
             $data['name'] = $request['nombre'].' '.$request['apellido'];
             $avatar = $user['avatar'];
+            $token = $user['token'];
+            $sistema = $user['sistema'];
             if ( isset($request['avatar']) )
             {
                 $data['avatar'] = 'users/'.$request['avatar'];
@@ -118,7 +120,9 @@ class RegistroController extends Controller
                     {
                         $alumno = Alumno::where('user_id', $id_usuario)->select('*')->first();   
                         $alumno['tipo'] = 'Alumno';
-                        $alumno['avatar'] = $avatar;  
+                        $alumno['avatar'] = $avatar; 
+                        $alumno['token'] = $token; 
+                        $alumno['sistema'] = $sistema;  
                         return response()->json(['success' => 'Datos actualizados correctamente', 'profile' => $alumno ], 200);
                     }
                     else
@@ -155,6 +159,8 @@ class RegistroController extends Controller
                         $profesor = Profesore::where('user_id', $id_usuario)->select('*')->first();
                         $profesor['tipo'] = 'Profesor';
                         $profesor['avatar'] = $avatar;
+                        $profesor['token'] = $token; 
+                        $profesor['sistema'] = $sistema;  
                         return response()->json(['success' => 'Datos actualizados correctamente', 'profile' => $profesor ], 200);
                     }
                     else
@@ -201,19 +207,24 @@ class RegistroController extends Controller
 
         if (Hash::check($request['password'], $user['password'])) 
         {
+            $avatar = $user['avatar'];
+            $token = $user['token'];
+            $sistema = $user['sistema'];
             if ($user['tipo'] == 'Alumno')
             {
-                $avatar = $user['avatar'];
                 $user = Alumno::where('user_id', $user['id'])->select('*')->first();
                 $user['tipo'] = 'Alumno';
                 $user['avatar'] = $avatar;
+                $user['token'] = $token; 
+                $user['sistema'] = $sistema;  
             }
             else if ($user['tipo'] == 'Profesor')
             {
-                $avatar = $user['avatar'];
                 $user = Profesore::where('user_id', $user['id'])->select('*')->first();
                 $user['tipo'] = 'Profesor';
                 $user['avatar'] = $avatar;
+                $user['token'] = $token; 
+                $user['sistema'] = $sistema;  
             }
             else
             {
@@ -458,7 +469,7 @@ class RegistroController extends Controller
         }
     }
 
-    public function actualizarCelular(Request $request)
+    public function actualizarToken(Request $request)
     {
         if (!isset($request['token']) && !isset($request['sistema']))
         {

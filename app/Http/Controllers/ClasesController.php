@@ -129,7 +129,7 @@ class ClasesController extends Controller
                                         ->select('profesores.nombres', 'profesores.apellidos', 'profesores.correo', 
                                                     'users.token', 'users.sistema', 'users.id')
                                         ->get();
-                if ($claseAnterior != nul)
+                if ($claseAnterior != null)
                 {
                     $profSelccionado = $profesores->where('id', $claseAnterior->user_id_pro)->firts();
                     if ($profSelccionado != null)

@@ -21,7 +21,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::post('login', 'RegistroController@login');
 Route::post('registro', 'RegistroController@registro');
 Route::post('actualizar-cuenta', 'RegistroController@actualizarCuenta');
-Route::post('actualizar-celular', 'RegistroController@actualizarCelular');
+Route::post('actualizar-token', 'RegistroController@actualizarToken');
 Route::get('eliminar-cuenta', 'RegistroController@eliminarCuenta');
 Route::get('devuelve-usuario', 'RegistroController@devuelveUsuario');
 
