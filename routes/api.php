@@ -71,6 +71,7 @@ Route::get('clases-disponibles', 'ClasesController@clasesDisponibles');
 Route::post('clase-terminar', 'ClasesController@claseTerminar');
 Route::get('lista-clases', 'ClasesController@listaClases');
 Route::post('clase-confirmar', 'ClasesController@claseConfirmar');
+Route::get('validar-penalizacion', 'ClasesController@validarPenalizacion');
 
 
 Route::post('subir-archivo', 'FicherosController@subirArchivo');

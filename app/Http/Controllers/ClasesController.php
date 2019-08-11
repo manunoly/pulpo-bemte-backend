@@ -235,32 +235,43 @@ class ClasesController extends Controller
                 }
                 else
                 {
-                    /*
                     if ($request['profesor'] == 1)
                     {
-                        $dateTime = date("Y-m-d H:i:s");
-                        $limit = date("Y-m-d H:i:s", strtotime(date("d/m/y H:i:s"). '-24*60 minutes'));
-                        $newDate = date("Y-m-d", $dateTime);
-                        $newTime = date("H:i:s", $dateTime);
-                        if (!(($clase->fecha < $newDate) || (($clase->fecha == $newDate)
-                            && ($clase->hora_prof <= $newTime))))
+                        $limit = date("Y-m-d H:i:s", strtotime(date("Y-m-d H:i:s"). '-24 hours'));
+                        $newDate = date_format(date_create($limit), "Y-m-d");
+                        $newTime = date_format(date_create($limit), "H:i:s");
+                        if (($clase->fecha > $newDate) || (($clase->fecha == $newDate)
+                            && ($clase->hora_prof > $newTime)))
                         {
                             //penalizar 1 hora al profesor
                         }
                     }
                     else
                     {
-                        $dateTime = date("Y-m-d H:i:s", strtotime(date("d/m/y H:i:s"). '-3*60 minutes'));
-                        $newDate = date("Y-m-d", $dateTime);
-                        $newTime = date("H:i:s", $dateTime);
-                        if (($clase->fecha < $newDate) || (($clase->fecha == $newDate)
-                            && ($clase->hora_prof <= $newTime)))
+                        $limit = date("Y-m-d H:i:s", strtotime(date("Y-m-d H:i:s"). '-3 hours'));
+                        $newDate = date_format(date_create($limit), "Y-m-d");
+                        $newTime = date_format(date_create($limit), "H:i:s");
+                        if (($clase->fecha > $newDate) || (($clase->fecha == $newDate)
+                            && ($clase->hora_prof > $newTime)))
                         {
-                            //penalizar 1 hora al profesor
+                            //penalizar todas las horas al alumno
+                            if ($clase->estado == 'Confirmado' || $clase->estado == 'Confirmando_Pago')
+                            {
+                                
+                            }
                         }
-
+                        else
+                        {
+                            if ($clase->estado == 'Aceptado' || $clase->estado == 'Pago_Aprobado')
+                            {
+                                //devolver las horas menos 1 por penalizacion
+                            }
+                            if ($clase->estado == 'Confirmado' || $clase->estado == 'Confirmando_Pago')
+                            {
+                                //penalizar 1 hora al alumno
+                            }
+                        }
                     }
-                    */
                     return response()->json(['success' => 'Clase terminada exitosamente'], 200);
                 }
             }
@@ -360,5 +371,94 @@ class ClasesController extends Controller
         {
             return response()->json(['error' => 'No se encontró la Clase'], 401);
         }            
+    }
+
+
+    public function validarPenalizacion()
+    {
+        if( \Request::get('user_id') )
+        {
+            if( \Request::get('clase_id') )
+            {
+                if( \Request::get('profesor') )
+                {
+                    $user = \Request::get('user_id');
+                    $tipo = \Request::get('profesor');
+                    $penalizacion = 0 ;
+                    
+                    $dateTime = date("Y-m-d H:i:s");
+                    $datos['now'] = $dateTime;
+                    $clase = Clase::where('id', \Request::get('clase_id'))->first();
+                    if ($clase != null)
+                    {
+                        if ($clase->estado == 'Sin_Profesor' || $clase->estado == 'Pago_Rechazado' ||
+                            $clase->estado == 'Sin_Pago' || $clase->estado == 'Terminado' || $clase->estado == 'Calificado')
+                            return response()->json(['error' => 'La Clase ya no permite modificación'], 401);
+
+                        //Solicitado, Confirmado, Aceptado, Confirmando_Pago, Pago_Aprobado
+                        if ($clase->user_id == $user && $tipo == 0)
+                        {
+                            $limit = date("Y-m-d H:i:s", strtotime(date("Y-m-d H:i:s"). '-3 hours'));
+                            $newDate = date_format(date_create($limit), "Y-m-d");
+                            $newTime = date_format(date_create($limit), "H:i:s");
+                            $datos['dateLimit'] = $newDate;
+                            $datos['timeLimit'] = $newTime;
+                            if (($clase->fecha > $newDate) || (($clase->fecha == $newDate)
+                                && ($clase->hora_prof > $newTime)))
+                            {
+                                //penalizar todas las horas al alumno
+                                if ($clase->estado == 'Confirmado' || $clase->estado == 'Confirmando_Pago')
+                                {
+                                    
+                                }
+                            }
+                            else 
+                            {
+                                if ($clase->estado == 'Aceptado' || $clase->estado == 'Pago_Aprobado')
+                                {
+                                    //devolver las horas menos 1 por penalizacion
+                                }
+                                if ($clase->estado == 'Confirmado' || $clase->estado == 'Confirmando_Pago')
+                                {
+                                    //penalizar 1 hora al alumno
+                                }
+                            }
+                        }
+                        else if ($clase->user_id_pro == $user && $tipo == 1)
+                        {
+                            $limit = date("Y-m-d H:i:s", strtotime(date("Y-m-d H:i:s"). '-24 hours'));
+                            $newDate = date_format(date_create($limit), "Y-m-d");
+                            $newTime = date_format(date_create($limit), "H:i:s");
+                            $datos['dateLimit'] = $newDate;
+                            $datos['timeLimit'] = $newTime;
+                            if (($clase->fecha > $newDate) || (($clase->fecha == $newDate)
+                                && ($clase->hora_prof > $newTime)))
+                            {
+                                //penalizar 1 hora al profesor
+                            }
+                        }
+                        else
+                            return response()->json(['error' => 'Usuario especificado no coincide con los datos de la Clase'], 401);
+                    }
+                    else
+                    {
+                        return response()->json(['error' => 'Clase no registrada'], 401);
+                    }
+                    return response()->json(['valor' => $penalizacion, 'datos' => $datos], 200);
+                }
+                else
+                {
+                    return response()->json(['error' => 'Usuario no especificado'], 401);
+                }
+            }
+            else
+            {
+                return response()->json(['error' => 'Tipo de Usuario no especificado'], 401);
+            }
+        }
+        else
+        {
+            return response()->json(['error' => 'Clase no especificada'], 401);
+        }
     }
 }
