@@ -12,7 +12,8 @@ class Profesore extends Model
     public $incrementing = false;
     
     protected $fillable = [
-        'user_id', 'celular', 'correo', 'nombres', 'apellidos', 'cedula', 'correo', 'apodo', 'ubicacion', 'ciudad', 
-        'clases', 'tareas', 'disponible', 'hoja_vida', 'titulo', 'activo', 'cuenta', 'banco', 'tipo_cuenta',
+        'user_id', 'celular', 'correo', 'nombres', 'apellidos', 'cedula', 'correo', 'apodo', 'ubicacion', 
+        'ciudad', 'clases', 'tareas', 'disponible', 'hoja_vida', 'titulo', 'activo', 
+        'cuenta', 'banco', 'tipo_cuenta', 'valor_clase', 'valor_tarea',
     ];
 }

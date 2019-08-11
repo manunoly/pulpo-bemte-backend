@@ -328,6 +328,7 @@ class ProfesorController extends Controller
                         $data['user_id_pro'] = $profe->user_id;
                         $data['hora_prof'] = $request['hora'];
                         $data['estado'] = 'Confirmado';
+                        $data['aplica_prof'] = date("Y-m-d H:i:s");
                         $actualizado = Clase::where('id', $clase->id )->update( $data );
                         if($actualizado)
                         {

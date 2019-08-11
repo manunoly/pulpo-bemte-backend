@@ -9,6 +9,6 @@ class Multa extends Model
     protected $table = 'multas'; 
 
     protected $fillable = [
-        'id', 'user_id', 'created_at', 'valor', 'comentario',
+        'id', 'user_id', 'created_at', 'valor', 'comentario', 'clase_id', 'tarea_id', 'estado',
     ];
 }

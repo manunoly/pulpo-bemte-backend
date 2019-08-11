@@ -6,6 +6,7 @@ use App\User;
 use App\Tarea;
 use App\Clase;
 use App\Alumno;
+use App\Profesore;
 use App\Formulario;
 use App\AlumnoBilletera;
 use Validator;
@@ -136,6 +137,10 @@ class AlumnosController extends Controller
             {
                 return response()->json(['error' => 'El usuario no tiene relación con la Tarea'], 401);
             }
+            else if ($tarea->user_canc != null)
+            {
+                return response()->json(['error' => 'La Tarea ha sido cancelada, no se puede pagar'], 401);
+            }
         }
         $clase = null;
         if ($request['clase_id'] > 0)
@@ -156,6 +161,10 @@ class AlumnosController extends Controller
             else if ($clase->user_id != $request['user_id'])
             {
                 return response()->json(['error' => 'El usuario no tiene relación con la Clase'], 401);
+            }
+            else if ($clase->user_canc != null)
+            {
+                return response()->json(['error' => 'La Clase ha sido cancelada, no se puede pagar'], 401);
             }
         }
         $combo = AlumnoBilletera::where('user_id', $request['user_id'])
@@ -195,6 +204,19 @@ class AlumnosController extends Controller
                 $data['estado'] = 'Aceptado';
                 if ($tarea != null)
                 {
+                    $profeTarea = Profesore::where('user_id', $tarea->user_id_pro)->first();
+                    $pagoProf = Pago::create([
+                            'user_id' => $tarea->user_id_pro,
+                            'tarea_id' => $tarea->id,
+                            'clase_id' => 0,
+                            'valor' => $duracion * $profeTarea->valor_tarea,
+                            'horas' => $duracion,
+                            'horas' => 'Solicitado'
+                            ]);
+                    if (!$pagoProf->id)
+                    {
+                        return response()->json(['error' => 'Ocurrió un error al crear Pago al Profesor'], 401);
+                    }
                     $actTarea = Tarea::where('id', $tarea->id )->update( $data );
                     if(!$actTarea )
                     {
@@ -217,6 +239,19 @@ class AlumnosController extends Controller
                 }
                 if ($clase != null)
                 {
+                    $profeClase = Profesore::where('user_id', $clase->user_id_pro)->first();
+                    $pagoProf = Pago::create([
+                            'user_id' => $clase->user_id_pro,
+                            'clase_id' => $clase->id,
+                            'tarea_id' => 0,
+                            'valor' => ($duracion * $profeClase->valor_clase) + ($clase->personas - 1),
+                            'horas' => $duracion,
+                            'horas' => 'Solicitado'
+                            ]);
+                    if (!$pagoProf->id)
+                    {
+                        return response()->json(['error' => 'Ocurrió un error al crear Pago al Profesor'], 401);
+                    }
                     $actClase = Clase::where('id', $clase->id )->update( $data );
                     if(!$actClase )
                     {

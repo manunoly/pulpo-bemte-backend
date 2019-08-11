@@ -19,6 +19,8 @@ use App\User;
 use App\Tarea;
 use App\Clase;
 use App\Combo;
+use App\Pago;
+use App\Profesore;
 use App\AlumnoCompra;
 use App\AlumnoPago;
 use App\AlumnoBilletera;
@@ -319,6 +321,11 @@ class AlumnoPagoController extends Controller
             $messages["error"] = 'La Tarea ya no permite la Aprobación del pago';
             return redirect()->back()->withErrors($messages)->withInput();
         }
+        else if (($tarea != null) && ($tarea->user_canc != null) && $request['estado'] == 'Aprobado')
+        {
+            $messages["error"] = 'La Tarea ha sido cancelada, no puede ser pagada';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
         else if ($tarea != null)
         {
             $duracion = $tarea->tiempo_estimado;
@@ -332,6 +339,11 @@ class AlumnoPagoController extends Controller
         if (($clase != null) && ($clase->estado != 'Confirmando_Pago'))
         {
             $messages["error"] = 'La Clase ya no permite la Aprobación del pago';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+        else if (($clase != null) && ($clase->user_canc != null) && $request['estado'] == 'Aprobado')
+        {
+            $messages["error"] = 'La Clase ha sido cancelada, no puede ser pagada';
             return redirect()->back()->withErrors($messages)->withInput();
         }
         else if ($clase != null)
@@ -376,6 +388,23 @@ class AlumnoPagoController extends Controller
         {
             if ($request['estado'] != 'Aprobado')
                 $dataAct['estado'] = 'Pago_Rechazado';
+            else
+            {
+                $profeTarea = Profesore::where('user_id', $tarea->user_id_pro)->first();
+                $pagoProf = Pago::create([
+                        'user_id' => $tarea->user_id_pro,
+                        'tarea_id' => $tarea->id,
+                        'clase_id' => 0,
+                        'valor' => $duracion * $profeTarea->valor_tarea,
+                        'horas' => $duracion,
+                        'estado' => 'Solicitado'
+                        ]);
+                if (!$pagoProf->id)
+                {
+                    $messages["error"] = 'Ocurrió un error al crear Pago al Profesor';
+                    return redirect()->back()->withErrors($messages)->withInput();
+                }
+            }
             $actualizado = Tarea::where('id', $tarea->id )->update( $dataAct );
             if(!$actualizado )
             {
@@ -411,6 +440,20 @@ class AlumnoPagoController extends Controller
                 $combo = Combo::where('nombre', $clase->combo)->first();
                 if ($combo->direccion)
                     $dataAct['estado'] = 'Pago_Aprobado';
+                $profeClase = Profesore::where('user_id', $clase->user_id_pro)->first();
+                $pagoProf = Pago::create([
+                        'user_id' => $clase->user_id_pro,
+                        'clase_id' => $clase->id,
+                        'tarea_id' => 0,
+                        'valor' => ($duracion * $profeClase->valor_clase) + ($clase->personas - 1),
+                        'horas' => $duracion,
+                        'estado' => 'Solicitado'
+                        ]);
+                if (!$pagoProf->id)
+                {
+                    $messages["error"] = 'Ocurrió un error al crear Pago al Profesor';
+                    return redirect()->back()->withErrors($messages)->withInput();
+                }
             }
             $actualizado = Clase::where('id', $clase->id )->update( $dataAct );
             if(!$actualizado )
