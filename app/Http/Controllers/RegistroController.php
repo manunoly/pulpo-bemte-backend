@@ -514,17 +514,23 @@ class RegistroController extends Controller
             if($user)
             {
                 $avatar = $user['avatar'];
+                $token = $user['token'];
+                $sistema = $user['sistema'];
                 if ($user['tipo'] == 'Alumno')
                 {
                     $user = Alumno::where('user_id', $user['id'])->select('*')->first();
                     $user['tipo'] = 'Alumno';
                     $user['avatar'] = $avatar;
+                    $user['token'] = $token; 
+                    $user['sistema'] = $sistema;  
                 }
                 else if ($user['tipo'] == 'Profesor')
                 {
                     $user = Profesore::where('user_id', $user['id'])->select('*')->first();
                     $user['tipo'] = 'Profesor';
                     $user['avatar'] = $avatar;
+                    $user['token'] = $token; 
+                    $user['sistema'] = $sistema;  
                 }
                 else
                 {
