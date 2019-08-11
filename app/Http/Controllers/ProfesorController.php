@@ -413,7 +413,12 @@ class ProfesorController extends Controller
             $multas = Multa::where('multas.user_id', $search)
                         ->select('multas.clase_id', 'multas.tarea_id', 'multas.valor', 
                         'multas.comentario', 'multas.created_at', 'multas.estado')->get();
-            $respuesta['total'] = $clases->sum('valor') + $tareas->sum('valor') - $multas->sum('valor');
+            $respuesta['total'] = $clases->where('estado', 'Aprobado')->sum('valor') 
+                                    + $tareas->where('estado', 'Aprobado')->sum('valor') 
+                                    - $multas->where('estado', 'Aprobado')->sum('valor');
+            $respuesta['pendiente'] = $clases->where('estado', 'Solicitado')->sum('valor') 
+                                    + $tareas->where('estado', 'Solicitado')->sum('valor') 
+                                    - $multas->where('estado', 'Solicitado')->sum('valor');
             $respuesta['clases'] = $clases;
             $respuesta['tareas'] = $tareas;
             $respuesta['multas'] = $multas;
