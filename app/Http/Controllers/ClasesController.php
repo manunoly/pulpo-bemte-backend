@@ -10,6 +10,7 @@ use App\Combo;
 use App\Multa;
 use App\Alumno;
 use App\Profesore;
+use App\ClasesGratis;
 use App\ClaseEjercicio;
 use App\AlumnoBilletera;
 use Illuminate\Http\Request;
@@ -543,5 +544,13 @@ class ClasesController extends Controller
         {
             return response()->json(['error' => 'Usuario no especificado'], 401);
         }
+    }
+
+    public function clasesGratis()
+    {
+        $clases = ClasesGratis::where('activa', true)
+                    ->select('clases_gratis.nombre', 'clases_gratis.descripcion', 'clases_gratis.url')
+                    ->get();
+        return response()->json($clases, 200);
     }
 }

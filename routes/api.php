@@ -72,6 +72,7 @@ Route::post('clase-terminar', 'ClasesController@claseTerminar');
 Route::get('lista-clases', 'ClasesController@listaClases');
 Route::post('clase-confirmar', 'ClasesController@claseConfirmar');
 Route::get('validar-penalizacion', 'ClasesController@validarPenalizacion');
+Route::get('clases-gratis', 'ClasesController@clasesGratis');
 
 
 Route::post('subir-archivo', 'FicherosController@subirArchivo');
