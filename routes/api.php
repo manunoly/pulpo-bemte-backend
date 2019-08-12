@@ -24,6 +24,7 @@ Route::post('actualizar-cuenta', 'RegistroController@actualizarCuenta');
 Route::post('actualizar-token', 'RegistroController@actualizarToken');
 Route::get('eliminar-cuenta', 'RegistroController@eliminarCuenta');
 Route::get('devuelve-usuario', 'RegistroController@devuelveUsuario');
+Route::post('resetPass', 'RegistroController@resetPassApp');
 
 Route::post('reset', 'RegistroController@resetPassword');
 Route::get('reset/{confirmation_code}/{email}', 'RegistroController@validar'); 

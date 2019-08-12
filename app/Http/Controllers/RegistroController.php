@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\User;
+use App\Ciudad;
 use App\Alumno;
 use App\Profesore;
-use App\Ciudad;
+use App\Mail\Notificacion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Validator;
 use Hash;
 
@@ -254,7 +256,7 @@ class RegistroController extends Controller
         if ($email) 
         {
             // generate random code to verify
-            $request['confirmation_code'] = str_random(30);
+            $request['confirmation_code'] = str_random(10);
             $mytime = date("Y-m-d H:i:s");  
 
             DB::insert('insert into password_resets (email, token,fecha) values (?, ?, ?)', [$request['email'], $request['confirmation_code'],$mytime]);
@@ -268,6 +270,46 @@ class RegistroController extends Controller
                 $message->to( $this->actual_email );
                 $message->subject('Código de verificación');
             });
+            return response()->json([ 'success' => 'Correo enviado correctamente, revise su bandeja de entrada'], 200);
+        }
+        else
+        {
+            return response()->json([ 'error' => 'El correo no se encuentra registrado'], 401);
+        }
+    }
+
+
+    public function resetPassApp(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required'
+        ]);
+        if ($validator->fails()) 
+        {
+            return response()->json(['error' => $validator->errors()], 406);
+        }
+
+        $email = User::where('email', '=', $request['email'] )->first();
+        if ($email) 
+        {
+            $pass= str_random(10);
+            $data['password'] = bcrypt($pass);
+            $act = User::where('id', $email->id )->update($data);
+            if(!$act )
+            {
+                return response()->json(['error' => 'Ocurrió un error al cambiar contraseña.'], 401);
+            }
+            try 
+            {
+                Mail::to($request['email'])->send(new Notificacion($email->name, 
+                        'Su nueva contraseña es:', '',  $pass, env('EMPRESA'), true));
+            }
+            catch (Exception $e) 
+            {
+                return response()->json(
+                            ['error' => 'No se ha podido enviar el correo con la nueva contraseña',
+                            'detalle' => $e->getMessage()], 401);
+            }
             return response()->json([ 'success' => 'Correo enviado correctamente, revise su bandeja de entrada'], 200);
         }
         else
