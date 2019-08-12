@@ -24,6 +24,7 @@ use App\Profesore;
 use App\AlumnoCompra;
 use App\AlumnoPago;
 use App\AlumnoBilletera;
+use App\Mail\Notificacion;
 use App\Mail\NotificacionClases;
 use App\Mail\NotificacionTareas;
 
@@ -384,6 +385,8 @@ class AlumnoPagoController extends Controller
             return redirect()->back()->withErrors($messages)->withInput();
         }
         $dataAct['estado'] = 'Aceptado';
+        if ($request['estado'] != 'Aprobado')
+            $dataAct['activa'] = false;
         if ($tarea != null)
         {
             if ($request['estado'] != 'Aprobado')
@@ -411,12 +414,12 @@ class AlumnoPagoController extends Controller
                 $messages["error"] = 'Ocurrió un error al actualizar Tarea';
                 return redirect()->back()->withErrors($messages)->withInput();
             }
+            $userAlumno = User::where('id', $tarea->user_id)->first();
+            $userProf = User::where('id', $tarea->user_id_pro)->first();
             if ($request['estado'] == 'Aprobado')
             {
                 try 
                 {
-                    $userAlumno = User::where('id', $tarea->user_id)->first();
-                    $userProf = User::where('id', $tarea->user_id_pro)->first();
                     Mail::to($userAlumno->email)->send(new NotificacionTareas($tarea, $userAlumno->name, $userProf->name, 
                                                     env('EMPRESA'), true));
                     Mail::to($userProf->email)->send(new NotificacionTareas($tarea, $userAlumno->name, $userProf->name, 
@@ -427,6 +430,20 @@ class AlumnoPagoController extends Controller
                     $messages["error"] = 'No se ha podido enviar el correo';
                     return redirect()->back()->withErrors($messages)->withInput();
                 } 
+            }
+            else
+            {
+                try 
+                {
+                    Mail::to($userAlumno->email)->send(new Notificacion($userAlumno->name, 
+                            'Su Pago para la Tarea '.$tarea->id.' no ha sido Aprobado.', '',
+                            'Por favor, contactar con el administrador.', env('EMPRESA')));
+                }
+                catch (Exception $e) 
+                {
+                    $messages["error"] = 'No se ha podido enviar el correo';
+                    return redirect()->back()->withErrors($messages)->withInput();
+                }
             }
         }
         if ($clase != null)
@@ -461,12 +478,12 @@ class AlumnoPagoController extends Controller
                 $messages["error"] = 'Ocurrió un error al actualizar Clase';
                 return redirect()->back()->withErrors($messages)->withInput();
             }
+            $userAlumno = User::where('id', $clase->user_id)->first();
+            $userProf = User::where('id', $clase->user_id_pro)->first();
             if ($request['estado'] == 'Aprobado')
             {
                 try 
                 {
-                    $userAlumno = User::where('id', $clase->user_id)->first();
-                    $userProf = User::where('id', $clase->user_id_pro)->first();
                     Mail::to($userAlumno->email)->send(new NotificacionClases($clase, $userAlumno->name, $userProf->name, 
                                                     env('EMPRESA'), true));
                     Mail::to($userProf->email)->send(new NotificacionClases($clase, $userAlumno->name, $userProf->name, 
@@ -478,14 +495,28 @@ class AlumnoPagoController extends Controller
                     return redirect()->back()->withErrors($messages)->withInput();
                 }
             }
+            else
+            {
+                try 
+                {
+                    Mail::to($userAlumno->email)->send(new Notificacion($userAlumno->name, 
+                            'Su Pago para la Clase '.$clase->id.' no ha sido Aprobado.', '',
+                            'Por favor, contactar con el administrador.', env('EMPRESA')));
+                }
+                catch (Exception $e) 
+                {
+                    $messages["error"] = 'No se ha podido enviar el correo';
+                    return redirect()->back()->withErrors($messages)->withInput();
+                }
+            }
         }
         if ($compra != null)
         {
             if ($request['estado'] != 'Aprobado')
-                $dataAct['estado'] = 'Rechazado';
+                $dataActCompra['estado'] = 'Rechazado';
             else
-                $dataAct['estado'] = 'Aceptado';
-            $actualizado = AlumnoCompra::where('id', $compra->id )->update( $dataAct );
+                $dataActCompra['estado'] = 'Aceptado';
+            $actualizado = AlumnoCompra::where('id', $compra->id )->update( $dataActCompra );
             if(!$actualizado )
             {
                 $messages["error"] = 'Ocurrió un error al actualizar Compra';

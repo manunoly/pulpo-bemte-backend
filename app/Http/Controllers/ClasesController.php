@@ -198,7 +198,8 @@ class ClasesController extends Controller
                         ->where('profesores.clases', true)
                         ->select('clases.id', 'clases.user_id', 'clases.materia', 'clases.tema', 
                         'clases.personas', 'clases.duracion', 'clases.hora1', 'clases.hora2', 'fecha',
-                        'clases.combo', 'clases.ubicacion', 'clases.coordenadas', 'clases.seleccion_profesor')->get();
+                        'clases.combo', 'clases.ubicacion', 'clases.coordenadas', 'clases.seleccion_profesor')
+                        ->orderBy('clases.id', 'desc')->get();
             return response()->json($clases, 200);
         }
         else
@@ -226,9 +227,9 @@ class ClasesController extends Controller
                 $clase->estado == 'Calificado' || $clase->activa == 0)
                 return response()->json(['error' => 'La Clase ya no permite modificación'], 401);
 
+            $data['activa'] = false;
             if ($request['cancelar'] == 1)
             {
-                $data['activa'] = false;
                 $data['fecha_canc'] = date("Y-m-d H:i:s");
                 $data['user_canc'] = $request['user_id'];
                 $actualizado = Clase::where('id', $request['clase_id'] )->update( $data );
@@ -391,7 +392,7 @@ class ClasesController extends Controller
                             'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 'horasCombo',
                             'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor',
                             'coordenadas')
-                            ->get();
+                            ->orderBy('clases.id', 'desc')->get();
             }
             else
             {
@@ -402,7 +403,7 @@ class ClasesController extends Controller
                             'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 'horasCombo',
                             'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor',
                             'coordenadas')
-                            ->get();
+                            ->orderBy('clases.id', 'desc')->get();
             }
             return response()->json($clases, 200);
         }

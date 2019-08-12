@@ -138,7 +138,8 @@ class TareasController extends Controller
                         ->where('profesores.tareas', true)
                         ->select('tareas.id', 'tareas.user_id', 'tareas.materia', 'tareas.tema', 
                         'tareas.fecha_entrega', 'tareas.hora_inicio', 'tareas.hora_fin', 
-                        'tareas.descripcion', 'tareas.formato_entrega', 'tareas.archivo')->get();
+                        'tareas.descripcion', 'tareas.formato_entrega', 'tareas.archivo')
+                        ->orderBy('tareas.id', 'desc')->get();
             return response()->json($tarea, 200);
         }
         else
@@ -205,7 +206,7 @@ class TareasController extends Controller
                             ->select('tareas.id','users.name', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
                             'descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 'archivo',
                             'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor', 'fecha_canc')
-                            ->get();
+                            ->orderBy('tareas.id', 'desc')->get();
             }
             else
             {
@@ -214,7 +215,7 @@ class TareasController extends Controller
                             ->select('tareas.id','users.name', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
                             'descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 'archivo',
                             'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor', 'fecha_canc')
-                            ->get();
+                            ->orderBy('tareas.id', 'desc')->get();
             }
             return response()->json($tareas, 200);
         }
