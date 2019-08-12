@@ -100,7 +100,7 @@ class RegistroController extends Controller
             $avatar = $user['avatar'];
             $token = $user['token'];
             $sistema = $user['sistema'];
-            if ( isset($request['avatar']) )
+            if (isset($request['avatar']) && $user['avatar'] != $request['avatar'])
             {
                 $data['avatar'] = 'users/'.$request['avatar'];
                 $avatar = $data['avatar'];

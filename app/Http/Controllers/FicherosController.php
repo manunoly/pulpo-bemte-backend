@@ -165,7 +165,7 @@ class FicherosController extends Controller
             return response()->json(['error' => 'No se ha especificada una opción'], 401);
         }
         $drive = isset($request['drive']) ? trim($request['drive']) : NULL;
-        $archivo = isset($request['archivo']) ? trim($request['archivo']) : NULL;
+        $archivo = isset($request['archivo']) ? 'uploads'.'\\'.$request['user_id'].'\\'.trim($request['archivo']) : NULL;
         if (($drive == NULL) && ($archivo == NULL))
         {
             return response()->json(['error' => 'Archivo de transferencia sin especificar'], 401);
