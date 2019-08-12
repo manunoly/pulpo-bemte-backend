@@ -6,6 +6,7 @@ use App\User;
 use App\Tarea;
 use App\Clase;
 use App\Alumno;
+use App\Pago;
 use App\Profesore;
 use App\Formulario;
 use App\AlumnoBilletera;
@@ -211,7 +212,7 @@ class AlumnosController extends Controller
                             'clase_id' => 0,
                             'valor' => $duracion * $profeTarea->valor_tarea,
                             'horas' => $duracion,
-                            'horas' => 'Solicitado'
+                            'estado' => 'Solicitado'
                             ]);
                     if (!$pagoProf->id)
                     {
@@ -246,7 +247,7 @@ class AlumnosController extends Controller
                             'tarea_id' => 0,
                             'valor' => $duracion * $profeClase->valor_clase,
                             'horas' => $clase->$duracion,
-                            'horas' => 'Solicitado'
+                            'estado' => 'Solicitado'
                             ]);
                     if (!$pagoProf->id)
                     {
