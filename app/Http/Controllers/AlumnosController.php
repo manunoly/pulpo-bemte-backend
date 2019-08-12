@@ -186,7 +186,7 @@ class AlumnosController extends Controller
         }
         if ($clase != null)
         {
-            $duracion = $clase->duracion - ($clase->personas - 1);
+            $duracion = $clase->duracion + ($clase->personas - 1);
             if ($duracion < 2)
                 $duracion = 2;
             if ($clase != null && 
@@ -244,8 +244,8 @@ class AlumnosController extends Controller
                             'user_id' => $clase->user_id_pro,
                             'clase_id' => $clase->id,
                             'tarea_id' => 0,
-                            'valor' => ($duracion * $profeClase->valor_clase) + ($clase->personas - 1),
-                            'horas' => $duracion,
+                            'valor' => $duracion * $profeClase->valor_clase,
+                            'horas' => $clase->$duracion,
                             'horas' => 'Solicitado'
                             ]);
                     if (!$pagoProf->id)
