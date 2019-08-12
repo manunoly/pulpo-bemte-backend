@@ -164,7 +164,7 @@ class ClasesController extends Controller
                         ->select('id', 'user_id', 'materia', 'tema', 'personas', 'duracion', 'hora1', 'hora2', 
                         'combo', 'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'horasCombo', 'precioCombo',
                         'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 'coordenadas',
-                        'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor')
+                        'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor', 'aplica_prof')
                         ->first();
             if (isset($clase->user_id_pro) && $clase->user_id_pro > 0)
             {
