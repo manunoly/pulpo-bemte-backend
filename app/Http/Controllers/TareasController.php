@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Materia;
 use App\User;
+use App\Tarea;
+use App\Materia;
 use App\Alumno;
 use App\Profesore;
-use App\Tarea;
 use App\TareaEjercicio;
+use App\Notificacione;
+use App\NotificacionesPushFcm;
 use Illuminate\Http\Request;
 use Validator;
 use Hash;
@@ -86,9 +88,42 @@ class TareasController extends Controller
                                     ->where('profesores.disponible', true)
                                     ->where('profesor_materia.activa', true)
                                     ->where('profesor_materia.materia', $tarea->materia)
-                                    ->select('profesores.nombres', 'profesores.apellidos', 'profesores.correo', 
-                                                'users.token', 'users.sistema')
+                                    ->select('profesores.correo', 'users.token', 'users.sistema', 'users.id')
                                     ->get();
+                
+                $titulo = 'Solicitud de Tarea';
+                $texto = 'Ha sido solicitada la Tarea '.$tarea->id.' de '.$tarea->materia
+                        .' ('.$tarea->tema.'), para el '.$tarea->fecha_entrega.' de '
+                        .$tarea->hora_inicio.' a '.$tarea->hora_fin
+                        .', en '.$tarea->formato_entrega.', por '.$user->name.', '.$dateTime;
+                foreach($profesores as $solicitar)
+                {
+                    $errorNotif = 'OK';
+                    $dateTime = date("Y-m-d H:i:s");
+                    try 
+                    {
+                        if ($solicitar != null && $solicitar->token != null)
+                        {
+                            $notificacionEnviar['to'] = $solicitar->token;
+                            $notificacionEnviar['title'] = $titulo;
+                            $notificacionEnviar['body'] = $texto;
+                            $notificacionEnviar['priority'] = 'normal';
+                            $pushClass = new NotificacionesPushFcm();
+                            $pushClass->enviarNotificacion($notificacionEnviar);
+                        }
+                        else
+                            $errorNotif = 'No se pudo encontrar el Token del Usuario a notificar';
+                    }
+                    catch (Exception $e) 
+                    {
+                        $errorNotif = $e->getMessage();
+                    }
+                    $notifBD = Notificacione::create([
+                        'user_id' => $solicitar->id,
+                        'notificacion' => $titulo.'|'.$texto,
+                        'estado' => $errorNotif
+                        ]);
+                }
 
                 return response()->json(['success'=> 'Su tarea ha sido solicitada. Por favor espera que validemos su información'], 200);
             }
@@ -163,6 +198,9 @@ class TareasController extends Controller
         $tarea = Tarea::where('id', $request['tarea_id'])->first();
         if ($tarea != null)
         {
+            if ($request['user_id'] != $tarea->user_id_pro && $request['user_id'] != $tarea->user_id)
+                return response()->json(['error' => 'Usuario especificado no coincide con los datos de la Tarea'], 401);
+
             if ($tarea->estado == 'Sin_Profesor' || $tarea->estado == 'Pago_Rechazado' ||
                 $tarea->estado == 'Sin_Pago' || $tarea->estado == 'Terminado' || $tarea->estado == 'Calificado')
                 return response()->json(['error' => 'La Tarea ya no permite modificación'], 401);
@@ -179,6 +217,45 @@ class TareasController extends Controller
                 }
                 else
                 {
+                    //enviar notificacion al profesor o alumno
+                    $errorNotif = 'OK';
+                    $dateTime = date("Y-m-d H:i:s");
+                    $titulo = 'Tarea Cancelada';
+                    $texto = 'La Tarea '.$tarea->id.' ha sido cancelada por el ';
+                    try 
+                    {
+                        if ($request['user_id'] == $tarea->user_id_pro)
+                        {
+                            $userNotif = User::where('id', $tarea->user_id)->first();
+                            $texto = $texto.'Profesor, '.$dateTime;
+                        }
+                        else
+                        {
+                            $userNotif = User::where('id', $tarea->user_id_pro)->first();
+                            $texto = $texto.'Alumno, '.$dateTime;
+                        }
+                        if ($userNotif != null && $userNotif->token != null)
+                        {
+                            $notificacionEnviar['to'] = $userNotif->token;
+                            $notificacionEnviar['title'] = $titulo;
+                            $notificacionEnviar['body'] = $texto;
+                            $notificacionEnviar['priority'] = 'normal';
+                            $pushClass = new NotificacionesPushFcm();
+                            $pushClass->enviarNotificacion($notificacionEnviar);
+                        }
+                        else
+                            $errorNotif = 'No se pudo encontrar el Token del Usuario a notificar';
+                    }
+                    catch (Exception $e) 
+                    {
+                        $errorNotif = $e->getMessage();
+                    }
+                    $notifBD = Notificacione::create([
+                        'user_id' => $request['user_id'] == $tarea->user_id_pro ? $tarea->user_id : $tarea->user_id_pro,
+                        'notificacion' => $titulo.'|'.$texto,
+                        'estado' => $errorNotif
+                        ]);
+
                     return response()->json(['success' => 'Tarea terminada exitosamente'], 200);
                 }  
             }
