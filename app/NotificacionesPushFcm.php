@@ -13,16 +13,16 @@ class NotificacionesPushFcm
         ];
 
         $notificacionEnviar = [];
-        $notificacionEnviar["notification"]['title'] = $notification['title'] ? $notification['title'] : 'Bemte';
-        $notificacionEnviar["notification"]['body'] = $notification['body'] ? $notification['body'] : 'Nueva notificación de Bemte';
-        $notificacionEnviar["notification"]['sound'] = $notification['sound'] ? $notification['sound'] : 'default';
-        $notificacionEnviar["notification"]['click_action'] = $notification['click_action'] ? $notification['click_action'] : 'FCM_PLUGIN_ACTIVITY';
-        $notificacionEnviar["notification"]['icon'] = $notification['icon'] ? $notification['icon'] : 'fcm_push_icon';
+        $notificacionEnviar["notification"]['title'] = isset($notification['title']) ? $notification['title'] : 'Bemte';
+        $notificacionEnviar["notification"]['body'] = isset($notification['body']) ? $notification['body'] : 'Nueva notificación de Bemte';
+        $notificacionEnviar["notification"]['sound'] = isset($notification['sound']) ? $notification['sound'] : 'default';
+        $notificacionEnviar["notification"]['click_action'] = isset($notification['click_action']) ? $notification['click_action'] : 'FCM_PLUGIN_ACTIVITY';
+        $notificacionEnviar["notification"]['icon'] = isset($notification['icon']) ? $notification['icon'] : 'fcm_push_icon';
 
-        if ($notification['data'])
+        if (isset($notification['data']))
             $notificacionEnviar['data'] = $notification['data'];
 
-        if ($notification['to'])
+        if (isset($notification['to']))
             $notificacionEnviar['to'] = $notification['to'];
         else 
         {
@@ -32,7 +32,7 @@ class NotificacionesPushFcm
 
         $notificacionEnviar['priority'] = $notification['priority'] ? $notification['priority'] : 'high';
 
-        if ($notification['restricted_package_name'])
+        if (isset($notification['restricted_package_name']))
             $notificacionEnviar['restricted_package_name'] = $notification['restricted_package_name'];
 
         $ch = curl_init();
@@ -50,6 +50,6 @@ class NotificacionesPushFcm
         }
         curl_close($ch);
 
-        var_dump($result);
+        //var_dump($result);
     }
 }
