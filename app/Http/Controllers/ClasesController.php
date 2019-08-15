@@ -16,6 +16,8 @@ use App\AlumnoBilletera;
 use App\Notificacione;
 use App\NotificacionesPushFcm;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\Notificacion;
 use Validator;
 use Hash;
 
@@ -351,6 +353,21 @@ class ClasesController extends Controller
                         {
                             //devolver las horas al alumno 
                             $penHoras = $duracion;
+                        }
+                        //verificar tercera cancelacion para avisar al ADMIN
+                        $mes = date("Y-m-1");
+                        $cant = Clase::where('user_canc', $clase->user_id_pro)
+                                ->where('fecha_canc', '>=', $mes)->count();
+                        if ($cant > 2)
+                        {
+                            try 
+                            {
+                                Mail::to(env('MAILADMIN'))->send(new Notificacion(
+                                        'Administrador de '.env('EMPRESA'), $texto, '',
+                                        'El profesor este mes ha cancelado ya un total de '.$cant.' clases', 
+                                        env('EMPRESA')));
+                            }
+                            catch (Exception $e) { }
                         }
                     }
                     else if ($request['user_id'] == $clase->user_id)
