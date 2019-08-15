@@ -11,6 +11,8 @@ use App\TareaEjercicio;
 use App\Notificacione;
 use App\NotificacionesPushFcm;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\Notificacion;
 use Validator;
 use Hash;
 
@@ -217,6 +219,7 @@ class TareasController extends Controller
                 }
                 else
                 {
+                    $correoAdmin = '';
                     if ($tarea->user_id_pro != null && $tarea->user_id != null)
                     {
                         //enviar notificacion al profesor o alumno
@@ -229,6 +232,7 @@ class TareasController extends Controller
                             if ($request['user_id'] == $tarea->user_id_pro)
                             {
                                 $userNotif = User::where('id', $tarea->user_id)->first();
+                                $correoAdmin = $texto.'Profesor '.$userNotif->name.' a las '.$dateTime;
                                 $texto = $texto.'Profesor, '.$dateTime;
                             }
                             else
@@ -257,6 +261,24 @@ class TareasController extends Controller
                             'notificacion' => $titulo.'|'.$texto,
                             'estado' => $errorNotif
                             ]);
+                    }
+                    //verificar tercera cancelacion del profesor para avisar al ADMIN
+                    if ($request['user_id'] == $tarea->user_id_pro)
+                    {
+                        $mes = date("Y-m-1");
+                        $cant = Tarea::where('user_canc', $tarea->user_id_pro)
+                                    ->where('fecha_canc', '>=', $mes)->count();
+                        if ($cant > 2)
+                        {
+                            try 
+                            {
+                                Mail::to(env('MAILADMIN'))->send(new Notificacion(
+                                        'Administrador de '.env('EMPRESA'), $correoAdmin, '',
+                                        'El profesor este mes ya ha cancelado un total de '.$cant.' tareas', 
+                                        env('EMPRESA')));
+                            }
+                            catch (Exception $e) { }
+                        }
                     }
 
                     return response()->json(['success' => 'Tarea terminada exitosamente'], 200);

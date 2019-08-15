@@ -285,11 +285,13 @@ class ClasesController extends Controller
                         $dateTime = date("Y-m-d H:i:s");
                         $titulo = 'Clase Cancelada';
                         $texto = 'La Clase '.$clase->id.' ha sido cancelada por el ';
+                        $correoAdmin = '';
                         try 
                         {
                             if ($request['user_id'] == $clase->user_id_pro)
                             {
                                 $userNotif = User::where('id', $clase->user_id)->first();
+                                $correoAdmin = $texto.'Profesor '.$userNotif->name.' a las '.$dateTime;
                                 $texto = $texto.'Profesor, '.$dateTime;
                             }
                             else
@@ -363,8 +365,8 @@ class ClasesController extends Controller
                             try 
                             {
                                 Mail::to(env('MAILADMIN'))->send(new Notificacion(
-                                        'Administrador de '.env('EMPRESA'), $texto, '',
-                                        'El profesor este mes ha cancelado ya un total de '.$cant.' clases', 
+                                        'Administrador de '.env('EMPRESA'), $correoAdmin, '',
+                                        'El profesor este mes ya ha cancelado un total de '.$cant.' clases', 
                                         env('EMPRESA')));
                             }
                             catch (Exception $e) { }
