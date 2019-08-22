@@ -18,12 +18,11 @@ use TCG\Voyager\Http\Controllers\Traits\BreadRelationshipParser;
 use App\User;
 use App\Tarea;
 use App\Clase;
-use App\Combo;
 use App\Pago;
 use App\Profesore;
 use App\AlumnoCompra;
 use App\AlumnoPago;
-use App\AlumnoBilletera;
+use App\Alumno;
 use App\Mail\Notificacion;
 use App\Mail\NotificacionClases;
 use App\Mail\NotificacionTareas;
@@ -358,7 +357,12 @@ class AlumnoPagoController extends Controller
             $messages["error"] = 'La Clase no existe';
             return redirect()->back()->withErrors($messages)->withInput();
         }
-        $billetera = null;
+        $billetera = Allumno::where('user_id', $data['user_id'])->first();
+        if ($billetera == null)
+        {
+            $messages["error"] = 'El Alumno no existe';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
         $compra = AlumnoCompra::where('id', $data['combo_id'])->first();
         if (($compra != null) && ($compra->estado != 'Solicitado'))
         {
@@ -367,13 +371,7 @@ class AlumnoPagoController extends Controller
         }
         else if ($compra != null)
         {
-            $billetera = AlumnoBilletera::where('user_id', $data['user_id'])->where('combo', $compra->combo)->first();
-            if ($billetera == null && $duracion > $compra->horas)
-            {
-                $messages["error"] = 'La Horas compradas del combo no son suficientes para pagar';
-                return redirect()->back()->withErrors($messages)->withInput();
-            }
-            else if ($billetera != null && $billetera->horas + $compra->horas - $duracion < 0)
+            if ($billetera->billetera + $compra->horas - $duracion < 0)
             {
                 $messages["error"] = 'La Horas compradas del combo no son suficientes para pagar';
                 return redirect()->back()->withErrors($messages)->withInput();
@@ -454,9 +452,7 @@ class AlumnoPagoController extends Controller
             }
             else
             {
-                $combo = Combo::where('nombre', $clase->combo)->first();
-                if ($combo->direccion)
-                    $dataAct['estado'] = 'Pago_Aprobado';
+                $dataAct['estado'] = 'Pago_Aprobado';
                 $profeClase = Profesore::where('user_id', $clase->user_id_pro)->first();
                 $pagoProf = Pago::create([
                         'user_id' => $clase->user_id_pro,
@@ -524,28 +520,12 @@ class AlumnoPagoController extends Controller
             }
             if ($request['estado'] == 'Aprobado')
             {
-                if ($billetera == null)
+                $dataBill['billetera'] = $billetera->billetera + $compra->horas - $duracion;
+                $actualizado = Alumno::where('user_id', $billetera->user_id)->update( $dataBill );
+                if(!$actualizado )
                 {
-                    $bill = AlumnoBilletera::create([
-                        'user_id' => $data['user_id'],
-                        'combo' => $compra->combo,
-                        'horas' => $compra->horas - $duracion
-                    ]);
-                    if (!$bill->id)
-                    {
-                        $messages["error"] = 'Ocurrió un error al crear Billetera';
-                        return redirect()->back()->withErrors($messages)->withInput();
-                    }
-                }
-                else
-                {
-                    $dataBill['horas'] = $billetera->horas + $compra->horas - $duracion;
-                    $actualizado = AlumnoBilletera::where('id', $billetera->id )->update( $dataBill );
-                    if(!$actualizado )
-                    {
-                        $messages["error"] = 'Ocurrió un error al actualizar Billetera';
-                        return redirect()->back()->withErrors($messages)->withInput();
-                    }
+                    $messages["error"] = 'Ocurrió un error al actualizar Billetera';
+                    return redirect()->back()->withErrors($messages)->withInput();
                 }
             }
         }

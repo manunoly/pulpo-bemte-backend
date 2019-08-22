@@ -4,15 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Materia;
 use App\User;
-use App\Sede;
 use App\Clase;
-use App\Combo;
 use App\Multa;
 use App\Alumno;
+use App\Pago;
 use App\Profesore;
 use App\ClasesGratis;
 use App\ClaseEjercicio;
-use App\AlumnoBilletera;
 use App\Notificacione;
 use App\NotificacionesPushFcm;
 use Illuminate\Http\Request;
@@ -302,7 +300,7 @@ class ClasesController extends Controller
                     }
 
                     $penHoras = 0;
-                    $duracion = $clase->duracion - ($clase->personas - 1);
+                    $duracion = $clase->duracion + ($clase->personas - 1);
                     if ($duracion < 2)
                         $duracion = 2;
                     if ($request['user_id'] == $clase->user_id_pro)
@@ -334,6 +332,28 @@ class ClasesController extends Controller
                         {
                             //devolver las horas al alumno 
                             $penHoras = $duracion;
+                            //quitar pago al profesor
+                            $pagoClase = Pago::where('user_id', $clase->user_id_pro)->where('clase_id', $clase->id)->first();
+                            if ($pagoClase->estado == 'Aprobado')
+                            {
+                                $multaProf = Multa::create([
+                                            'user_id' => $clase->user_id_pro,
+                                            'tarea_id' => 0,
+                                            'clase_id' => $clase->id,
+                                            'valor' => $pagoClase->valor,
+                                            'comentario' => 'Clase Cancelada por Profesor con Pago Aprobado',
+                                            'estado' => 'Solicitado'
+                                            ]);
+                                if (!$multaProf->id)
+                                    return response()->json(['error' => 'Ocurrió un error al crear Multa al Profesor'], 401);
+                            }
+                            else if ($pagoClase->estado == 'Solicitado')
+                            {
+                                $pago['estado'] = 'Cancelado';
+                                $actualizado = Pago::where('user_id', $clase->user_id_pro)->where('clase_id', $clase->id)->update( $pago );
+                                if(!$actualizado )
+                                    return response()->json(['error' => 'Ocurrió un error al Cancelar Pago al Profesor de la Clase.'], 401);
+                            }
                         }
                         //verificar tercera cancelacion para avisar al ADMIN
                         $mes = date("Y-m-1");
@@ -371,7 +391,7 @@ class ClasesController extends Controller
                         {
                             if ($clase->estado == 'Aceptado' || $clase->estado == 'Pago_Aprobado')
                             {
-                                //devolver las horas menos 1 por penalizacion al 
+                                //devolver las horas menos 1 por penalizacion al alumno
                                 $penHoras = $duracion - 1;
                             }
                             if ($clase->estado == 'Confirmado' || $clase->estado == 'Confirmando_Pago')
@@ -384,48 +404,19 @@ class ClasesController extends Controller
                     if ($penHoras != 0)
                     {
                         //quitar las horas del combo del Alumno
-                        $bill = AlumnoBilletera::where('user_id', $clase->user_id)->where('combo', $clase->combo)->first();
+                        $bill = Alumno::where('user_id', $clase->user_id)->first();
                         $resto = 0;
-                        if ($bill != null)
-                        {
-                            if ($bill->horas > $penHoras * -1)
-                            {
-                                $dataCombo['horas'] = $bill->horas + $penHoras;
-                            }
-                            else
-                            {
-                                $resto = $penHoras + $bill->horas;
-                                $dataCombo['horas'] = 0;
-                            }
-                            $actCombo = AlumnoBilletera::where('id', $bill->id )->update( $dataCombo );
-                            if(!$actCombo)
-                                return response()->json(['error' => 'Ocurrió un error al Penalizar al Alumno.'], 401);
-                        }
+                        if ($bill->billetera > $penHoras * -1)
+                            $dataCombo['billetera'] = $bill->billetera + $penHoras;
                         else
-                            $resto = $penHoras;
-                        if ($resto != 0)
                         {
-                            $listaCombos = AlumnoBilletera::where('user_id', $clase->user_id)->orderBy('horas', 'desc')->get();
-                            foreach($listaCombos as $item)
-                            {
-                                $restar = $resto;
-                                if ($item->horas < $resto * -1)
-                                {
-                                    $restar = $item->horas * -1;
-                                }
-                                $dataCombo['horas'] = $item->horas + $restar;
-                                $actCombo = AlumnoBilletera::where('id', $item->id )->update( $dataCombo );
-                                if(!$actCombo )
-                                {
-                                    return response()->json(['error' => 'Ocurrió un error al Penalizar Horas del Alumno.'], 401);
-                                }
-                                $resto = $resto - $restar;
-                                if ($resto == 0)
-                                {
-                                    break;
-                                }
-                            }
+                            $resto = $penHoras + $bill->billetera;
+                            $dataCombo['billetera'] = 0;
+                            //ver q hacer con horas negativas
                         }
+                        $actCombo = Alumno::where('user_id', $bill->user_id )->update( $dataCombo );
+                        if(!$actCombo)
+                            return response()->json(['error' => 'Ocurrió un error al Actualizar Billetera del Alumno.'], 401);
                     }
                     return response()->json(['success' => 'Clase terminada exitosamente'], 200);
                 }

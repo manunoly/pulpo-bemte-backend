@@ -6,6 +6,7 @@ use App\User;
 use App\Tarea;
 use App\Materia;
 use App\Alumno;
+use App\Pago;
 use App\Profesore;
 use App\TareaEjercicio;
 use App\Notificacione;
@@ -219,7 +220,60 @@ class TareasController extends Controller
                 }
                 else
                 {
-                    //devolver dinero al estudiante y quitar al profesor en caso de haberse pagado
+                    if ($tarea->estado == 'Aceptado')
+                    {
+                        $penHoras = 0;
+                        if ($request['user_id'] == $tarea->user_id_pro)
+                        {
+                            //devolver las horas al alumno 
+                            $penHoras = $tarea->tiempo_estimado;
+                            //quitar pago al profesor
+                            $pagoTarea = Pago::where('user_id', $tarea->user_id_pro)->where('tarea_id', $tarea->id)->first();
+                            if ($pagoTarea->estado == 'Aprobado')
+                            {
+                                $multaProf = Multa::create([
+                                            'user_id' => $tarea->user_id_pro,
+                                            'clase_id' => 0,
+                                            'tarea_id' => $tarea->id,
+                                            'valor' => $pagoTarea->valor,
+                                            'comentario' => 'Tarea Cancelada por Profesor con Pago Aprobado',
+                                            'estado' => 'Solicitado'
+                                            ]);
+                                if (!$multaProf->id)
+                                    return response()->json(['error' => 'Ocurrió un error al crear Multa al Profesor'], 401);
+                            }
+                            else if ($pagoTarea->estado == 'Solicitado')
+                            {
+                                $pago['estado'] = 'Cancelado';
+                                $actualizado = Pago::where('user_id', $tarea->user_id_pro)->where('tarea_id', $tarea->id)->update( $pago );
+                                if(!$actualizado)
+                                    return response()->json(['error' => 'Ocurrió un error al Cancelar Pago al Profesor de la Tarea.'], 401);
+                            }
+                        }
+                        else
+                        {
+                            //devolver las horas al alumno 
+                            $penHoras = $$tarea->tiempo_estimado;
+                            //quitar pago al profesor
+                        }
+                        if ($penHoras != 0)
+                        {
+                            //quitar las horas del combo del Alumno
+                            $bill = Alumno::where('user_id', $clase->user_id)->first();
+                            $resto = 0;
+                            if ($bill->billetera > $penHoras * -1)
+                                $dataCombo['billetera'] = $bill->billetera + $penHoras;
+                            else
+                            {
+                                $resto = $penHoras + $bill->billetera;
+                                $dataCombo['billetera'] = 0;
+                                //ver q hacer con horas negativas
+                            }
+                            $actCombo = Alumno::where('user_id', $bill->user_id )->update( $dataCombo );
+                            if(!$actCombo)
+                                return response()->json(['error' => 'Ocurrió un error al Actualizar Billetera del Alumno.'], 401);
+                        }
+                    }
                     $correoAdmin = '';
                     if ($tarea->user_id_pro != null && $tarea->user_id != null)
                     {

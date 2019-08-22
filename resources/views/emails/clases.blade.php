@@ -113,7 +113,6 @@
                 <p>Profesor: {{$profesor}}<p>
                 <p>Materia: {{$clase->materia}}<p>
                 <p>Tema: {{$clase->tema}}<p>
-                <p>Combo: {{$clase->combo}}<p>
                 <p>Personas: {{$clase->personas}}<p>
                 <p>Duración: {{$clase->duracion}}<p>
                 <p>Fecha: {{$clase->fecha}}<p>

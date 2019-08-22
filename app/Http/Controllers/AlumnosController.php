@@ -9,7 +9,6 @@ use App\Alumno;
 use App\Pago;
 use App\Profesore;
 use App\Formulario;
-use App\AlumnoBilletera;
 use Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -175,23 +174,16 @@ class AlumnosController extends Controller
 
         $duracion = 0;
         if ($tarea != null)
-        {
-            if ($user->billetera < $tarea->tiempo_estimado)
-            {
-                return response()->json(['error' => 'Combos sin horas para pagar'], 401);
-            }
             $duracion = $tarea->tiempo_estimado;
-        }
         if ($clase != null)
         {
             $duracion = $clase->duracion + ($clase->personas - 1);
             if ($duracion < 2)
                 $duracion = 2;
-            if ($user->billetera < $duracion)
-            {
-                return response()->json(['error' => 'Combos sin horas para pagar'], 401);
-            }
         }
+        if ($user->billetera < $duracion)
+            return response()->json(['error' => 'Combos sin horas para pagar'], 401);
+
         $data['estado'] = 'Aceptado';
         if ($tarea != null)
         {
