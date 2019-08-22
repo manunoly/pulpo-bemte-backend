@@ -111,8 +111,7 @@ class AlumnosController extends Controller
         $validator = Validator::make($request->all(), [
             'user_id' => 'required',
             'tarea_id' => 'required|numeric',
-            'clase_id' => 'required|numeric',
-            'combo' => 'required'
+            'clase_id' => 'required|numeric'
         ]);
         if ($validator->fails()) 
         {
@@ -168,18 +167,16 @@ class AlumnosController extends Controller
                 return response()->json(['error' => 'La Clase ha sido cancelada, no se puede pagar'], 401);
             }
         }
-        $combo = AlumnoBilletera::where('user_id', $request['user_id'])
-                                    ->where('combo', $request['combo'])->first();
-        if ($combo == null)
-        {
-            $listaCombos = AlumnoBilletera::where('user_id', $request['user_id'])->orderBy('horas', 'desc')->get();
-        }
+        $user = Alumno::where('user_id', $request['user_id'])->first();
+        if ($user == null)
+            return response()->json(['error' => 'No se encontró al Alumno para realizar el pago'], 401);
+        if (!$user->activo)
+            return response()->json(['error' => 'El alumno no se encuentra activo'], 401);
+
         $duracion = 0;
         if ($tarea != null)
         {
-            if ($tarea != null && 
-                (($combo != null && $combo->horas < $tarea->tiempo_estimado) ||
-                ($combo == null && $listaCombos->sum('horas') < $tarea->tiempo_estimado)))
+            if ($user->billetera < $tarea->tiempo_estimado)
             {
                 return response()->json(['error' => 'Combos sin horas para pagar'], 401);
             }
@@ -190,23 +187,16 @@ class AlumnosController extends Controller
             $duracion = $clase->duracion + ($clase->personas - 1);
             if ($duracion < 2)
                 $duracion = 2;
-            if ($clase != null && 
-                (($combo != null && $combo->horas < $duracion) ||
-                ($combo == null && $listaCombos->sum('horas') < $duracion)))
+            if ($user->billetera < $duracion)
             {
                 return response()->json(['error' => 'Combos sin horas para pagar'], 401);
             }
         }
-        $user = Alumno::where('user_id', $request['user_id'])->first();
-        if ($user != null)
+        $data['estado'] = 'Aceptado';
+        if ($tarea != null)
         {
-            if ($user->activo)
-            {
-                $data['estado'] = 'Aceptado';
-                if ($tarea != null)
-                {
-                    $profeTarea = Profesore::where('user_id', $tarea->user_id_pro)->first();
-                    $pagoProf = Pago::create([
+            $profeTarea = Profesore::where('user_id', $tarea->user_id_pro)->first();
+            $pagoProf = Pago::create([
                             'user_id' => $tarea->user_id_pro,
                             'tarea_id' => $tarea->id,
                             'clase_id' => 0,
@@ -214,34 +204,32 @@ class AlumnosController extends Controller
                             'horas' => $duracion,
                             'estado' => 'Solicitado'
                             ]);
-                    if (!$pagoProf->id)
-                    {
-                        return response()->json(['error' => 'Ocurrió un error al crear Pago al Profesor'], 401);
-                    }
-                    $actTarea = Tarea::where('id', $tarea->id )->update( $data );
-                    if(!$actTarea )
-                    {
-                        return response()->json(['error' => 'Ocurrió un error al actualizar la Tarea.'], 401);
-                    }
-                    try 
-                    {
-                        $userAlum = User::where('id', $tarea->user_id)->first();
-                        $userProf = User::where('id', $tarea->user_id_pro)->first();
-                        Mail::to($userAlum->email)->send(new NotificacionTareas($tarea, $userAlum->name, $userProf->name, 
+            if (!$pagoProf->id)
+                return response()->json(['error' => 'Ocurrió un error al crear Pago al Profesor'], 401);
+            
+            $actTarea = Tarea::where('id', $tarea->id )->update( $data );
+            if(!$actTarea )
+                return response()->json(['error' => 'Ocurrió un error al actualizar la Tarea.'], 401);
+            
+            try 
+            {
+                $userAlum = User::where('id', $tarea->user_id)->first();
+                $userProf = User::where('id', $tarea->user_id_pro)->first();
+                Mail::to($userAlum->email)->send(new NotificacionTareas($tarea, $userAlum->name, $userProf->name, 
                                                         env('EMPRESA'), true));
-                        Mail::to($userProf->email)->send(new NotificacionTareas($tarea, $userAlum->name, $userProf->name, 
+                Mail::to($userProf->email)->send(new NotificacionTareas($tarea, $userAlum->name, $userProf->name, 
                                                         env('EMPRESA'), false));
-                    }
-                    catch (Exception $e) 
-                    {
-                        return response()->json(['success' => 'No se ha podido enviar el correo',
+            }
+            catch (Exception $e) 
+            {
+                return response()->json(['success' => 'No se ha podido enviar el correo',
                                     'detalle' => $e->getMessage()], 200);
-                    }
-                }
-                if ($clase != null)
-                {
-                    $profeClase = Profesore::where('user_id', $clase->user_id_pro)->first();
-                    $pagoProf = Pago::create([
+            }
+        }
+        if ($clase != null)
+        {
+            $profeClase = Profesore::where('user_id', $clase->user_id_pro)->first();
+            $pagoProf = Pago::create([
                             'user_id' => $clase->user_id_pro,
                             'clase_id' => $clase->id,
                             'tarea_id' => 0,
@@ -249,72 +237,34 @@ class AlumnosController extends Controller
                             'horas' => $clase->duracion,
                             'estado' => 'Solicitado'
                             ]);
-                    if (!$pagoProf->id)
-                    {
-                        return response()->json(['error' => 'Ocurrió un error al crear Pago al Profesor'], 401);
-                    }
-                    $actClase = Clase::where('id', $clase->id )->update( $data );
-                    if(!$actClase )
-                    {
-                        return response()->json(['error' => 'Ocurrió un error al actualizar la Clase.'], 401);
-                    }
-                    try 
-                    {
-                        $userAlum = User::where('id', $clase->user_id)->first();
-                        $userProf = User::where('id', $clase->user_id_pro)->first();
-                        Mail::to($userAlum->email)->send(new NotificacionClases($clase, $userAlum->name, $userProf->name, 
-                                                        env('EMPRESA'), true));
-                        Mail::to($userProf->email)->send(new NotificacionClases($clase, $userAlum->name, $userProf->name, 
-                                                        env('EMPRESA'), false));
-                    }
-                    catch (Exception $e) 
-                    {
-                        return response()->json(['success' => 'No se ha podido enviar el correo',
-                                    'detalle' => $e->getMessage()], 200);
-                    }
-                }
-                if ($combo != null)
-                {
-                    $dataCombo['horas'] = $combo->horas - $duracion;
-                    $actCombo = AlumnoBilletera::where('id', $combo->id )->update( $dataCombo );
-                    if(!$actCombo )
-                    {
-                        return response()->json(['error' => 'Ocurrió un error al actualizar pago.'], 401);
-                    }
-                }
-                else
-                {
-                    foreach($listaCombos as $item)
-                    {
-                        $restar = $duracion;
-                        if ($item->horas < $duracion)
-                        {
-                            $restar = $item->horas;
-                        }
-                        $dataCombo['horas'] = $combo->horas - $restar;
-                        $actCombo = AlumnoBilletera::where('id', $combo->id )->update( $dataCombo );
-                        if(!$actCombo )
-                        {
-                            return response()->json(['error' => 'Ocurrió un error al actualizar pago.'], 401);
-                        }
-                        $duracion = $duracion - $restar;
-                        if ($duracion == 0)
-                        {
-                            break;
-                        }
-                    }
-                }
-                return response()->json(['success' => 'Pago con Combo exitoso'], 200);
-            }
-            else
+            if (!$pagoProf->id)
+                return response()->json(['error' => 'Ocurrió un error al crear Pago al Profesor'], 401);
+            
+            $actClase = Clase::where('id', $clase->id )->update( $data );
+            if(!$actClase )
+                return response()->json(['error' => 'Ocurrió un error al actualizar la Clase.'], 401);
+            
+            try 
             {
-                return response()->json(['error' => 'El alumno no se encuentra activo'], 401);
+                $userAlum = User::where('id', $clase->user_id)->first();
+                $userProf = User::where('id', $clase->user_id_pro)->first();
+                Mail::to($userAlum->email)->send(new NotificacionClases($clase, $userAlum->name, $userProf->name, 
+                                                        env('EMPRESA'), true));
+                Mail::to($userProf->email)->send(new NotificacionClases($clase, $userAlum->name, $userProf->name, 
+                                                        env('EMPRESA'), false));
+            }
+            catch (Exception $e) 
+            {
+                return response()->json(['success' => 'No se ha podido enviar el correo',
+                                    'detalle' => $e->getMessage()], 200);
             }
         }
-        else
-        {
-            return response()->json(['error' => 'No se encontró al Alumno para subir el pago'], 401);
-        }
+        $dataCombo['billetera'] = $user->billetera - $duracion;
+        $actCombo = Alumno::where('user_id', $user->user_id )->update( $dataCombo );
+        if(!$actCombo )
+            return response()->json(['error' => 'Ocurrió un error al actualizar pago.'], 401);
+                
+        return response()->json(['success' => 'Pago con Combo exitoso'], 200);
     }
     
     public function aplicarProfesor(Request $request)

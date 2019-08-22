@@ -219,6 +219,7 @@ class TareasController extends Controller
                 }
                 else
                 {
+                    //devolver dinero al estudiante y quitar al profesor en caso de haberse pagado
                     $correoAdmin = '';
                     if ($tarea->user_id_pro != null && $tarea->user_id != null)
                     {

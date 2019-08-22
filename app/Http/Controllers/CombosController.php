@@ -20,17 +20,8 @@ class CombosController extends Controller
 
     public function listaCombosHoras()
     {
-        if( \Request::get('combo') )
-        {
-            $search = \Request::get('combo');
-            $combos = CombosHora::where('combo', $search)->where('activo', '1')
-                        ->select('id', 'combo', 'hora', 'inversion', 'descuento')->get();
-            return response()->json($combos, 200);
-        }
-        else
-        {
-            return response()->json(['error' => 'Combo no especificado'], 401);
-        }
+        $combos = CombosHora::where('activo', '1')->select('id', 'hora', 'inversion', 'descuento')->get();
+        return response()->json($combos, 200);
     }
 
     public function horasComboAlumno()
@@ -59,7 +50,7 @@ class CombosController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'user_id' => 'required',
-            'combo' => 'required',
+            'horas' => 'required',
             'valor' => 'required'
         ]);
         if ($validator->fails()) 
@@ -70,10 +61,9 @@ class CombosController extends Controller
         {
             return response()->json(['error' => 'Valor inválido'], 401);
         }
-        $combo = Combo::where('nombre', $request['combo'])->first();
-        if ($combo == null)
+        if (!is_numeric($request['horas']))
         {
-            return response()->json(['error' => 'No existe el Combo'], 401);
+            return response()->json(['error' => 'Horas inválidas'], 401);
         }
         $usuario = Alumno::where('user_id', $request['user_id'])->first();
         if ($usuario != null)
@@ -82,8 +72,9 @@ class CombosController extends Controller
             {
                 $compra = AlumnoCompra::create([
                     'user_id' => $request['user_id'],
-                    'combo' => $request['combo'],
+                    'combo' => 'COMBO',
                     'valor' => $request['valor'],
+                    'horas' => $request['horas'],
                     'estado' => 'Solicitado'
                 ]);
                 if ($compra->id)
@@ -125,7 +116,7 @@ class CombosController extends Controller
         if( \Request::get('user_id') )
         {
             $alumno = \Request::get('user_id');
-            $horas = AlumnoBilletera::where('user_id', $alumno)->sum('horas');
+            $horas = Alumno::where('user_id', $alumno)->sum('billetera');
             return response()->json($horas, 200);
         }
         else

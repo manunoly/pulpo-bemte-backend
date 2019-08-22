@@ -32,15 +32,15 @@ Route::post('reset_pw', 'RegistroController@actualizarPW');
 
 
 Route::get('lista-ciudades', 'CiudadController@listaCiudades');
-Route::get('lista-sedes', 'CiudadController@listaSedes');
+//Route::get('lista-sedes', 'CiudadController@listaSedes');
 
 Route::get('lista-materias', 'MateriasController@listaMaterias');
 
-Route::get('lista-combos', 'CombosController@listaCombos');
+//Route::get('lista-combos', 'CombosController@listaCombos');
 Route::get('combo-horas', 'CombosController@listaCombosHoras');
 Route::post('combo-compra', 'CombosController@compraComboAlumno');
-Route::get('combo-alumno', 'CombosController@horasComboAlumno');
-Route::get('horas-alumno', 'CombosController@horasAlumno');
+//Route::get('combo-alumno', 'CombosController@horasComboAlumno');
+//Route::get('horas-alumno', 'CombosController@horasAlumno');
 Route::get('horas-totales', 'CombosController@horasTotales');
 
 
