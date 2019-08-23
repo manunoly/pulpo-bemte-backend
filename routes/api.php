@@ -79,3 +79,7 @@ Route::get('clases-gratis', 'ClasesController@clasesGratis');
 Route::post('subir-archivo', 'FicherosController@subirArchivo');
 Route::post('subir-ejercicio', 'FicherosController@subirEjercicio');
 Route::post('subir-transferencia', 'FicherosController@subirTransferencia');
+
+
+Route::get('obtener-chat', 'ChatController@obtenerChat');
+Route::post('enviar-chat', 'ChatController@enviarChat');
