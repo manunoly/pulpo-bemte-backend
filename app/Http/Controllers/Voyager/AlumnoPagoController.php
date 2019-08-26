@@ -315,6 +315,7 @@ class AlumnoPagoController extends Controller
             return redirect()->back()->withErrors($messages)->withInput();
         }
         $duracion = 0;
+        $compra = null;
         $tarea = Tarea::where('id', $data['tarea_id'])->first();
         if (($tarea != null) && ($tarea->estado != 'Confirmando_Pago'))
         {
@@ -329,6 +330,8 @@ class AlumnoPagoController extends Controller
         else if ($tarea != null)
         {
             $duracion = $tarea->tiempo_estimado;
+            if ($tarea->compra_id > 0)
+                $compra = AlumnoCompra::where('id', $clase->compra_id )->first();
         }
         else if ($data['tarea_id'] > 0)
         {
@@ -351,19 +354,22 @@ class AlumnoPagoController extends Controller
             $duracion = $clase->duracion + ($clase->personas - 1);
             if ($duracion < 2)
                 $duracion = 2;
+            if ($clase->compra_id > 0)
+                $compra = AlumnoCompra::where('id', $clase->compra_id )->first();
         }
         else if ($data['clase_id'] > 0)
         {
             $messages["error"] = 'La Clase no existe';
             return redirect()->back()->withErrors($messages)->withInput();
         }
-        $billetera = Allumno::where('user_id', $data['user_id'])->first();
+        $billetera = Alumno::where('user_id', $data['user_id'])->first();
         if ($billetera == null)
         {
             $messages["error"] = 'El Alumno no existe';
             return redirect()->back()->withErrors($messages)->withInput();
         }
-        $compra = AlumnoCompra::where('id', $data['combo_id'])->first();
+        if ($compra == null)
+            $compra = AlumnoCompra::where('id', $data['combo_id'])->first();
         if (($compra != null) && ($compra->estado != 'Solicitado'))
         {
             $messages["error"] = 'La Compra del combo ya no permite la Aprobación del pago';
@@ -452,7 +458,7 @@ class AlumnoPagoController extends Controller
             }
             else
             {
-                $dataAct['estado'] = 'Pago_Aprobado';
+                //$dataAct['estado'] = 'Pago_Aprobado';
                 $profeClase = Profesore::where('user_id', $clase->user_id_pro)->first();
                 $pagoProf = Pago::create([
                         'user_id' => $clase->user_id_pro,

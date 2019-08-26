@@ -118,9 +118,6 @@
                 <p>Fecha: {{$clase->fecha}}<p>
                 <p>Hora: {{$clase->hora_prof}}<p>
                 <p>Ubicación: {{$clase->ubicacion}}<p>
-                <p>Calle: {{$clase->calle}}<p>
-                <p>Referencia: {{$clase->referencia}}<p>
-                <p>Por Quién Preguntar: {{$clase->quien_preguntar}}<p>
                 <p class="hola">Saludos,</p>
                 <p class="hola">{{$empresa}}</p>    
                 <br>

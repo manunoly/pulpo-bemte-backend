@@ -56,8 +56,11 @@ class AlumnosController extends Controller
             {
                 if ($id_calificado == $tarea->user_id && $id_usuario == $tarea->user_id_pro)
                 {
-                    $calif = array("califacion_alumno" => $request['calificacion'], 
+                    if ($request['calificacion'] > 0)
+                        $calif = array("califacion_alumno" => $request['calificacion'], 
                                     "comentario_alumno" => $coment);
+                    else
+                        $calif = array("comentario_alumno" => 'No Califica. '.$coment);
                     Tarea::where('id',$id_tarea)->update($calif);
                 }
                 else
@@ -77,8 +80,11 @@ class AlumnosController extends Controller
             {
                 if ($id_calificado == $clase->user_id && $id_usuario == $clase->user_id_pro)
                 {
-                    $calif = array("califacion_alumno" => $request['calificacion'], 
+                    if ($request['calificacion'] > 0)
+                        $calif = array("califacion_alumno" => $request['calificacion'], 
                                     "comentario_alumno" => $coment);
+                    else
+                        $calif = array("comentario_alumno" => 'No Califica. '.$coment);
                     Clase::where('id',$id_clase)->update($calif);
                 }
                 else

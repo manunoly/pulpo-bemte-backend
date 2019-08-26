@@ -22,6 +22,7 @@ use Hash;
 /* ESTADOS CLASE
 
 Solicitado
+Sin_Horas
 Confirmado
 Aceptado (pagado)
 Terminado
@@ -79,6 +80,9 @@ class ClasesController extends Controller
                 if ($claseAnterior == nul)
                     return response()->json(['error' => 'No existe una Clase anterior para seleccionar al Profesor'], 401);
             }
+            $duracion = $request['duracion'] + ($request['personas'] - 1);
+            if ($duracion < 2)
+                $duracion = 2;
 
             $coordenadas = isset($request['coordenadas']) ? $request['coordenadas'] : NULL;
             $hora1 = isset($request['hora1']) ? $request['hora1'] : NULL;
@@ -97,7 +101,7 @@ class ClasesController extends Controller
                 'combo' => 'COMBO',
                 'ubicacion' => $request['ubicacion'],
                 'coordenadas' => $coordenadas,
-                'estado' => 'Solicitado',
+                'estado' => $alumno->billetera < $duracion ? 'Sin_Horas' : 'Solicitado',
                 'seleccion_profesor' => $request['selProfesor'] == 1,
                 'activa' => true,
                 'horasCombo' => $horasCombo,
@@ -106,59 +110,63 @@ class ClasesController extends Controller
 
             if ($clase->id)
             {
-                $profesores = Profesore::join('profesor_materia', 'profesor_materia.user_id', '=', 'profesores.user_id')
-                                        ->join('users', 'users.id', '=', 'profesores.user_id')
-                                        ->where('profesores.activo', true)
-                                        ->where('profesores.clases', true)
-                                        ->where('profesores.disponible', true)
-                                        //->where('profesores.ciudad', $sede)
-                                        ->where('profesor_materia.activa', true)
-                                        ->where('profesor_materia.materia', $clase->materia)
-                                        ->select('profesores.correo', 'users.token', 'users.sistema', 'users.id')
-                                        ->get();
-                if ($claseAnterior != null)
+                if ($clase->estado == 'Solicitado')
                 {
-                    $profSelccionado = $profesores->where('id', $claseAnterior->user_id_pro)->firts();
-                    if ($profSelccionado != null)
+                    $profesores = Profesore::join('profesor_materia', 'profesor_materia.user_id', '=', 'profesores.user_id')
+                                            ->join('users', 'users.id', '=', 'profesores.user_id')
+                                            ->where('profesores.activo', true)
+                                            ->where('profesores.clases', true)
+                                            ->where('profesores.disponible', true)
+                                            //->where('profesores.ciudad', $sede)
+                                            ->where('profesor_materia.activa', true)
+                                            ->where('profesor_materia.materia', $clase->materia)
+                                            ->select('profesores.correo', 'users.token', 'users.sistema', 'users.id')
+                                            ->get();
+                    if ($claseAnterior != null)
                     {
-                        $profesores = $profSelccionado;
-                    }
-                }
-                //lanzar notificaciones a los profesores
-                $titulo = 'Solicitud de Clase';
-                $dateTime = date("Y-m-d H:i:s");
-                $texto = 'Ha sido solicitada la Clase '.$clase->id.' de '.$clase->materia
-                        .', para el '.$clase->fecha.' a las '.$clase->hora1.' o a las '.$clase->hora2
-                        .', en '.$clase->ubicacion.' para '.$clase->personas.' estudiantes con una duracion de '
-                        .$clase->duracion.', por '.$user->name.', '.$dateTime;
-                foreach($profesores as $solicitar)
-                {
-                    $errorNotif = 'OK';
-                    try 
-                    {
-                        if ($solicitar != null && $solicitar->token != null)
+                        $profSelccionado = $profesores->where('id', $claseAnterior->user_id_pro)->firts();
+                        if ($profSelccionado != null)
                         {
-                            $notificacionEnviar['to'] = $solicitar->token;
-                            $notificacionEnviar['title'] = $titulo;
-                            $notificacionEnviar['body'] = $texto;
-                            $notificacionEnviar['priority'] = 'normal';
-                            $pushClass = new NotificacionesPushFcm();
-                            $pushClass->enviarNotificacion($notificacionEnviar);
+                            $profesores = $profSelccionado;
                         }
-                        else
-                            $errorNotif = 'No se pudo encontrar el Token del Usuario a notificar';
                     }
-                    catch (Exception $e) 
+                    //lanzar notificaciones a los profesores
+                    $titulo = 'Solicitud de Clase';
+                    $dateTime = date("Y-m-d H:i:s");
+                    $texto = 'Ha sido solicitada la Clase '.$clase->id.' de '.$clase->materia
+                            .', para el '.$clase->fecha.' a las '.$clase->hora1.' o a las '.$clase->hora2
+                            .', en '.$clase->ubicacion.' para '.$clase->personas.' estudiantes con una duracion de '
+                            .$clase->duracion.', por '.$user->name.', '.$dateTime;
+                    foreach($profesores as $solicitar)
                     {
-                        $errorNotif = $e->getMessage();
+                        $errorNotif = 'OK';
+                        try 
+                        {
+                            if ($solicitar != null && $solicitar->token != null)
+                            {
+                                $notificacionEnviar['to'] = $solicitar->token;
+                                $notificacionEnviar['title'] = $titulo;
+                                $notificacionEnviar['body'] = $texto;
+                                $notificacionEnviar['priority'] = 'normal';
+                                $pushClass = new NotificacionesPushFcm();
+                                $pushClass->enviarNotificacion($notificacionEnviar);
+                            }
+                            else
+                                $errorNotif = 'No se pudo encontrar el Token del Usuario a notificar';
+                        }
+                        catch (Exception $e) 
+                        {
+                            $errorNotif = $e->getMessage();
+                        }
+                        $notifBD = Notificacione::create([
+                            'user_id' => $solicitar->id,
+                            'notificacion' => $titulo.'|'.$texto,
+                            'estado' => $errorNotif
+                            ]);
                     }
-                    $notifBD = Notificacione::create([
-                        'user_id' => $solicitar->id,
-                        'notificacion' => $titulo.'|'.$texto,
-                        'estado' => $errorNotif
-                        ]);
                 }
-                return response()->json(['success'=> 'Su Clase ha sido solicitada. Por favor espera que validemos su información'], 200);
+                return response()->json(['success'=> 'Su Clase ha sido solicitada. Por favor espera que validemos su información',
+                                        'clase' => $clase], 200);
             }
             else
             {

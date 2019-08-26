@@ -128,7 +128,8 @@ class TareasController extends Controller
                         ]);
                 }
 
-                return response()->json(['success'=> 'Su tarea ha sido solicitada. Por favor espera que validemos su información'], 200);
+                return response()->json(['success'=> 'Su tarea ha sido solicitada. Por favor espera que validemos su información',
+                                        'tarea' => $tarea], 200);
             }
             else
             {

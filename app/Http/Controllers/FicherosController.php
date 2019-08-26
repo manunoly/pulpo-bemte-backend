@@ -190,7 +190,7 @@ class FicherosController extends Controller
         $clase = null;
         if ($request['clase_id'] > 0)
         {
-            if ($request['tarea_id'] > 0)
+            if ($request['tarea_id'] > 0 || ($request['combo_id'] != '0'))
             {
                 return response()->json(['error' => 'Especifique una sola opción para la clase'], 401);
             }
@@ -207,7 +207,7 @@ class FicherosController extends Controller
         $combo = null;
         if ($request['combo_id'] != '0')
         {
-            if ($request['tarea_id'] > 0)
+            if ($request['tarea_id'] > 0 || $request['clase_id'] > 0)
             {
                 return response()->json(['error' => 'Especifique una sola opción para el Combo'], 401);
             }
@@ -242,14 +242,14 @@ class FicherosController extends Controller
                 $solicitud = AlumnoPago::where('user_id', $request['user_id'])
                                         ->where('tarea_id', $request['tarea_id'])
                                         ->where('clase_id', $request['clase_id'])
-                                        ->where('combo_id', $combo->id)->first();
+                                        ->where('combo_id', $combo != null ? $combo->id : $request['combo_id'])->first();
                 if ($solicitud == null)
                 {
                     $aplica = AlumnoPago::create([
                         'user_id' => $request['user_id'],
                         'tarea_id' => $request['tarea_id'],
                         'clase_id' => $request['clase_id'],
-                        'combo_id' => $combo->id,
+                        'combo_id' => $combo != null ? $combo->id : $request['combo_id'],
                         'archivo' => $archivo,
                         'drive' => $drive,
                         'estado' => 'Solicitado'
