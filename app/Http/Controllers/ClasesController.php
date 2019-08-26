@@ -255,11 +255,11 @@ class ClasesController extends Controller
                 }
                 else
                 {
+                    $dateTime = date("Y-m-d H:i:s");
                     if ($clase->user_id_pro != null && $clase->user_id != null)
                     {
                         //enviar notificacion al profesor o alumno
                         $errorNotif = 'OK';
-                        $dateTime = date("Y-m-d H:i:s");
                         $titulo = 'Clase Cancelada';
                         $texto = 'La Clase '.$clase->id.' ha sido cancelada por el ';
                         $correoAdmin = '';
@@ -439,42 +439,67 @@ class ClasesController extends Controller
     
     public function listaClases()
     {
-        if( \Request::get('user_id') )
+        if ( \Request::get('user_id') )
         {
-            $search = \Request::get('user_id');
-            $user = User::where('id', '=', $search )->first();
-            if ($user == null) 
+            $tipo = \Request::get('tipo');
+            if ( $tipo == 'ACTUAL' || $tipo == 'ANTERIOR')
             {
-                return response()->json([ 'error' => 'El usuario no existe!'], 401);
-            }
-            if ($user['tipo'] == 'Alumno') 
-            {
-                $clases = Clase::leftJoin('users', 'users.id', '=', 'clases.user_id_pro')
-                            ->where('user_id', $search)
+                $search = \Request::get('user_id');
+                $user = User::where('id', '=', $search )->first();
+                if ($user == null) 
+                {
+                    return response()->json([ 'error' => 'El usuario no existe!'], 401);
+                }
+                $nowDate = date_format(date_create(date("Y-m-d H:i:s")), "Y-m-d");
+                if ($user['tipo'] == 'Alumno') 
+                {
+                    if ($tipo == 'ACTUAL')
+                        $clases = Clase::leftJoin('users', 'users.id', '=', 'clases.user_id_pro')
+                                ->where('user_id', $search)->where('fecha', $nowDate)
+                                ->select('clases.id','users.name', 'materia', 'tema', 'personas', 'duracion', 'hora1', 'hora2', 
+                                'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc', 'precioCombo',
+                                'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 'horasCombo',
+                                'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor',
+                                'coordenadas')
+                                ->orderBy('clases.id', 'desc')->get();
+                    else
+                        $clases = Clase::leftJoin('users', 'users.id', '=', 'clases.user_id_pro')
+                            ->where('user_id', $search)->where('fecha', '<', $nowDate)
                             ->select('clases.id','users.name', 'materia', 'tema', 'personas', 'duracion', 'hora1', 'hora2', 
                             'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc', 'precioCombo',
                             'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 'horasCombo',
                             'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor',
                             'coordenadas')
                             ->orderBy('clases.id', 'desc')->get();
+                }
+                else
+                {
+                    if ($tipo == 'ACTUAL')
+                        $clases = Clase::join('users', 'users.id', '=', 'clases.user_id')
+                                ->where('user_id_pro', $search)->where('fecha', $nowDate)
+                                ->select('clases.id','users.name', 'materia', 'tema', 'personas', 'duracion', 'hora1', 'hora2', 
+                                'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc', 'precioCombo',
+                                'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 'horasCombo',
+                                'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor',
+                                'coordenadas')
+                                ->orderBy('clases.id', 'desc')->get();
+                    else
+                        $clases = Clase::join('users', 'users.id', '=', 'clases.user_id')
+                                ->where('user_id_pro', $search)->where('fecha', '<', $nowDate)
+                                ->select('clases.id','users.name', 'materia', 'tema', 'personas', 'duracion', 'hora1', 'hora2', 
+                                'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc', 'precioCombo',
+                                'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 'horasCombo',
+                                'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor',
+                                'coordenadas')
+                                ->orderBy('clases.id', 'desc')->get();
+                }
+                return response()->json($clases, 200);
             }
             else
-            {
-                $clases = Clase::join('users', 'users.id', '=', 'clases.user_id')
-                            ->where('user_id_pro', $search)
-                            ->select('clases.id','users.name', 'materia', 'tema', 'personas', 'duracion', 'hora1', 'hora2', 
-                            'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc', 'precioCombo',
-                            'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 'horasCombo',
-                            'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor',
-                            'coordenadas')
-                            ->orderBy('clases.id', 'desc')->get();
-            }
-            return response()->json($clases, 200);
+                return response()->json(['error' => 'Tipo no válido'], 401);
         }
         else
-        {
             return response()->json(['error' => 'Usuario no especificado'], 401);
-        }
     }
     
     public function claseConfirmar(Request $request)
@@ -560,7 +585,6 @@ class ClasesController extends Controller
                 $user = \Request::get('user_id');
                 $penHoras = 0 ;
                 $penValor = 0;
-                
                 $dateTime = date("Y-m-d H:i:s");
                 $nowDate = date_format(date_create($dateTime), "Y-m-d");
                 $nowTime = date_format(date_create($dateTime), "H:i:s");
