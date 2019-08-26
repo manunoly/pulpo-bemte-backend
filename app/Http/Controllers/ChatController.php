@@ -44,8 +44,13 @@ class ChatController extends Controller
                             return response()->json(['error' => 'El usuario no está relacionado con la Clase'], 401);
                     }
                     $chats = Chat::where('clase_id', $claseID)->where('tarea_id', $tareaID)->get();
-                    $data['leido'] = true;
-                    foreach($chats->where('leido', false) as $item)
+
+                    $data['leidoA'] = true;
+                    foreach($chats->where('leidoA', false)->where('user_id', $user) as $item)
+                        Chat::where('id', $item->id )->update( $data );
+                    
+                    $data['leidoP'] = true;
+                    foreach($chats->where('leidoP', false)->where('user_id_pro', $user) as $item)
                         Chat::where('id', $item->id )->update( $data );
                     
                     return response()->json($chats, 200);
@@ -105,7 +110,8 @@ class ChatController extends Controller
             'user_escribe' => $request['user_id'],
             'clase_id' => $request['clase_id'],
             'tarea_id' => $request['tarea_id'],
-            'leido' => false,
+            'leidoA' => $alumno == $request['user_id'] ? true : false,
+            'leidoP' => $profesor == $request['user_id'] ? true : false,
             'imagen' => $imagen,
             'texto' => $texto,
             'user_id' => $alumno,
