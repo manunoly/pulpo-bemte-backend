@@ -681,4 +681,18 @@ class ClasesController extends Controller
                     ->get();
         return response()->json($clases, 200);
     }
+
+    public function devuelveClase()
+    {
+        $search = \Request::get('clase_id');
+        $clase = Clase::where('id', $search)->first();
+        if ($clase != null)
+        {
+            return response()->json($clase, 200);
+        }
+        else
+        {
+            return response()->json(['error' => 'Clase no Encontrada'], 401);
+        }
+    }
 }

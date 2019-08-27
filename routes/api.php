@@ -59,6 +59,7 @@ Route::get('tarea-activa', 'TareasController@tareaActiva');
 Route::get('tareas-disponibles', 'TareasController@tareasDisponibles');
 Route::post('tarea-terminar', 'TareasController@tareaTerminar');
 Route::get('lista-tareas', 'TareasController@listaTareas');
+Route::get('devuelve-tarea', 'TareasController@devuelveTarea');
 
 
 Route::post('calificar-alumno', 'AlumnosController@calificarAlumno');
@@ -74,6 +75,7 @@ Route::get('lista-clases', 'ClasesController@listaClases');
 Route::post('clase-confirmar', 'ClasesController@claseConfirmar');
 Route::get('validar-penalizacion', 'ClasesController@validarPenalizacion');
 Route::get('clases-gratis', 'ClasesController@clasesGratis');
+Route::get('devuelve-clase', 'ClasesController@devuelveClase');
 
 
 Route::post('subir-archivo', 'FicherosController@subirArchivo');

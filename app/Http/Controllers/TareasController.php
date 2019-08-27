@@ -403,4 +403,18 @@ class TareasController extends Controller
         else
             return response()->json(['error' => 'Usuario no especificado'], 401);
     }
+
+    public function devuelveTarea()
+    {
+        $search = \Request::get('tarea_id');
+        $tarea = Tarea::where('id', $search)->first();
+        if ($tarea != null)
+        {
+            return response()->json($tarea, 200);
+        }
+        else
+        {
+            return response()->json(['error' => 'Tarea no Encontrada'], 401);
+        }
+    }
 }
