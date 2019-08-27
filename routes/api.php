@@ -33,6 +33,8 @@ Route::post('reset_pw', 'RegistroController@actualizarPW');
 
 Route::get('lista-ciudades', 'CiudadController@listaCiudades');
 //Route::get('lista-sedes', 'CiudadController@listaSedes');
+Route::get('lista-ciudad-pais', 'CiudadController@listaCiudadPais');
+Route::get('lista-paises', 'CiudadController@listaPaises');
 
 Route::get('lista-materias', 'MateriasController@listaMaterias');
 
