@@ -11,7 +11,6 @@ use App\Pago;
 use App\Profesore;
 use App\ClasesGratis;
 use App\ClaseEjercicio;
-use App\Notificacione;
 use App\NotificacionesPushFcm;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -120,7 +119,7 @@ class ClasesController extends Controller
                                             //->where('profesores.ciudad', $sede)
                                             ->where('profesor_materia.activa', true)
                                             ->where('profesor_materia.materia', $clase->materia)
-                                            ->select('profesores.correo', 'users.token', 'users.sistema', 'users.id')
+                                            ->select('users.email', 'users.token', 'users.sistema', 'users.id', 'users.name')
                                             ->get();
                     if ($claseAnterior != null)
                     {
@@ -129,41 +128,23 @@ class ClasesController extends Controller
                         {
                             $profesores = $profSelccionado;
                         }
+                        else
+                        {
+                            $actClase['seleccion_profesor'] = false;
+                            $actualizado = Clase::where('id', $clase->id )->update( $actClase );
+                        }
                     }
                     //lanzar notificaciones a los profesores
-                    $titulo = 'Solicitud de Clase';
+                    $notificacion['titulo'] = 'Solicitud de Clase';
                     $dateTime = date("Y-m-d H:i:s");
-                    $texto = 'Ha sido solicitada la Clase '.$clase->id.' de '.$clase->materia
-                            .', para el '.$clase->fecha.' a las '.$clase->hora1.' o a las '.$clase->hora2
+                    $notificacion['texto'] = 'Ha sido solicitada la Clase '.$clase->id.' de '.$clase->materia
+                            .', para el '.$clase->fecha.' a las '.$clase->hora1
                             .', en '.$clase->ubicacion.' para '.$clase->personas.' estudiantes con una duracion de '
                             .$clase->duracion.', por '.$user->name.', '.$dateTime;
+                    $notificacion['estado'] = 'NO';
+                    $pushClass = new NotificacionesPushFcm();
                     foreach($profesores as $solicitar)
-                    {
-                        $errorNotif = 'OK';
-                        try 
-                        {
-                            if ($solicitar != null && $solicitar->token != null)
-                            {
-                                $notificacionEnviar['to'] = $solicitar->token;
-                                $notificacionEnviar['title'] = $titulo;
-                                $notificacionEnviar['body'] = $texto;
-                                $notificacionEnviar['priority'] = 'normal';
-                                $pushClass = new NotificacionesPushFcm();
-                                $pushClass->enviarNotificacion($notificacionEnviar);
-                            }
-                            else
-                                $errorNotif = 'No se pudo encontrar el Token del Usuario a notificar';
-                        }
-                        catch (Exception $e) 
-                        {
-                            $errorNotif = $e->getMessage();
-                        }
-                        $notifBD = Notificacione::create([
-                            'user_id' => $solicitar->id,
-                            'notificacion' => $titulo.'|'.$texto,
-                            'estado' => $errorNotif
-                            ]);
-                    }
+                        $pushClass->enviarNotificacion($notificacion, $solicitar);
                 }
                 return response()->json(['success'=> 'Su Clase ha sido solicitada. Por favor espera que validemos su información',
                                         'clase' => $clase], 200);
@@ -267,44 +248,23 @@ class ClasesController extends Controller
                     if ($clase->user_id_pro != null && $clase->user_id != null)
                     {
                         //enviar notificacion al profesor o alumno
-                        $errorNotif = 'OK';
-                        $titulo = 'Clase Cancelada';
-                        $texto = 'La Clase '.$clase->id.' ha sido cancelada por el ';
                         $correoAdmin = '';
-                        try 
+                        $notificacion['titulo'] = 'Clase Cancelada';
+                        $notificacion['texto'] = 'La Clase '.$clase->id.' ha sido cancelada por el ';
+                        $notificacion['estado'] = 'NO';
+                        if ($request['user_id'] == $clase->user_id_pro)
                         {
-                            if ($request['user_id'] == $clase->user_id_pro)
-                            {
-                                $userNotif = User::where('id', $clase->user_id)->first();
-                                $correoAdmin = $texto.'Profesor '.$userNotif->name.' a las '.$dateTime;
-                                $texto = $texto.'Profesor, '.$dateTime;
-                            }
-                            else
-                            {
-                                $userNotif = User::where('id', $clase->user_id_pro)->first();
-                                $texto = $texto.'Alumno, '.$dateTime;
-                            }
-                            if ($userNotif != null && $userNotif->token != null)
-                            {
-                                $notificacionEnviar['to'] = $userNotif->token;
-                                $notificacionEnviar['title'] = $titulo;
-                                $notificacionEnviar['body'] = $texto;
-                                $notificacionEnviar['priority'] = 'normal';
-                                $pushClass = new NotificacionesPushFcm();
-                                $pushClass->enviarNotificacion($notificacionEnviar);
-                            }
-                            else
-                                $errorNotif = 'No se pudo encontrar el Token del Usuario a notificar';
+                            $userNotif = User::where('id', $clase->user_id)->first();
+                            $correoAdmin = $notificacion['texto'].'Profesor '.$userNotif->name.' a las '.$dateTime;
+                            $notificacion['texto'] = $notificacion['texto'].'Profesor, '.$dateTime;
                         }
-                        catch (Exception $e) 
+                        else
                         {
-                            $errorNotif = $e->getMessage();
+                            $userNotif = User::where('id', $clase->user_id_pro)->first();
+                            $notificacion['texto'] = $notificacion['texto'].'Alumno, '.$dateTime;
                         }
-                        $notifBD = Notificacione::create([
-                            'user_id' => $request['user_id'] == $clase->user_id_pro ? $clase->user_id : $clase->user_id_pro,
-                            'notificacion' => $titulo.'|'.$texto,
-                            'estado' => $errorNotif
-                            ]);
+                        $pushClass = new NotificacionesPushFcm();
+                        $pushClass->enviarNotificacion($notificacion, $userNotif);
                     }
 
                     $penHoras = 0;
@@ -539,36 +499,15 @@ class ClasesController extends Controller
                 else
                 {
                     //enviar notificacion al profesor
-                    $errorNotif = 'OK';
                     $dateTime = date("Y-m-d H:i:s");
-                    $titulo = 'Clase Confirmada';
-                    $texto = 'Clase '.$clase->id.' confirmada en Calle: '.$request['calle']
-                            .', Referencia: '.$request['referencia'].', Preguntar: '.$request['quien_preguntar']
-                            .', '.$dateTime;
-                    try 
-                    {
-                        $userNotif = User::where('id', $clase->user_id_pro)->first();
-                        if ($userNotif != null && $userNotif->token != null)
-                        {
-                            $notificacionEnviar['to'] = $userNotif->token;
-                            $notificacionEnviar['title'] = $titulo;
-                            $notificacionEnviar['body'] = $texto;
-                            $notificacionEnviar['priority'] = 'normal';
-                            $pushClass = new NotificacionesPushFcm();
-                            $pushClass->enviarNotificacion($notificacionEnviar);
-                        }
-                        else
-                            $errorNotif = 'No se pudo encontrar el Token del Usuario a notificar';
-                    }
-                    catch (Exception $e) 
-                    {
-                        $errorNotif = $e->getMessage();
-                    }
-                    $notifBD = Notificacione::create([
-                        'user_id' => $clase->user_id_pro,
-                        'notificacion' => $titulo.'|'.$texto,
-                        'estado' => $errorNotif
-                        ]);
+                    $notificacion['titulo'] = 'Clase Confirmada';
+                    $notificacion['texto'] = 'Clase '.$clase->id.' confirmada en Calle: '.$request['calle']
+                        .', Referencia: '.$request['referencia'].', Preguntar: '.$request['quien_preguntar']
+                        .', '.$dateTime;
+                    $notificacion['estado'] = 'NO';
+                    $userNotif = User::where('id', $clase->user_id_pro)->first();
+                    $pushClass = new NotificacionesPushFcm();
+                    $pushClass->enviarNotificacion($notificacion, $userNotif);
 
                     return response()->json(['success' => 'Clase confirmada exitosamente'], 200);
                 }  

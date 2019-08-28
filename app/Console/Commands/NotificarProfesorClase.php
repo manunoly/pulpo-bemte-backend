@@ -5,8 +5,8 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Console\Command;
 use App\User;
 use App\Clase;
-use App\AlumnoPago;
-use App\Mail\NotificacionTareas;
+use App\Profesore;
+use App\NotificacionesPushFcm;
 
 class NotificarProfesorClase extends Command
 {
@@ -42,23 +42,35 @@ class NotificarProfesorClase extends Command
     public function handle()
     {
         $newDate = date("Y-m-d H:i:s", strtotime(date("d/m/y H:i:s"). '-15 minutes'));
-        $clases = Clase::where('estado','Solicitado')->where('updated_at','<=', $newDate)->get();
+        $clases = Clase::where('estado','Solicitado')->where('activa', true)
+                ->where('seleccion_profesor', true)->where('updated_at','<=', $newDate)->get();
+        $notificacion['titulo'] = 'Solicitud de Clase';
+        $dateTime = date("Y-m-d H:i:s");
+        $notificacion['estado'] = 'NO';
+        $pushClass = new NotificacionesPushFcm();
         foreach($clases as $item)
         {
-            $profesores = Clase::join('profesor_materia', 'profesor_materia.materia', '=', 'clases.materia')
-                                ->join('sedes', 'sedes.nombre', '=', 'clases.ubicacion')
-                                ->join('profesores', function ($join) {
-                                    $join->on('profesores.user_id', '=', 'profesor_materia.user_id');
-                                        $join->on('sedes.ciudad', '=', 'profesores.ciudad');})
-                                ->join('users', 'users.id', '=', 'profesores.user_id')
-                                ->where('profesores.activo', true)
-                                ->where('profesores.clases', true)
-                                ->where('profesores.disponible', true)
-                                ->where('clases.id', $item->id)
-                                ->select('profesores.nombres', 'profesores.apellidos', 'profesores.correo', 
-                                            'users.token', 'users.sistema', 'users.id')
-                                ->get();
-            //lanzar notificaciones
+            $actClase['seleccion_profesor'] = false;
+            Clase::where('id', $item->id )->update( $actClase );
+            $profesores = Profesore::join('profesor_materia', 'profesor_materia.user_id', '=', 'profesores.user_id')
+                    ->join('users', 'users.id', '=', 'profesores.user_id')
+                    ->where('profesores.activo', true)
+                    ->where('profesores.clases', true)
+                    ->where('profesores.disponible', true)
+                    //->where('profesores.ciudad', $sede)
+                    ->where('profesor_materia.activa', true)
+                    ->where('profesor_materia.materia', $item->materia)
+                    ->select('users.email', 'users.token', 'users.sistema', 'users.id', 'users.name')
+                    ->get();
+
+            //lanzar notificaciones a los profesores
+            $user = User::where('id', '=', $item->user_id )->first();
+            $notificacion['texto'] = 'Ha sido solicitada la Clase '.$item->id.' de '.$item->materia
+                    .', para el '.$item->fecha.' a las '.$item->hora1
+                    .', en '.$item->ubicacion.' para '.$item->personas.' estudiantes con una duracion de '
+                    .$item->duracion.', por '.$user->name.', '.$dateTime;
+            foreach($profesores as $solicitar)
+                $pushClass->enviarNotificacion($notificacion, $solicitar);
         }
     }
 }

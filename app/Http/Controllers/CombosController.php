@@ -7,12 +7,12 @@ use App\Tarea;
 use App\Combo;
 use App\CombosHora;
 use App\Alumno;
+use App\User;
 use App\Profesore;
 use App\AlumnoCompra;
 use App\AlumnoBilletera;
 use Illuminate\Http\Request;
 use Validator;
-use App\Notificacione;
 use App\NotificacionesPushFcm;
 
 class CombosController extends Controller
@@ -123,7 +123,7 @@ class CombosController extends Controller
                                                 //->where('profesores.ciudad', $sede)
                                                 ->where('profesor_materia.activa', true)
                                                 ->where('profesor_materia.materia', $clase->materia)
-                                                ->select('profesores.correo', 'users.token', 'users.sistema', 'users.id')
+                                                ->select('users.email', 'users.token', 'users.sistema', 'users.id', 'users.name')
                                                 ->get();
                         if ($clase->seleccion_profesor)
                         {
@@ -138,58 +138,28 @@ class CombosController extends Controller
                             }
                         }
                         //lanzar notificaciones a los profesores
-                        $titulo = 'Solicitud de Clase';
+                        $notificacion['titulo'] = 'Solicitud de Clase';
                         $dateTime = date("Y-m-d H:i:s");
-                        $texto = 'Ha sido solicitada la Clase '.$clase->id.' de '.$clase->materia
-                                .', para el '.$clase->fecha.' a las '.$clase->hora1.' o a las '.$clase->hora2
-                                .', en '.$clase->ubicacion.' para '.$clase->personas.' estudiantes con una duracion de '
-                                .$clase->duracion.', por '.$usuario->nombres.' '.$usuario->apellidos
-                                .', '.$dateTime;
+                        $notificacion['texto'] = 'Ha sido solicitada la Clase '.$clase->id.' de '.$clase->materia
+                                    .', para el '.$clase->fecha.' a las '.$clase->hora1
+                                    .', en '.$clase->ubicacion.' para '.$clase->personas.' estudiantes con una duracion de '
+                                    .$clase->duracion.', por '.$usuario->nombres.' '.$usuario->apellidos
+                                    .', '.$dateTime;
+                        $notificacion['estado'] = 'NO';
+                        $pushClass = new NotificacionesPushFcm();
                         foreach($profesores as $solicitar)
-                        {
-                            $errorNotif = 'OK';
-                            try 
-                            {
-                                if ($solicitar != null && $solicitar->token != null)
-                                {
-                                    $notificacionEnviar['to'] = $solicitar->token;
-                                    $notificacionEnviar['title'] = $titulo;
-                                    $notificacionEnviar['body'] = $texto;
-                                    $notificacionEnviar['priority'] = 'normal';
-                                    $pushClass = new NotificacionesPushFcm();
-                                    $pushClass->enviarNotificacion($notificacionEnviar);
-                                }
-                                else
-                                    $errorNotif = 'No se pudo encontrar el Token del Usuario a notificar';
-                            }
-                            catch (Exception $e) 
-                            {
-                                $errorNotif = $e->getMessage();
-                            }
-                            $notifBD = Notificacione::create([
-                                'user_id' => $solicitar->id,
-                                'notificacion' => $titulo.'|'.$texto,
-                                'estado' => $errorNotif
-                                ]);
-                        }
+                            $pushClass->enviarNotificacion($notificacion, $solicitar);
                     }
-
                     return response()->json(['success' => 'Compra de Combo Solicitada'], 200);
                 }
                 else
-                {
                     return response()->json(['error' => 'Ocurrió un error al registrar solicitud!'], 401);
-                }
             }
             else
-            {
                 return response()->json(['error' => 'El Alumno no puede comprar un Combo'], 401); 
-            }
         }
         else
-        {
             return response()->json(['error' => 'No existe el Alumno'], 401);
-        }
     }
 
     public function horasAlumno()

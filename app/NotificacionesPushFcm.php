@@ -2,9 +2,13 @@
 
 namespace App;
 
+use Illuminate\Support\Facades\Mail;
+use App\Notificacion;
+use App\Notificacione;
+
 class NotificacionesPushFcm
 {
-    static public function enviarNotificacion($notification)
+    static public function enviar($notification)
     {
         $url = 'https://fcm.googleapis.com/fcm/send';
         $headers = [
@@ -51,5 +55,41 @@ class NotificacionesPushFcm
         curl_close($ch);
 
         //var_dump($result);
+    }
+
+    static public function enviarNotificacion($notificacion, $user)
+    {
+        $errorNotif = 'OK';
+        try 
+        {
+            if ($user != null && $user->token != null)
+            {
+                $notificacionEnviar['to'] = $user->token;
+                $notificacionEnviar['title'] = $notificacion['titulo'];
+                $notificacionEnviar['body'] = $notificacion['texto'];
+                $notificacionEnviar['priority'] = 'normal';
+                $this->enviar($notificacionEnviar);
+            }
+            else
+                $errorNotif = 'No se pudo encontrar el Token del Usuario a notificar';
+        }
+        catch (Exception $e) 
+        {
+            $errorNotif = $e->getMessage();
+        }
+        $notifBD = Notificacione::create([
+                                'user_id' => $user->id,
+                                'notificacion' => $notificacion['titulo'].'|'.$notificacion['texto'],
+                                'estado' => $errorNotif
+                                ]);
+        if ($notificacion['estado'] != 'NO')
+        {
+            try 
+            {
+                Mail::to($user->email)->send(new Notificacion(
+                        $user->name, $notificacion['texto'], '', $notificacion['estado'], env('EMPRESA')));
+            }
+            catch (Exception $e) { }
+        }
     }
 }

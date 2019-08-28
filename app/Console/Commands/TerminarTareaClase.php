@@ -41,7 +41,8 @@ class TerminarTareaClase extends Command
     { 
         $newDate = date("Y-m-d");
         $newTime = date("H:i:s");
-        $listado = Tarea::where('estado','Aceptado')->where('fecha_entrega','<=', $newDate)->get();
+        $listado = Tarea::where('estado','Aceptado')->where('fecha_entrega','<=', $newDate)
+                        ->where('activa', true)->get();
         $tareas = [];
         foreach($listado as $item)
         {
@@ -54,9 +55,11 @@ class TerminarTareaClase extends Command
         foreach($tareas as $item)
         {
             $dataTarea['estado'] = 'Terminado';
+            $dataTarea['activa'] = false;
             Tarea::where('id', $item->id )->update( $dataTarea );
         }
-        $listado = Clase::where('estado','Aceptado')->where('fecha','<=', $newDate)->get();
+        $listado = Clase::where('estado','Aceptado')->where('fecha','<=', $newDate)
+                            ->where('activa', true)->get();
         $clases = [];
         foreach($listado as $item)
         {
@@ -69,6 +72,7 @@ class TerminarTareaClase extends Command
         foreach($clases as $item)
         {
             $dataClase['estado'] = 'Terminado';
+            $dataClase['activa'] = false;
             Clase::where('id', $item->id )->update( $dataClase );
         }
     }

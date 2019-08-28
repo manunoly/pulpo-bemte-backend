@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\Mail;
 use Validator;
 use App\Mail\Notificacion;
 use App\Mail\NotificacionClases;
-use App\Notificacione;
 use App\NotificacionesPushFcm;
 
 class ProfesorController extends Controller
@@ -386,39 +385,12 @@ class ProfesorController extends Controller
                         {
                             //enviar notificacion al profesor o alumno
                             $dateTime = date("Y-m-d H:i:s");
-                            $errorNotif = 'OK';
-                            $titulo = 'Clase Confirmada';
-                            $texto = 'La Clase '.$clase->id.' ha sido confirmada por el profesor '
-                                        .$profe->nombres.' '.$profe->apellidos.', '.$dateTime;
-                            try 
-                            {
-                                if ($userAlumno != null && $userAlumno->token != null)
-                                {
-                                    $notificacionEnviar['to'] = $userAlumno->token;
-                                    $notificacionEnviar['title'] = $titulo;
-                                    $notificacionEnviar['body'] = $texto;
-                                    $notificacionEnviar['priority'] = 'normal';
-                                    $pushClass = new NotificacionesPushFcm();
-                                    $pushClass->enviarNotificacion($notificacionEnviar);
-                                }
-                                else
-                                    $errorNotif = 'No se pudo encontrar el Token del Usuario a notificar';
-                            }
-                            catch (Exception $e) 
-                            {
-                                $errorNotif = $e->getMessage();
-                            }
-                            $notifBD = Notificacione::create([
-                                'user_id' => $clase->user_id,
-                                'notificacion' => $titulo.'|'.$texto,
-                                'estado' => $errorNotif
-                                ]);
-                            try 
-                            {
-                                Mail::to($userAlumno->email)->send(new Notificacion(
-                                        $userAlumno->name, $texto, '', $estado, env('EMPRESA')));
-                            }
-                            catch (Exception $e) { }
+                            $notificacion['titulo'] = 'Clase Confirmada';
+                            $notificacion['texto'] = 'La Clase '.$clase->id.' ha sido confirmada por el profesor '
+                                    .$profe->nombres.' '.$profe->apellidos.', '.$dateTime;
+                            $notificacion['estado'] = $estado;
+                            $pushClass = new NotificacionesPushFcm();
+                            $pushClass->enviarNotificacion($notificacion, $userAlumno);
 
                             return response()->json(['success' => 'Clase Solicitada'], 200);
                         }
