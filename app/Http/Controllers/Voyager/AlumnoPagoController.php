@@ -464,7 +464,7 @@ class AlumnoPagoController extends Controller
                         'user_id' => $clase->user_id_pro,
                         'clase_id' => $clase->id,
                         'tarea_id' => 0,
-                        'valor' => $duracion * $profeClase->valor_clase,
+                        'valor' => ($clase->duracion * $profeClase->valor_clase) + ($clase->personas - 1),
                         'horas' => $clase->duracion,
                         'estado' => 'Solicitado'
                         ]);

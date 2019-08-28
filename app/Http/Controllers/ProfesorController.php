@@ -362,8 +362,8 @@ class ProfesorController extends Controller
                                         'user_id' => $profe->user_id,
                                         'tarea_id' => 0,
                                         'clase_id' => $clase->id,
-                                        'valor' => $duracion * $profe->valor_tarea,
-                                        'horas' => $duracion,
+                                        'valor' => ($clase->duracion * $profe->valor_clase) + ($clase->personas - 1),
+                                        'horas' => $clase->duracion,
                                         'estado' => 'Solicitado'
                                         ]);
                             if (!$pagoProf->id)
