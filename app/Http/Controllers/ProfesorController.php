@@ -367,7 +367,7 @@ class ProfesorController extends Controller
                                         ]);
                             if (!$pagoProf->id)
                                 return response()->json(['error' => 'No se pudo crear pago al Profesor'], 401);                            
-                            $userProf = User::where('id', $clase->user_id_pro)->first();
+                            $userProf = User::where('id', $profe->user_id)->first();
                             try 
                             {
                                 Mail::to($userAlumno->email)->send(new NotificacionClases($clase, $userAlumno->name, $userProf->name, 

@@ -3,7 +3,7 @@
 namespace App;
 
 use Illuminate\Support\Facades\Mail;
-use App\Notificacion;
+use App\Mail\Notificacion;
 use App\Notificacione;
 
 class NotificacionesPushFcm
