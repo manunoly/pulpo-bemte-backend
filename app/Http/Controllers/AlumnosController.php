@@ -328,4 +328,25 @@ class AlumnosController extends Controller
         }
         return response()->json(['success' => 'Solicitud ser Profesor realizada'], 200);
     }
+
+    public function alumnoHeader()
+    {
+        $search = \Request::get('user_id');
+        $alumno = Alumno::where('user_id', $search)->first();
+        if ($alumno != null)
+        {
+            $clases = Clase::where('user_id', $search)
+                        ->select('clases.id', 'clases.materia', 'clases.personas', 
+                        'clases.duracion', 'clases.fecha')->get();
+            $tareas = Tarea::where('user_id', $search)
+                        ->select('tareas.id', 'tareas.materia', 'tareas.tiempo_estimado', 'tareas.fecha_entrega')->get();
+            $respuesta['clases'] = $clases->count();
+            $respuesta['tareas'] = $tareas->count();
+            $respuesta['horas'] = $alumno->billetera;
+            $respuesta['ranking'] = $alumno->calificacion == null ? 5 : $alumno->calificacion;
+            return response()->json($respuesta, 200);
+        }
+        else
+            return response()->json(['error' => 'Alumno Incorrecto'], 401);
+    }
 }

@@ -67,6 +67,7 @@ Route::get('devuelve-tarea', 'TareasController@devuelveTarea');
 Route::post('calificar-alumno', 'AlumnosController@calificarAlumno');
 Route::post('pagar-con-combo', 'AlumnosController@pagarConCombo');
 Route::post('aplicar-profesor', 'AlumnosController@aplicarProfesor');
+Route::get('alumno', 'AlumnosController@alumnoHeader');
 
 
 Route::post('solicitar-clase', 'ClasesController@solicitarClase');

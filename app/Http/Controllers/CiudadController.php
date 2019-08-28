@@ -22,7 +22,12 @@ class CiudadController extends Controller
 
     public function listaCiudadPais()
     {
-        $ciudades = Ciudad::where('activa', '1' )->select('ciudad', 'pais', 'codigo')->get();
+        $search = \Request::get('pais');
+        if ($search == null)
+            $ciudades = Ciudad::where('activa', '1' )->select('ciudad', 'pais', 'codigo')->get();
+        else
+            $ciudades = Ciudad::where('activa', '1' )->where('pais', $search)
+                        ->select('ciudad', 'pais', 'codigo')->get();
         return response()->json($ciudades, 200);
     }
 
