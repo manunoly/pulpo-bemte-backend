@@ -104,12 +104,12 @@ class TareasController extends Controller
                 foreach($profesores as $solicitar)
                     $pushClass->enviarNotificacion($notificacion, $solicitar);
 
-                return response()->json(['success'=> 'Su tarea ha sido solicitada. Por favor espera que validemos su información',
+                return response()->json(['success'=> 'Tarea solicitada exitosamente',
                                         'tarea' => $tarea], 200);
             }
             else
             {
-                return response()->json(['error' => 'Lo sentimos, ocurrió un error al registrar!'], 401);
+                return response()->json(['error' => 'Ocurrió un error al registrar!'], 401);
             }
         } 
         else 
@@ -179,11 +179,11 @@ class TareasController extends Controller
         if ($tarea != null)
         {
             if ($request['user_id'] != $tarea->user_id_pro && $request['user_id'] != $tarea->user_id)
-                return response()->json(['error' => 'Usuario especificado no coincide con los datos de la Tarea'], 401);
+                return response()->json(['error' => 'Usuario no coincide con datos de la Tarea'], 401);
 
             if ($tarea->estado == 'Sin_Profesor' || $tarea->estado == 'Pago_Rechazado' ||
                 $tarea->estado == 'Sin_Pago' || $tarea->estado == 'Terminado' || $tarea->estado == 'Calificado')
-                return response()->json(['error' => 'La Tarea ya no permite modificación'], 401);
+                return response()->json(['error' => 'La Tarea no permite modificación'], 401);
             
             if ($request['cancelar'] == 1)
             {
@@ -193,7 +193,7 @@ class TareasController extends Controller
                 $actualizado = Tarea::where('id', $request['tarea_id'] )->update( $data );
                 if(!$actualizado )
                 {
-                    return response()->json(['error' => 'Ocurrió un error al terminar la tarea.'], 401);
+                    return response()->json(['error' => 'Ocurrió un error al terminar la tarea'], 401);
                 }
                 else
                 {
@@ -224,7 +224,7 @@ class TareasController extends Controller
                                 $pago['estado'] = 'Cancelado';
                                 $actualizado = Pago::where('user_id', $tarea->user_id_pro)->where('tarea_id', $tarea->id)->update( $pago );
                                 if(!$actualizado)
-                                    return response()->json(['error' => 'Ocurrió un error al Cancelar Pago al Profesor de la Tarea.'], 401);
+                                    return response()->json(['error' => 'Ocurrió un error al Cancelar Pago al Profesor'], 401);
                             }
                         }
                         else
@@ -248,7 +248,7 @@ class TareasController extends Controller
                             }
                             $actCombo = Alumno::where('user_id', $bill->user_id )->update( $dataCombo );
                             if(!$actCombo)
-                                return response()->json(['error' => 'Ocurrió un error al Actualizar Billetera del Alumno.'], 401);
+                                return response()->json(['error' => 'Ocurrió un error al Actualizar Billetera del Alumno'], 401);
                         }
                     }
                     $correoAdmin = '';

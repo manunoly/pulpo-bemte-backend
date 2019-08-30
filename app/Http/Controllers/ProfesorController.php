@@ -46,12 +46,12 @@ class ProfesorController extends Controller
             }
             else
             {
-                return response()->json(['error' => 'Ocurrió un error al actualizar.'], 401);
+                return response()->json(['error' => 'Ocurrió un error al actualizar'], 401);
             }
         }
         else
         {
-            return response()->json(['error' => 'No se encontró el usuario'], 401);
+            return response()->json(['error' => 'No se encontró el Usuario'], 401);
         }
     }
     
@@ -82,12 +82,12 @@ class ProfesorController extends Controller
             }
             else
             {
-                return response()->json(['error' => 'Ocurrió un error al actualizar.'], 401);
+                return response()->json(['error' => 'Ocurrió un error al actualizar'], 401);
             }
         }
         else
         {
-            return response()->json(['error' => 'No se encontró el usuario'], 401);
+            return response()->json(['error' => 'No se encontró el Usuario'], 401);
         }
     }
     
@@ -118,12 +118,12 @@ class ProfesorController extends Controller
             }
             else
             {
-                return response()->json(['error' => 'Ocurrió un error al actualizar.'], 401);
+                return response()->json(['error' => 'Ocurrió un error al actualizar'], 401);
             }
         }
         else
         {
-            return response()->json(['error' => 'No se encontró el usuario'], 401);
+            return response()->json(['error' => 'No se encontró el Usuario'], 401);
         }
     }
     
@@ -141,21 +141,21 @@ class ProfesorController extends Controller
         
         if (!is_numeric($request['calificacion']) || $request['calificacion'] > 5 || $request['calificacion'] < 0)
         {
-            return response()->json(['error' => 'La calificación debe estar en el rango de 0 a 5'], 401);
+            return response()->json(['error' => 'La calificación debe ser de 0 a 5'], 401);
         }
 
         $id_tarea = isset($request['tarea_id']) ? $request['tarea_id'] : 0;
         $id_clase = isset($request['clase_id']) ? $request['clase_id'] : 0;
         if ($id_tarea == 0 && $id_clase == 0)
         {
-            return response()->json(['error' => 'Debe especificar la tarea o clase que se califica'], 401);
+            return response()->json(['error' => 'Debe especificar Tarea o Clase a calificar'], 401);
         }
 
         $id_usuario = $request['user_id'];
         $id_calificado = $request['user_id_calif'];
         if ($id_usuario == $id_calificado)
         {
-            return response()->json(['error' => 'No se puede calificar al mismo usuario'], 401);
+            return response()->json(['error' => 'No puede calificar al mismo Usuario'], 401);
         }
         $coment = isset($request['comment']) ? $request['comment'] : NULL;
         if ($id_tarea != 0)
@@ -174,12 +174,12 @@ class ProfesorController extends Controller
                 }
                 else
                 {
-                    return response()->json(['error' => 'Los usuarios no coinciden con la tarea especificada'], 401);
+                    return response()->json(['error' => 'Usuarios no coinciden con la Tarea'], 401);
                 }
             }
             else
             {
-                return response()->json(['error' => 'No se encontró la tarea a calificar'], 401);
+                return response()->json(['error' => 'No se encontró Tarea a calificar'], 401);
             }
         }
         if ($id_clase != 0)
@@ -198,12 +198,12 @@ class ProfesorController extends Controller
                 }
                 else
                 {
-                    return response()->json(['error' => 'Los usuarios no coinciden con la Clase especificada'], 401);
+                    return response()->json(['error' => 'Usuarios no coinciden con la Clase'], 401);
                 }
             }
             else
             {
-                return response()->json(['error' => 'No se encontró la Clase a calificar'], 401);
+                return response()->json(['error' => 'No se encontró Clase a calificar'], 401);
             }
         }
         $tareas_prof = Tarea::where('user_id_pro', $id_calificado)->where('estado', 'Terminado')
@@ -235,11 +235,11 @@ class ProfesorController extends Controller
         
         if (!is_numeric($request['tiempo']) || $request['tiempo'] <= 0)
         {
-            return response()->json(['error' => 'Especifique un tiempo para la Tarea'], 401);
+            return response()->json(['error' => 'Especifique el tiempo de la Tarea'], 401);
         }
         if (!is_numeric($request['inversion']) || $request['inversion'] <= 0)
         {
-            return response()->json(['error' => 'Especifique una inversión para la Tarea'], 401);
+            return response()->json(['error' => 'Especifique la inversión de la Tarea'], 401);
         }
 
         $tarea = Tarea::where('id', $request['tarea_id'])->first();
@@ -290,13 +290,13 @@ class ProfesorController extends Controller
                             }
                             else
                             {
-                                return response()->json(['error' => 'Solicitud para la Tarea no se pudo actualizar'], 401);
+                                return response()->json(['error' => 'La Solicitud no se pudo actualizar'], 401);
                             }
                         }
                     }
                     else
                     {
-                        return response()->json(['error' => 'El profesor no se encuentra disponible para la tarea'], 401);
+                        return response()->json(['error' => 'Profesor no disponible para la tarea'], 401);
                     }
                 }
                 else
@@ -395,10 +395,10 @@ class ProfesorController extends Controller
                             return response()->json(['success' => 'Clase Solicitada'], 200);
                         }
                         else
-                            return response()->json(['error' => 'Solicitud para la Clase no se pudo actualizar'], 401);
+                            return response()->json(['error' => 'La Solicitud no se pudo actualizar'], 401);
                     }
                     else
-                        return response()->json(['error' => 'El profesor no se encuentra disponible para la clase'], 401);
+                        return response()->json(['error' => 'Profesor no disponible para la clase'], 401);
                 }
                 else
                     return response()->json(['error' => 'No se encontró al Profesor para aplicar'], 401);
@@ -436,12 +436,12 @@ class ProfesorController extends Controller
             }
             else
             {
-                return response()->json(['error' => 'Ocurrió un error al actualizar.'], 401);
+                return response()->json(['error' => 'Ocurrió un error al actualizar'], 401);
             }
         }
         else
         {
-            return response()->json(['error' => 'No se encontró el usuario'], 401);
+            return response()->json(['error' => 'No se encontró el Usuario'], 401);
         }
     }
 

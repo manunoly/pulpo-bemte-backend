@@ -75,17 +75,17 @@ class CombosController extends Controller
         $tarea = Tarea::where('id', $request['tarea_id'])->first();
         $clase = Clase::where('id', $request['clase_id'])->first();
         if ($tarea != null && $clase != null)
-            return response()->json(['error' => 'Especifique una sola opción, Clase o Tarea'], 401);
+            return response()->json(['error' => 'Especifique una opción, Clase o Tarea'], 401);
         else if ($tarea == null && $clase == null)
-            return response()->json(['error' => 'Debe especificar una opción, Clase o Tarea'], 401);
+            return response()->json(['error' => 'Especifique una opción, Clase o Tarea'], 401);
         if ($tarea != null && $tarea->estado != 'Sin_Horas')
-            return response()->json(['error' => 'El estado de la Tarea ya no permite comprar horas.'], 401);
+            return response()->json(['error' => 'El estado de la Tarea no permite comprar horas'], 401);
         if ($tarea != null && $tarea->user_id != $request['user_id'])
-            return response()->json(['error' => 'El usuario no tiene relación con la Clase.'], 401);
+            return response()->json(['error' => 'El usuario no tiene relación con la Clase'], 401);
         if ($clase != null && $clase->estado != 'Sin_Horas')
-            return response()->json(['error' => 'El estado de la Clase ya no permite comprar horas.'], 401);
+            return response()->json(['error' => 'El estado de la Clase no permite comprar horas'], 401);
         if ($clase != null && $clase->user_id != $request['user_id'])
-            return response()->json(['error' => 'El usuario no tiene relación con la Clase.'], 401);
+            return response()->json(['error' => 'El usuario no tiene relación con la Clase'], 401);
         $usuario = Alumno::where('user_id', $request['user_id'])->first();
         if ($usuario != null)
         {
@@ -97,7 +97,7 @@ class CombosController extends Controller
                     if ($duracion < 2)
                         $duracion = 2;
                     if ($usuario->billetera + $request['horas'] < $duracion)
-                        return response()->json(['error' => 'Horas insuficientes para la clase. Mínimo: '.($duracion-$usuario->billetera )], 401);
+                        return response()->json(['error' => 'Horas insuficientes. Mínimo: '.($duracion-$usuario->billetera )], 401);
                 }
                 $compra = AlumnoCompra::create([
                     'user_id' => $request['user_id'],

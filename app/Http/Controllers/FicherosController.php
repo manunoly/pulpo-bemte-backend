@@ -35,7 +35,7 @@ class FicherosController extends Controller
         $usuario = User::where('id', $request['user_id'])->first();
         if ($usuario == NULL)
         {
-            return response()->json(['error' => 'No se encontró el usuario.'], 401);
+            return response()->json(['error' => 'No se encontró el usuario'], 401);
         }
         if ($usuario->activo && ($usuario->tipo == 'Alumno' || $usuario->tipo == 'Profesor'))
         {
@@ -53,7 +53,7 @@ class FicherosController extends Controller
         }
         else
         {
-            return response()->json(['error' => 'El Usuario no está autorizado a subir un Archivo'], 401);
+            return response()->json(['error' => 'Usuario no autorizado a subir un Archivo'], 401);
         }
     }
     
@@ -78,7 +78,7 @@ class FicherosController extends Controller
         $clase = Clase::where('id', $request['clase_id'])->first();
         if ($tarea == null && $clase == null)
         {
-            return response()->json(['error' => 'No existe la tarea o clase para el ejercicio'], 401);
+            return response()->json(['error' => 'No existe Tarea o Clase para el ejercicio'], 401);
         }
         if ($tarea != null)
         {
@@ -143,7 +143,7 @@ class FicherosController extends Controller
         }
         else
         {
-            return response()->json(['error' => 'No se encontró al Usuario para subir el Ejercicio'], 401);
+            return response()->json(['error' => 'No se encontró Usuario para subir Ejercicio'], 401);
         }
     }
     
@@ -162,7 +162,7 @@ class FicherosController extends Controller
         }
         if (($request['tarea_id'] == 0) && ($request['clase_id'] == 0) && ($request['combo_id'] == '0'))
         {
-            return response()->json(['error' => 'No se ha especificada una opción'], 401);
+            return response()->json(['error' => 'Especifique una opción'], 401);
         }
         $drive = isset($request['drive']) ? trim($request['drive']) : NULL;
         $archivo = isset($request['archivo']) ? 'uploads'.'\\'.$request['user_id'].'\\'.trim($request['archivo']) : NULL;
@@ -175,7 +175,7 @@ class FicherosController extends Controller
         {
             if (($request['clase_id'] > 0) || ($request['combo_id'] != '0'))
             {
-                return response()->json(['error' => 'Especifique una sola opción para la tarea'], 401);
+                return response()->json(['error' => 'Especifique una opción para la tarea'], 401);
             }
             $tarea = Tarea::where('id', $request['tarea_id'])->first();
             if ($tarea == null)
@@ -192,7 +192,7 @@ class FicherosController extends Controller
         {
             if ($request['tarea_id'] > 0 || ($request['combo_id'] != '0'))
             {
-                return response()->json(['error' => 'Especifique una sola opción para la clase'], 401);
+                return response()->json(['error' => 'Especifique una opción para la clase'], 401);
             }
             $clase = Clase::where('id', $request['clase_id'])->first();
             if ($clase == null)
@@ -209,7 +209,7 @@ class FicherosController extends Controller
         {
             if ($request['tarea_id'] > 0 || $request['clase_id'] > 0)
             {
-                return response()->json(['error' => 'Especifique una sola opción para el Combo'], 401);
+                return response()->json(['error' => 'Especifique una opción para el Combo'], 401);
             }
             if (is_numeric($request['combo_id']))
             {
@@ -267,7 +267,7 @@ class FicherosController extends Controller
                     $actualizado = AlumnoPago::where('id', $solicitud->id )->update( $data );
                     if(!$actualizado )
                     {
-                        return response()->json(['error' => 'Ocurrió un error al actualizar solicitud.'], 401);
+                        return response()->json(['error' => 'Ocurrió un error al actualizar solicitud'], 401);
                     }
                 }
                 if ($clase != null)
@@ -276,7 +276,7 @@ class FicherosController extends Controller
                     $actualizado = Clase::where('id', $clase->id )->update( $dataClase );
                     if(!$actualizado )
                     {
-                        return response()->json(['error' => 'Ocurrió un error al actualizar solicitud.'], 401);
+                        return response()->json(['error' => 'Ocurrió un error al actualizar solicitud'], 401);
                     }
                 }
                 if ($tarea != null)
@@ -285,7 +285,7 @@ class FicherosController extends Controller
                     $actualizado = Tarea::where('id', $tarea->id )->update( $dataTarea );
                     if(!$actualizado )
                     {
-                        return response()->json(['error' => 'Ocurrió un error al actualizar solicitud.'], 401);
+                        return response()->json(['error' => 'Ocurrió un error al actualizar solicitud'], 401);
                     }
                 }
                 return response()->json(['success' => 'Transferencia solicitada exitosamente'], 200);
@@ -297,7 +297,7 @@ class FicherosController extends Controller
         }
         else
         {
-            return response()->json(['error' => 'No se encontró al Alumno para subir Transferencia'], 401);
+            return response()->json(['error' => 'No se encontró Alumno para subir Transferencia'], 401);
         }
     }
 }

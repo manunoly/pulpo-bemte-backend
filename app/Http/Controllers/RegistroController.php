@@ -42,7 +42,7 @@ class RegistroController extends Controller
                 return response()->json(['success' => 'Cuenta desactivada correctamente' ], 200);
             }
         }
-        return response()->json(['error' => 'Ocurrió un error al desactivar su cuenta.'], 401);
+        return response()->json(['error' => 'Ocurrió un error al desactivar su cuenta'], 401);
     }
 
     public function actualizarCuenta(Request $request)
@@ -65,12 +65,12 @@ class RegistroController extends Controller
         }
         if (($request['tipo'] != 'Alumno') && ($request['tipo'] != 'Profesor'))
         {
-            return response()->json(['error' => 'El tipo de usuario enviado no es válido'], 401);
+            return response()->json(['error' => 'Tipo de Usuario inválido'], 401);
         }
         $ciudad = Ciudad::where('ciudad', '=', $request['ciudad'] )->first();
         if (!$ciudad)
         {
-            return response()->json(['error' => 'La ciudad enviada no es válida'], 401);
+            return response()->json(['error' => 'Ciudad inválida'], 401);
         }
         $cedula = isset($request['cedula']) ? trim($request['cedula']) : NULL;
         if (strlen($cedula) != 10 && strlen($cedula) != 0)
@@ -87,7 +87,7 @@ class RegistroController extends Controller
                 $emailVerified = User::where('email', '=', $request['email'] )->first();
                 if ($emailVerified !== null) 
                 {
-                    return response()->json([ 'exist' => 'El email ya pertenece a otro usuario!'], 401);
+                    return response()->json([ 'exist' => 'El email pertenece a otro usuario!'], 401);
                 }
                 $data['email'] = $request['email'];
             }
@@ -129,7 +129,7 @@ class RegistroController extends Controller
                     }
                     else
                     {
-                        return response()->json(['error' => 'Ocurrió un error al actualizar.'], 401);
+                        return response()->json(['error' => 'Ocurrió un error al actualizar'], 401);
                     }
                 }
                 else
@@ -167,18 +167,18 @@ class RegistroController extends Controller
                     }
                     else
                     {
-                        return response()->json(['error' => 'Ocurrió un error al actualizar.'], 401);
+                        return response()->json(['error' => 'Ocurrió un error al actualizar'], 401);
                     }
                 }
             }
             else
             {
-                return response()->json(['error' => 'Ocurrió un error al actualizar.'], 401);
+                return response()->json(['error' => 'Ocurrió un error al actualizar'], 401);
             }
         } 
         else
         {
-            return response()->json(['error' => 'No se encontró el usuario.'], 401);
+            return response()->json(['error' => 'No se encontró el Usuario'], 401);
         }
     }
 
@@ -199,12 +199,12 @@ class RegistroController extends Controller
         {
             if($user['activo'] == false)
             {
-                return response()->json(['error' => '¡Su cuenta no está activa! Por favor comunicarse con atención al cliente.'], 401);
+                return response()->json(['error' => '¡Cuenta inactiva! Por favor comunicarse con atención al cliente'], 401);
             }
         }
         else
         {
-            return response()->json(['error' => 'Aún no se ha registrado.'], 401);
+            return response()->json(['error' => 'Aún no se ha registrado!'], 401);
         }
 
         if (Hash::check($request['password'], $user['password'])) 
@@ -270,11 +270,11 @@ class RegistroController extends Controller
                 $message->to( $this->actual_email );
                 $message->subject('Código de verificación');
             });
-            return response()->json([ 'success' => 'Correo enviado correctamente, revise su bandeja de entrada'], 200);
+            return response()->json([ 'success' => 'Correo enviado correctamente'], 200);
         }
         else
         {
-            return response()->json([ 'error' => 'El correo no se encuentra registrado'], 401);
+            return response()->json([ 'error' => 'Correo no registrado'], 401);
         }
     }
 
@@ -297,7 +297,7 @@ class RegistroController extends Controller
             $act = User::where('id', $email->id )->update($data);
             if(!$act )
             {
-                return response()->json(['error' => 'Ocurrió un error al cambiar contraseña.'], 401);
+                return response()->json(['error' => 'Ocurrió un error al cambiar contraseña'], 401);
             }
             try 
             {
@@ -307,14 +307,14 @@ class RegistroController extends Controller
             catch (Exception $e) 
             {
                 return response()->json(
-                            ['error' => 'No se ha podido enviar el correo con la nueva contraseña',
+                            ['error' => 'No se ha podido enviar el correo',
                             'detalle' => $e->getMessage()], 401);
             }
-            return response()->json([ 'success' => 'Correo enviado correctamente, revise su bandeja de entrada'], 200);
+            return response()->json([ 'success' => 'Correo enviado correctamente'], 200);
         }
         else
         {
-            return response()->json([ 'error' => 'El correo no se encuentra registrado'], 401);
+            return response()->json([ 'error' => 'Correo no registrado'], 401);
         }
     }
 
@@ -355,7 +355,7 @@ class RegistroController extends Controller
         }
         else
         {
-            return response()->json([ 'exist' => 'El correo no se encuentra registrado'], 401);
+            return response()->json([ 'exist' => 'Correo no registrado'], 401);
         }        
     }
 
@@ -387,13 +387,13 @@ class RegistroController extends Controller
             }
             if (($request['tipo'] != 'Alumno') && ($request['tipo'] != 'Profesor'))
             {
-                return response()->json(['error' => 'El tipo de usuario enviado no es válido'], 401);
+                return response()->json(['error' => 'Tipo de usuario inválido'], 401);
             }
             if ($request['tipo'] == 'Profesor')
             {
                 if (!isset($request['clases']))
                 {
-                    return response()->json(['error' => 'Indique la Opción Clases'], 401);
+                    return response()->json(['error' => 'Indique opción Clases'], 401);
                 }   
                 if ($request['clases'] != "0" && $request['clases'] != "1")
                 {
@@ -401,7 +401,7 @@ class RegistroController extends Controller
                 }
                 if (!isset($request['tareas']))
                 {
-                    return response()->json(['error' => 'Indique la Opción Tareas'], 401);
+                    return response()->json(['error' => 'Indique opción Tareas'], 401);
                 }   
                 if ($request['tareas'] != "0" && $request['tareas'] != "1")
                 {
@@ -411,7 +411,7 @@ class RegistroController extends Controller
             $ciudad = Ciudad::where('ciudad', '=', $request['ciudad'] )->first();
             if (!$ciudad)
             {
-                return response()->json(['error' => 'La ciudad enviada no es válida'], 401);
+                return response()->json(['error' => 'Ciudad inválida'], 401);
             }
             $cedula = isset($request['cedula']) ? trim($request['cedula']) : NULL;
             if (strlen($cedula) != 10 && strlen($cedula) != 0)
@@ -456,7 +456,7 @@ class RegistroController extends Controller
                     ]);
                     if($alumno)
                     {
-                        return response()->json(['success'=> 'Su cuenta ha sido creada correctamente'], 200);
+                        return response()->json(['success'=> 'Cuenta creada correctamente'], 200);
                     }
                 }
                 else
@@ -490,13 +490,13 @@ class RegistroController extends Controller
                     ]);
                     if($profesor)
                     {
-                        return response()->json(['success'=> 'Su cuenta ha sido creada correctamente. Por favor espera que validemos su información'], 200);
+                        return response()->json(['success'=> 'Cuenta creada correctamente'], 200);
                     }
                 }
             }
             else
             {
-                return response()->json(['error' => 'Lo sentimos, ocurrió un error al registrar!'], 401);
+                return response()->json(['error' => 'Ocurrió un error al registrar!'], 401);
             }
 
             // send email
@@ -515,7 +515,7 @@ class RegistroController extends Controller
     {
         if (!isset($request['token']) && !isset($request['sistema']))
         {
-            return response()->json(['error' => 'No se especificaron datos para actualizar'], 401);
+            return response()->json(['error' => 'Sin datos para actualizar'], 401);
         }
         $id_usuario = $request['user_id'];
         $user = User::where('id', $id_usuario)->select('*')->first();
@@ -537,12 +537,12 @@ class RegistroController extends Controller
             }
             else
             {
-                return response()->json(['error' => 'Ocurrió un error al actualizar.'], 401);
+                return response()->json(['error' => 'Ocurrió un error al actualizar'], 401);
             }
         } 
         else
         {
-            return response()->json(['error' => 'No se encontró el usuario.'], 401);
+            return response()->json(['error' => 'No se encontró el Usuario'], 401);
         }
     }
 
@@ -582,7 +582,7 @@ class RegistroController extends Controller
             }
             else
             {
-                return response()->json(['error' => 'Usuario no registrado.'], 401);
+                return response()->json(['error' => 'Usuario no registrado'], 401);
             }
         }
         else

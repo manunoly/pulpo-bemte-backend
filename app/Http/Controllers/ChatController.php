@@ -28,10 +28,10 @@ class ChatController extends Controller
                     $tarea = Tarea::where('id', $tareaID)->first();
                     $clase = Clase::where('id', $claseID)->first();
                     if ($tarea == null && $clase == null)
-                        return response()->json(['error' => 'No existe la tarea o clase para el chat'], 401);
+                        return response()->json(['error' => 'No existe Tarea o Clase para el Chat'], 401);
                     
                     if ($tarea != null && $clase != null)
-                        return response()->json(['error' => 'Especifica una sola opción, Tarea o Clase'], 401);
+                        return response()->json(['error' => 'Especifica una opción, Tarea o Clase'], 401);
                     
                     if ($tarea != null)
                     {
@@ -41,7 +41,7 @@ class ChatController extends Controller
                     else
                     {
                         if ($clase->user_id != $user && $clase->user_id_pro != $user)
-                            return response()->json(['error' => 'El usuario no está relacionado con la Clase'], 401);
+                            return response()->json(['error' => 'Usuario no relacionado con la Clase'], 401);
                     }
                     $chats = Chat::where('clase_id', $claseID)->where('tarea_id', $tareaID)->get();
 
@@ -86,16 +86,16 @@ class ChatController extends Controller
         $clase = Clase::where('id', $request['clase_id'])->first();
         if ($tarea == null && $clase == null)
         {
-            return response()->json(['error' => 'No existe la tarea o clase para el chat'], 401);
+            return response()->json(['error' => 'No existe Tarea o Clase para el Chat'], 401);
         }
         if ($tarea != null && $clase != null)
         {
-            return response()->json(['error' => 'Especifica una sola opción, Tarea o Clase'], 401);
+            return response()->json(['error' => 'Especifica una opción, Tarea o Clase'], 401);
         }
         if ($tarea != null)
         {
             if ($tarea->user_id != $request['user_id'] && $tarea->user_id_pro != $request['user_id'])
-                return response()->json(['error' => 'El usuario no está relacionado con la Tarea'], 401);
+                return response()->json(['error' => 'Usuario no relacionado con la Tarea'], 401);
             if ($tarea->user_id_pro == null || $tarea->estado != 'Aceptado')
                 return response()->json(['error' => 'El Chat no se encuentra activo para la Tarea'], 401);
             $alumno = $tarea->user_id;
@@ -104,7 +104,7 @@ class ChatController extends Controller
         else
         {
             if ($clase->user_id != $request['user_id'] && $clase->user_id_pro != $request['user_id'])
-                return response()->json(['error' => 'El usuario no está relacionado con la Clase'], 401);
+                return response()->json(['error' => 'Usuario no relacionado con la Clase'], 401);
             if ($clase->user_id_pro == null || $clase->estado != 'Aceptado')
                 return response()->json(['error' => 'El Chat no se encuentra activo para la Clase'], 401);
             $alumno = $clase->user_id;

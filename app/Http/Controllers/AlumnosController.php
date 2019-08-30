@@ -32,14 +32,14 @@ class AlumnosController extends Controller
         
         if (!is_numeric($request['calificacion']) || $request['calificacion'] > 5 || $request['calificacion'] < 0)
         {
-            return response()->json(['error' => 'La calificación debe estar en el rango de 0 a 5'], 401);
+            return response()->json(['error' => 'La calificación debe ser de 0 a 5'], 401);
         }
 
         $id_tarea = isset($request['tarea_id']) ? $request['tarea_id'] : 0;
         $id_clase = isset($request['clase_id']) ? $request['clase_id'] : 0;
         if ($id_tarea== 0 && $id_clase == 0)
         {
-            return response()->json(['error' => 'Debe especificar la tarea o clase que se califica'], 401);
+            return response()->json(['error' => 'Especifique la tarea o clase a calificar'], 401);
         }
 
         $id_usuario = $request['user_id'];
@@ -65,12 +65,12 @@ class AlumnosController extends Controller
                 }
                 else
                 {
-                    return response()->json(['error' => 'Los usuarios no coinciden con la tarea especificada'], 401);
+                    return response()->json(['error' => 'Los usuarios no coinciden con la Tarea'], 401);
                 }
             }
             else
             {
-                return response()->json(['error' => 'No se encontró la tarea a calificar'], 401);
+                return response()->json(['error' => 'No se encontró la Tarea a calificar'], 401);
             }
         }
         if ($id_clase != 0)
@@ -89,7 +89,7 @@ class AlumnosController extends Controller
                 }
                 else
                 {
-                    return response()->json(['error' => 'Los usuarios no coinciden con la Clase especificada'], 401);
+                    return response()->json(['error' => 'Los usuarios no coinciden con la Clase'], 401);
                 }
             }
             else
@@ -136,7 +136,7 @@ class AlumnosController extends Controller
             }
             else if ($tarea->estado != 'Confirmado')
             {
-                return response()->json(['error' => 'La Tarea no se encuentra Confirmada para pagar'], 401);
+                return response()->json(['error' => 'La Tarea no está Confirmada para pagar'], 401);
             }
             else if ($tarea->user_id != $request['user_id'])
             {
@@ -144,7 +144,7 @@ class AlumnosController extends Controller
             }
             else if ($tarea->user_canc != null)
             {
-                return response()->json(['error' => 'La Tarea ha sido cancelada, no se puede pagar'], 401);
+                return response()->json(['error' => 'La Tarea ha sido cancelada, no puede pagar'], 401);
             }
         }
         $clase = null;
@@ -161,7 +161,7 @@ class AlumnosController extends Controller
             }
             else if ($clase->estado != 'Confirmado')
             {
-                return response()->json(['error' => 'La Clase no se encuentra Confirmada para pagar'], 401);
+                return response()->json(['error' => 'La Clase no está Confirmada para pagar'], 401);
             }
             else if ($clase->user_id != $request['user_id'])
             {
@@ -169,14 +169,14 @@ class AlumnosController extends Controller
             }
             else if ($clase->user_canc != null)
             {
-                return response()->json(['error' => 'La Clase ha sido cancelada, no se puede pagar'], 401);
+                return response()->json(['error' => 'La Clase ha sido cancelada, no puede pagar'], 401);
             }
         }
         $user = Alumno::where('user_id', $request['user_id'])->first();
         if ($user == null)
-            return response()->json(['error' => 'No se encontró al Alumno para realizar el pago'], 401);
+            return response()->json(['error' => 'No se encontró al Alumno para el pago'], 401);
         if (!$user->activo)
-            return response()->json(['error' => 'El alumno no se encuentra activo'], 401);
+            return response()->json(['error' => 'El Alumno no se encuentra activo'], 401);
 
         $duracion = 0;
         if ($tarea != null)
@@ -207,7 +207,7 @@ class AlumnosController extends Controller
             
             $actTarea = Tarea::where('id', $tarea->id )->update( $data );
             if(!$actTarea )
-                return response()->json(['error' => 'Ocurrió un error al actualizar la Tarea.'], 401);
+                return response()->json(['error' => 'Ocurrió un error al actualizar la Tarea'], 401);
             
             try 
             {
@@ -240,7 +240,7 @@ class AlumnosController extends Controller
             
             $actClase = Clase::where('id', $clase->id )->update( $data );
             if(!$actClase )
-                return response()->json(['error' => 'Ocurrió un error al actualizar la Clase.'], 401);
+                return response()->json(['error' => 'Ocurrió un error al actualizar la Clase'], 401);
             
             try 
             {
@@ -260,7 +260,7 @@ class AlumnosController extends Controller
         $dataCombo['billetera'] = $user->billetera - $duracion;
         $actCombo = Alumno::where('user_id', $user->user_id )->update( $dataCombo );
         if(!$actCombo )
-            return response()->json(['error' => 'Ocurrió un error al actualizar pago.'], 401);
+            return response()->json(['error' => 'Ocurrió un error al actualizar pago'], 401);
                 
         return response()->json(['success' => 'Pago con Combo exitoso'], 200);
     }
@@ -284,15 +284,15 @@ class AlumnosController extends Controller
         }
         if ($request['clases'] != 0 && $request['clases'] != 1)
         {
-            return response()->json(['error' => 'Disponibilidad para las Clases Inválida'], 401);
+            return response()->json(['error' => 'Disponibilidad para Clases Inválida'], 401);
         }
         if ($request['tareas'] != 0 && $request['tareas'] != 1)
         {
-            return response()->json(['error' => 'Disponibilidad para las Tareas Inválida'], 401);
+            return response()->json(['error' => 'Disponibilidad para Tareas Inválida'], 401);
         }
         if ($request['clases'] == 0 && $request['tareas'] == 0)
         {
-            return response()->json(['error' => 'Para solicitar ser Profesor debe tener al menos una Disponibilidad activa (Clases o Tareas)'], 401);
+            return response()->json(['error' => 'Especifique una Disponibilidad (Clases o Tareas)'], 401);
         }
         $alumno = Alumno::where('user_id', $request['user_id'])->first();
         if ($alumno == null)
@@ -309,7 +309,7 @@ class AlumnosController extends Controller
         $act = Alumno::where('user_id', $request['user_id'])->update($data);
         if(!$act )
         {
-            return response()->json(['error' => 'Ocurrió un error al actualizar el Alumno.'], 401);
+            return response()->json(['error' => 'Ocurrió un error al actualizar el Alumno'], 401);
         }
         $hojaVida  = isset($request['hojaVida ']) ? trim($request['hojaVida ']) : NULL;
         $titulo = isset($request['titulo']) ? trim($request['titulo']) : NULL;

@@ -77,7 +77,7 @@ class ClasesController extends Controller
                                 ->whereIn('estado', ['Aceptado', 'Terminado', 'Calificado'])
                                 ->orderBy('id', 'desc')->first();
                 if ($claseAnterior == nul)
-                    return response()->json(['error' => 'No existe una Clase anterior para seleccionar al Profesor'], 401);
+                    return response()->json(['error' => 'No existe Clase anterior para seleccionar Profesor'], 401);
             }
             $duracion = $request['duracion'] + ($request['personas'] - 1);
             if ($duracion < 2)
@@ -146,12 +146,12 @@ class ClasesController extends Controller
                     foreach($profesores as $solicitar)
                         $pushClass->enviarNotificacion($notificacion, $solicitar);
                 }
-                return response()->json(['success'=> 'Su Clase ha sido solicitada. Por favor espera que validemos su información',
+                return response()->json(['success'=> 'Clase solicitada exitosamente',
                                         'clase' => $clase], 200);
             }
             else
             {
-                return response()->json(['error' => 'Lo sentimos, ocurrió un error al registrar!'], 401);
+                return response()->json(['error' => 'Ocurrió un error al registrar!'], 401);
             }
         } 
         else 
@@ -225,12 +225,12 @@ class ClasesController extends Controller
         if ($clase != null)
         {
             if ($request['user_id'] != $clase->user_id_pro && $request['user_id'] != $clase->user_id)
-                return response()->json(['error' => 'Usuario especificado no coincide con los datos de la Clase'], 401);
+                return response()->json(['error' => 'Usuario no coincide con datos de la Clase'], 401);
 
             if ($clase->estado == 'Sin_Profesor' || $clase->estado == 'Pago_Rechazado' ||
                 $clase->estado == 'Sin_Pago' || $clase->estado == 'Terminado' || 
                 $clase->estado == 'Calificado' || $clase->activa == 0)
-                return response()->json(['error' => 'La Clase ya no permite modificación'], 401);
+                return response()->json(['error' => 'La Clase no permite modificación'], 401);
 
             $data['activa'] = false;
             if ($request['cancelar'] == 1)
@@ -320,7 +320,7 @@ class ClasesController extends Controller
                                 $pago['estado'] = 'Cancelado';
                                 $actualizado = Pago::where('user_id', $clase->user_id_pro)->where('clase_id', $clase->id)->update( $pago );
                                 if(!$actualizado )
-                                    return response()->json(['error' => 'Ocurrió un error al Cancelar Pago al Profesor de la Clase.'], 401);
+                                    return response()->json(['error' => 'Ocurrió un error al Cancelar Pago al Profesor'], 401);
                             }
                         }
                         //verificar tercera cancelacion para avisar al ADMIN
@@ -384,7 +384,7 @@ class ClasesController extends Controller
                         }
                         $actCombo = Alumno::where('user_id', $bill->user_id )->update( $dataCombo );
                         if(!$actCombo)
-                            return response()->json(['error' => 'Ocurrió un error al Actualizar Billetera del Alumno.'], 401);
+                            return response()->json(['error' => 'Ocurrió un error al Actualizar Billetera del Alumno'], 401);
                     }
                     return response()->json(['success' => 'Clase terminada exitosamente'], 200);
                 }
@@ -394,7 +394,7 @@ class ClasesController extends Controller
                 $data['estado'] = 'Terminado';
                 $actualizado = Clase::where('id', $request['clase_id'] )->update( $data );
                 if(!$actualizado )
-                    return response()->json(['error' => 'Ocurrió un error al Finalizar la Clase.'], 401);
+                    return response()->json(['error' => 'Ocurrió un error al Finalizar la Clase'], 401);
                 else
                     return response()->json(['success' => 'Clase Finalizada exitosamente'], 200);
             }  
@@ -494,7 +494,7 @@ class ClasesController extends Controller
                 $actualizado = Clase::where('id', $request['clase_id'] )->update( $data );
                 if(!$actualizado )
                 {
-                    return response()->json(['error' => 'Ocurrió un error al Confirmar la Clase.'], 401);
+                    return response()->json(['error' => 'Ocurrió un error al Confirmar la Clase'], 401);
                 }
                 else
                 {
@@ -544,7 +544,7 @@ class ClasesController extends Controller
                     if ($clase->estado == 'Sin_Profesor' || $clase->estado == 'Pago_Rechazado' ||
                         $clase->estado == 'Sin_Pago' || $clase->estado == 'Terminado' || 
                         $clase->estado == 'Calificado' || $clase->activa == 0)
-                        return response()->json(['error' => 'La Clase ya no permite modificación'], 401);
+                        return response()->json(['error' => 'La Clase no permite modificación'], 401);
 
                     $duracion = $clase->duracion - ($clase->personas - 1);
                     if ($duracion < 2)
@@ -593,7 +593,7 @@ class ClasesController extends Controller
                         }
                     }
                     else
-                        return response()->json(['error' => 'Usuario especificado no coincide con los datos de la Clase'], 401);
+                        return response()->json(['error' => 'Usuario no coincide con datos de la Clase'], 401);
                 }
                 else
                 {
@@ -633,5 +633,16 @@ class ClasesController extends Controller
         {
             return response()->json(['error' => 'Clase no Encontrada'], 401);
         }
+    }
+
+    public function seleccionarProfesor()
+    {
+        $user = \Request::get('user_id');
+        $materia = \Request::get('materia_id');
+        $clase = Clase::where('user_id', $user)->where('materia', $materia)->first();
+        if ($clase != null)
+            return response()->json(true, 200);
+        else
+            return response()->json(false, 200);
     }
 }
