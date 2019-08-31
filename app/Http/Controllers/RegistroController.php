@@ -6,6 +6,8 @@ use App\User;
 use App\Ciudad;
 use App\Alumno;
 use App\Profesore;
+use App\Materia;
+use App\ProfesorMaterium;
 use App\Mail\Notificacion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -91,9 +93,11 @@ class RegistroController extends Controller
                 }
                 $data['email'] = $request['email'];
             }
-            if ( isset($request['password']) )
+            if ( isset($request['newPassword']) )
             {
-                $data['password'] = bcrypt($request['password']);
+                if (!Hash::check($request['oldPassword'], $user['password'])) 
+                    return response()->json([ 'exist' => 'Credenciales Incorrectas!'], 401);
+                $data['newPassword'] = bcrypt($request['newPassword']);
             }
 
             $data['name'] = $request['nombre'].' '.$request['apellido'];
@@ -182,7 +186,6 @@ class RegistroController extends Controller
         }
     }
 
-
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -214,7 +217,11 @@ class RegistroController extends Controller
             $sistema = $user['sistema'];
             if ($user['tipo'] == 'Alumno')
             {
-                $user = Alumno::where('user_id', $user['id'])->select('*')->first();
+                $user = Alumno::join('ciudad', 'ciudad.ciudad', '=', 'alumnos.ciudad')
+                        ->where('user_id', $user['id'])
+                        ->select('user_id', 'celular', 'correo', 'nombres', 'apellidos', 'correo', 'apodo', 
+                            'ubicacion', 'alumnos.ciudad', 'ser_profesor', 'activo', 'billetera',
+                            'pais', 'codigo')->first();
                 $user['tipo'] = 'Alumno';
                 $user['avatar'] = $avatar;
                 $user['token'] = $token; 
@@ -222,7 +229,12 @@ class RegistroController extends Controller
             }
             else if ($user['tipo'] == 'Profesor')
             {
-                $user = Profesore::where('user_id', $user['id'])->select('*')->first();
+                $user = Profesore::join('ciudad', 'ciudad.ciudad', '=', 'profesores.ciudad')
+                        ->where('user_id', $user['id'])
+                        ->select('user_id', 'celular', 'correo', 'nombres', 'apellidos', 'cedula', 'correo', 
+                            'apodo', 'ubicacion', 'profesores.ciudad', 'clases', 'tareas', 'disponible', 'hoja_vida', 
+                            'titulo', 'activo', 'cuenta', 'banco', 'tipo_cuenta', 'valor_clase', 'valor_tarea',
+                            'pais', 'codigo')->first();
                 $user['tipo'] = 'Profesor';
                 $user['avatar'] = $avatar;
                 $user['token'] = $token; 
@@ -239,7 +251,6 @@ class RegistroController extends Controller
             return response()->json(['error' => 'Credenciales Incorrectas'], 401);
         }
     }
-
 
     public function resetPassword(Request $request)
     {
@@ -277,7 +288,6 @@ class RegistroController extends Controller
             return response()->json([ 'error' => 'Correo no registrado'], 401);
         }
     }
-
 
     public function resetPassApp(Request $request)
     {
@@ -318,7 +328,6 @@ class RegistroController extends Controller
         }
     }
 
-
     public function validar($confirmation_code,$email)
     {
         $codigo = DB::table('password_resets')->where('token', '=', $confirmation_code )->first();
@@ -331,7 +340,6 @@ class RegistroController extends Controller
             return view('reset_err');
         }
     }
-
     
     public function actualizarPW(Request $request)
     {
@@ -358,7 +366,6 @@ class RegistroController extends Controller
             return response()->json([ 'exist' => 'Correo no registrado'], 401);
         }        
     }
-
     
     public function registro(Request $request)
     {
@@ -490,6 +497,42 @@ class RegistroController extends Controller
                     ]);
                     if($profesor)
                     {
+                        $materia1 = Materia::where('nombre', $request['materia1'])->first();
+                        $materia2 = Materia::where('nombre', $request['materia2'])->first();
+                        $materia3 = Materia::where('nombre', $request['materia3'])->first();
+                        $materia4 = Materia::where('nombre', $request['materia4'])->first();
+                        $materia5 = Materia::where('nombre', $request['materia5'])->first();
+                        if ($materia1 != null)
+                            ProfesorMaterium::create([
+                                'user_id' => $user->id,
+                                'materia' => $materia1,
+                                'activa' => true
+                            ]);
+                        if ($materia2 != null)
+                            ProfesorMaterium::create([
+                                'user_id' => $user->id,
+                                'materia' => $materia2,
+                                'activa' => true
+                            ]);
+                        if ($materia3 != null)
+                            ProfesorMaterium::create([
+                                'user_id' => $user->id,
+                                'materia' => $materia3,
+                                'activa' => true
+                            ]);
+                        if ($materia4 != null)
+                            ProfesorMaterium::create([
+                                'user_id' => $user->id,
+                                'materia' => $materia4,
+                                'activa' => true
+                            ]);
+                        if ($materia5 != null)
+                            ProfesorMaterium::create([
+                                'user_id' => $user->id,
+                                'materia' => $materia5,
+                                'activa' => true
+                            ]);
+
                         return response()->json(['success'=> 'Cuenta creada correctamente'], 200);
                     }
                 }
@@ -546,21 +589,24 @@ class RegistroController extends Controller
         }
     }
 
-
     public function devuelveUsuario()
     {
         if( \Request::get('user_id') )
         {
             $search = \Request::get('user_id');
             $user = User::where('id', $search)->select('*')->first();
-            if($user)
+            if($user != null)
             {
                 $avatar = $user['avatar'];
                 $token = $user['token'];
                 $sistema = $user['sistema'];
                 if ($user['tipo'] == 'Alumno')
                 {
-                    $user = Alumno::where('user_id', $user['id'])->select('*')->first();
+                    $user = Alumno::join('ciudad', 'ciudad.ciudad', '=', 'alumnos.ciudad')
+                    ->where('user_id', $user['id'])
+                    ->select('user_id', 'celular', 'correo', 'nombres', 'apellidos', 'correo', 'apodo', 
+                        'ubicacion', 'alumnos.ciudad', 'ser_profesor', 'activo', 'billetera',
+                        'pais', 'codigo')->first();
                     $user['tipo'] = 'Alumno';
                     $user['avatar'] = $avatar;
                     $user['token'] = $token; 
@@ -568,7 +614,12 @@ class RegistroController extends Controller
                 }
                 else if ($user['tipo'] == 'Profesor')
                 {
-                    $user = Profesore::where('user_id', $user['id'])->select('*')->first();
+                    $user = Profesore::join('ciudad', 'ciudad.ciudad', '=', 'profesores.ciudad')
+                    ->where('user_id', $user['id'])
+                    ->select('user_id', 'celular', 'correo', 'nombres', 'apellidos', 'cedula', 'correo', 
+                        'apodo', 'ubicacion', 'profesores.ciudad', 'clases', 'tareas', 'disponible', 'hoja_vida', 
+                        'titulo', 'activo', 'cuenta', 'banco', 'tipo_cuenta', 'valor_clase', 'valor_tarea',
+                        'pais', 'codigo')->first();
                     $user['tipo'] = 'Profesor';
                     $user['avatar'] = $avatar;
                     $user['token'] = $token; 

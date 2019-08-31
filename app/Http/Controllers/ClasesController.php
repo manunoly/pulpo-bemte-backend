@@ -86,6 +86,7 @@ class ClasesController extends Controller
             $coordenadas = isset($request['coordenadas']) ? $request['coordenadas'] : NULL;
             $hora1 = isset($request['hora1']) ? $request['hora1'] : NULL;
             $hora2 = isset($request['hora2']) ? $request['hora2'] : NULL;
+            $descripcion = isset($request['descripcion']) ? $request['descripcion'] : NULL;
             $horasCombo = isset($request['horasCombo']) ? $request['horasCombo'] : NULL;
             $precioCombo = isset($request['precioCombo']) ? $request['precioCombo'] : NULL;
             $clase = Clase::create([
@@ -97,6 +98,7 @@ class ClasesController extends Controller
                 'hora2' => $hora2,
                 'personas' => $request['personas'],
                 'duracion' => $request['duracion'],
+                'descripcion' => $descripcion,
                 'combo' => 'COMBO',
                 'ubicacion' => $request['ubicacion'],
                 'coordenadas' => $coordenadas,
@@ -170,8 +172,8 @@ class ClasesController extends Controller
                         ->select('id', 'user_id', 'materia', 'tema', 'personas', 'duracion', 'hora1', 'hora2', 
                         'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'horasCombo', 'precioCombo',
                         'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 'coordenadas',
-                        'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor', 'aplica_prof')
-                        ->first();
+                        'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor', 
+                        'aplica_prof', 'descripcion')->first();
             if (isset($clase->user_id_pro) && $clase->user_id_pro > 0)
             {
                 $prof = User::where('id', $clase->user_id_pro)->first();
@@ -200,8 +202,8 @@ class ClasesController extends Controller
                         ->where('profesores.clases', true)
                         ->select('clases.id', 'clases.user_id', 'clases.materia', 'clases.tema', 
                         'clases.personas', 'clases.duracion', 'clases.hora1', 'clases.hora2', 'fecha',
-                        'clases.ubicacion', 'clases.coordenadas', 'clases.seleccion_profesor')
-                        ->orderBy('clases.id', 'desc')->get();
+                        'clases.ubicacion', 'clases.coordenadas', 'clases.seleccion_profesor', 
+                        'descripcion')->orderBy('clases.id', 'desc')->get();
             return response()->json($clases, 200);
         }
         else
@@ -428,7 +430,7 @@ class ClasesController extends Controller
                                 'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc', 'precioCombo',
                                 'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 'horasCombo',
                                 'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor',
-                                'coordenadas')
+                                'coordenadas', 'descripcion')
                                 ->orderBy('clases.id', 'desc')->get();
                     else
                         $clases = Clase::leftJoin('users', 'users.id', '=', 'clases.user_id_pro')
@@ -437,7 +439,7 @@ class ClasesController extends Controller
                             'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc', 'precioCombo',
                             'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 'horasCombo',
                             'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor',
-                            'coordenadas')
+                            'coordenadas', 'descripcion')
                             ->orderBy('clases.id', 'desc')->get();
                 }
                 else
@@ -449,7 +451,7 @@ class ClasesController extends Controller
                                 'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc', 'precioCombo',
                                 'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 'horasCombo',
                                 'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor',
-                                'coordenadas')
+                                'coordenadas', 'descripcion')
                                 ->orderBy('clases.id', 'desc')->get();
                     else
                         $clases = Clase::join('users', 'users.id', '=', 'clases.user_id')
@@ -458,7 +460,7 @@ class ClasesController extends Controller
                                 'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc', 'precioCombo',
                                 'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 'horasCombo',
                                 'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor',
-                                'coordenadas')
+                                'coordenadas', 'descripcion')
                                 ->orderBy('clases.id', 'desc')->get();
                 }
                 return response()->json($clases, 200);
