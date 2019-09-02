@@ -98,7 +98,7 @@ class RegistroController extends Controller
             {
                 if (!Hash::check($request['oldPassword'], $user['password'])) 
                     return response()->json([ 'exist' => 'Credenciales Incorrectas!'], 401);
-                $data['newPassword'] = bcrypt($newPassword);
+                $data['password'] = bcrypt($newPassword);
             }
 
             $data['name'] = $request['nombre'].' '.$request['apellido'];
