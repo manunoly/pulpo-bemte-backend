@@ -321,7 +321,7 @@ class TareasController extends Controller
                 {
                     if ($tipo == 'ACTUAL')
                         $tareas = Tarea::leftJoin('users', 'users.id', '=', 'tareas.user_id_pro')
-                                    ->where('user_id', $search)->where('fecha_entrega', $nowDate)
+                                    ->where('user_id', $search)->where('fecha_entrega', '>=', $nowDate)
                                     ->select('tareas.id','users.name', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
                                     'descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 'archivo',
                                     'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor', 'fecha_canc')
@@ -338,7 +338,7 @@ class TareasController extends Controller
                 {
                     if ($tipo == 'ACTUAL')
                         $tareas = Tarea::join('users', 'users.id', '=', 'tareas.user_id')
-                                ->where('user_id_pro', $search)->where('fecha_entrega', $nowDate)
+                                ->where('user_id_pro', $search)->where('fecha_entrega', '>=', $nowDate)
                                 ->select('tareas.id','users.name', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
                                 'descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 'archivo',
                                 'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor', 'fecha_canc')
