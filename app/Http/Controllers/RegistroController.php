@@ -93,11 +93,12 @@ class RegistroController extends Controller
                 }
                 $data['email'] = $request['email'];
             }
-            if ( isset($request['newPassword']) )
+            $newPassword = isset($request['newPassword']) ? trim($request['newPassword']) : '';
+            if (strlen($newPassword) > 0)
             {
                 if (!Hash::check($request['oldPassword'], $user['password'])) 
                     return response()->json([ 'exist' => 'Credenciales Incorrectas!'], 401);
-                $data['newPassword'] = bcrypt($request['newPassword']);
+                $data['newPassword'] = bcrypt($newPassword);
             }
 
             $data['name'] = $request['nombre'].' '.$request['apellido'];
@@ -124,12 +125,8 @@ class RegistroController extends Controller
                     $actualizado = Alumno::where('user_id', $id_usuario )->update( $dataUser );               
                     if ($actualizado)
                     {
-                        $alumno = Alumno::where('user_id', $id_usuario)->select('*')->first();   
-                        $alumno['tipo'] = 'Alumno';
-                        $alumno['avatar'] = $avatar; 
-                        $alumno['token'] = $token; 
-                        $alumno['sistema'] = $sistema;  
-                        return response()->json(['success' => 'Datos actualizados correctamente', 'profile' => $alumno ], 200);
+                        $userDev = $this->datosUser($id_usuario);
+                        return response()->json(['success' => 'Datos actualizados correctamente', 'profile' => $userDev], 200);
                     }
                     else
                     {
@@ -162,12 +159,8 @@ class RegistroController extends Controller
                     $actualizado = Profesore::where('user_id', $id_usuario )->update( $dataUser );
                     if ($actualizado)
                     {
-                        $profesor = Profesore::where('user_id', $id_usuario)->select('*')->first();
-                        $profesor['tipo'] = 'Profesor';
-                        $profesor['avatar'] = $avatar;
-                        $profesor['token'] = $token; 
-                        $profesor['sistema'] = $sistema;  
-                        return response()->json(['success' => 'Datos actualizados correctamente', 'profile' => $profesor ], 200);
+                        $userDev = $this->datosUser($id_usuario);
+                        return response()->json(['success' => 'Datos actualizados correctamente', 'profile' => $userDev], 200);
                     }
                     else
                     {
@@ -212,39 +205,8 @@ class RegistroController extends Controller
 
         if (Hash::check($request['password'], $user['password'])) 
         {
-            $avatar = $user['avatar'];
-            $token = $user['token'];
-            $sistema = $user['sistema'];
-            if ($user['tipo'] == 'Alumno')
-            {
-                $user = Alumno::join('ciudad', 'ciudad.ciudad', '=', 'alumnos.ciudad')
-                        ->where('user_id', $user['id'])
-                        ->select('user_id', 'celular', 'correo', 'nombres', 'apellidos', 'correo', 'apodo', 
-                            'ubicacion', 'alumnos.ciudad', 'ser_profesor', 'activo', 'billetera',
-                            'pais', 'codigo')->first();
-                $user['tipo'] = 'Alumno';
-                $user['avatar'] = $avatar;
-                $user['token'] = $token; 
-                $user['sistema'] = $sistema;  
-            }
-            else if ($user['tipo'] == 'Profesor')
-            {
-                $user = Profesore::join('ciudad', 'ciudad.ciudad', '=', 'profesores.ciudad')
-                        ->where('user_id', $user['id'])
-                        ->select('user_id', 'celular', 'correo', 'nombres', 'apellidos', 'cedula', 'correo', 
-                            'apodo', 'ubicacion', 'profesores.ciudad', 'clases', 'tareas', 'disponible', 'hoja_vida', 
-                            'titulo', 'activo', 'cuenta', 'banco', 'tipo_cuenta', 'valor_clase', 'valor_tarea',
-                            'pais', 'codigo')->first();
-                $user['tipo'] = 'Profesor';
-                $user['avatar'] = $avatar;
-                $user['token'] = $token; 
-                $user['sistema'] = $sistema;  
-            }
-            else
-            {
-                return response()->json(['error' => 'Usuario no Autorizado en App'], 401);
-            }
-            return response()->json(['success' => 'Login OK', 'profile' => $user], 200);
+            $userDev = $this->datosUser($user->id);
+            return response()->json(['success' => 'Login OK', 'profile' => $userDev], 200);
         }
         else
         {
@@ -463,7 +425,8 @@ class RegistroController extends Controller
                     ]);
                     if($alumno)
                     {
-                        return response()->json(['success'=> 'Cuenta creada correctamente'], 200);
+                        $userDev = $this->datosUser($user->id);
+                        return response()->json(['success' => 'Cuenta creada correctamente', 'profile' => $userDev], 200);
                     }
                 }
                 else
@@ -533,7 +496,8 @@ class RegistroController extends Controller
                                 'activa' => true
                             ]);
 
-                        return response()->json(['success'=> 'Cuenta creada correctamente'], 200);
+                        $userDev = $this->datosUser($user->id);
+                        return response()->json(['success' => 'Cuenta creada correctamente', 'profile' => $userDev], 200);
                     }
                 }
             }
@@ -594,51 +558,51 @@ class RegistroController extends Controller
         if( \Request::get('user_id') )
         {
             $search = \Request::get('user_id');
-            $user = User::where('id', $search)->select('*')->first();
+            $user = $this->datosUser($search);
             if($user != null)
-            {
-                $avatar = $user['avatar'];
-                $token = $user['token'];
-                $sistema = $user['sistema'];
-                if ($user['tipo'] == 'Alumno')
-                {
-                    $user = Alumno::join('ciudad', 'ciudad.ciudad', '=', 'alumnos.ciudad')
-                    ->where('user_id', $user['id'])
-                    ->select('user_id', 'celular', 'correo', 'nombres', 'apellidos', 'correo', 'apodo', 
-                        'ubicacion', 'alumnos.ciudad', 'ser_profesor', 'activo', 'billetera',
-                        'pais', 'codigo')->first();
-                    $user['tipo'] = 'Alumno';
-                    $user['avatar'] = $avatar;
-                    $user['token'] = $token; 
-                    $user['sistema'] = $sistema;  
-                }
-                else if ($user['tipo'] == 'Profesor')
-                {
-                    $user = Profesore::join('ciudad', 'ciudad.ciudad', '=', 'profesores.ciudad')
-                    ->where('user_id', $user['id'])
-                    ->select('user_id', 'celular', 'correo', 'nombres', 'apellidos', 'cedula', 'correo', 
-                        'apodo', 'ubicacion', 'profesores.ciudad', 'clases', 'tareas', 'disponible', 'hoja_vida', 
-                        'titulo', 'activo', 'cuenta', 'banco', 'tipo_cuenta', 'valor_clase', 'valor_tarea',
-                        'pais', 'codigo')->first();
-                    $user['tipo'] = 'Profesor';
-                    $user['avatar'] = $avatar;
-                    $user['token'] = $token; 
-                    $user['sistema'] = $sistema;  
-                }
-                else
-                {
-                    return response()->json(['error' => 'Usuario no Autorizado en App'], 401);
-                }
                 return response()->json(['success' => 'Login OK', 'profile' => $user], 200);
-            }
             else
-            {
-                return response()->json(['error' => 'Usuario no registrado'], 401);
-            }
+                return response()->json(['error' => 'Usuario no Autorizado'], 401);
         }
         else
         {
             return response()->json(['error' => 'Usuario no especificado'], 401);
         }
+    }
+
+    public function datosUser($idUser)
+    {
+        $user = null;
+        $userPro = User::where('id', $idUser)->first();
+        if ($userPro != null)
+        {
+            if ($userPro->tipo == 'Alumno')
+            {
+                $user = Alumno::join('ciudad', 'ciudad.ciudad', '=', 'alumnos.ciudad')
+                    ->where('user_id', $userPro['id'])
+                    ->select('user_id', 'celular', 'correo', 'nombres', 'apellidos', 'correo', 'apodo', 
+                        'ubicacion', 'alumnos.ciudad', 'ser_profesor', 'activo', 'billetera',
+                        'pais', 'codigo')->first();
+                    $user['tipo'] = 'Alumno';
+                    $user['avatar'] = $userPro->avatar;
+                    $user['token'] = $userPro->token; 
+                    $user['sistema'] = $userPro->sistema;  
+            }
+            if ($userPro->tipo == 'Profesor')
+            {
+                $user = Profesore::join('ciudad', 'ciudad.ciudad', '=', 'profesores.ciudad')
+                ->where('user_id', $userPro['id'])
+                ->select('user_id', 'celular', 'correo', 'nombres', 'apellidos', 'cedula', 'correo', 
+                    'apodo', 'ubicacion', 'profesores.ciudad', 'clases', 'tareas', 'disponible', 'hoja_vida', 
+                    'titulo', 'activo', 'cuenta', 'banco', 'tipo_cuenta', 'valor_clase', 'valor_tarea',
+                    'pais', 'codigo')->first();
+                $user['tipo'] = 'Profesor';
+                $user['avatar'] = $userPro->avatar;
+                $user['token'] = $userPro->token; 
+                $user['sistema'] = $userPro->sistema;  
+            }
+        }
+        return $user;
+
     }
 }

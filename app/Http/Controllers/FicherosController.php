@@ -12,6 +12,8 @@ use App\ClaseEjercicio;
 use App\AlumnoPago;
 use App\AlumnoCompra;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\Notificacion;
 use Validator;
 use Hash;
 
@@ -225,6 +227,8 @@ class FicherosController extends Controller
         {
             if ($user->activo)
             {
+                $correoAdmin = 'Ha sido subida una transferencia por '.$user->nombres.' '.$user->apellidos;
+                $detalle = '';
                 if ($request['combo_id'] != '0' && $combo == null)
                 {
                     $combo = AlumnoCompra::create([
@@ -274,6 +278,7 @@ class FicherosController extends Controller
                 {
                     $dataClase['estado'] = 'Confirmando_Pago';
                     $actualizado = Clase::where('id', $clase->id )->update( $dataClase );
+                    $detalle = 'Para la Clase '.$clase->id;
                     if(!$actualizado )
                     {
                         return response()->json(['error' => 'Ocurrió un error al actualizar solicitud'], 401);
@@ -283,11 +288,21 @@ class FicherosController extends Controller
                 {
                     $dataTarea['estado'] = 'Confirmando_Pago';
                     $actualizado = Tarea::where('id', $tarea->id )->update( $dataTarea );
+                    $detalle = 'Para la Tarea '.$tarea->id;
                     if(!$actualizado )
                     {
                         return response()->json(['error' => 'Ocurrió un error al actualizar solicitud'], 401);
                     }
                 }
+                try 
+                {
+                    Mail::to(env('MAILADMIN'))->send(new Notificacion(
+                            'Administrador de '.env('EMPRESA'), 
+                            $correoAdmin, $detalle, 'Por favor, revisar la transferencia.', 
+                            env('EMPRESA')));
+                }
+                catch (Exception $e) { }
+
                 return response()->json(['success' => 'Transferencia solicitada exitosamente'], 200);
             }
             else

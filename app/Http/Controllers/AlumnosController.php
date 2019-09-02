@@ -9,6 +9,7 @@ use App\Alumno;
 use App\Pago;
 use App\Profesore;
 use App\Formulario;
+use App\Notificacione;
 use Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -348,5 +349,40 @@ class AlumnosController extends Controller
         }
         else
             return response()->json(['error' => 'Alumno Incorrecto'], 401);
+    }
+
+    public function calificacionPendiente()
+    {
+        $respuesta['tarea_id'] = 0;
+        $respuesta['clase_id'] = 0;
+        $respuesta['tarea'] = null;
+        $respuesta['clase'] = null;
+        $search = \Request::get('user_id');
+        $clase = Clase::where('user_id', $search)->where('estado', 'Terminado')
+                ->where('calificacion_profesor', null)->where('comentario_profesor', null)->first();
+        if ($clase != null)
+        {
+            $respuesta['clase_id'] = $clase->id;
+            $respuesta['clase'] = $clase;
+        }
+        else
+        {
+            $tarea = Tarea::where('user_id', $search)->where('estado', 'Terminado')
+                    ->where('calificacion_profesor', null)->where('comentario_profesor', null)->first();
+            if ($tarea != null)
+            {
+                $respuesta['tarea_id'] = $tarea->id;
+                $respuesta['tarea'] = $tarea;
+            }
+        }
+        return response()->json($respuesta, 200);
+    }
+
+    public function listadoNotificaciones()
+    {
+        $search = \Request::get('user_id');
+        $respuesta = Notificacione::where('user_id', $search)
+                                     ->orderBy('id', 'desc')->get();
+        return response()->json($respuesta, 200);
     }
 }

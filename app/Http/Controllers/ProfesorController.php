@@ -245,7 +245,7 @@ class ProfesorController extends Controller
         $tarea = Tarea::where('id', $request['tarea_id'])->first();
         if ($tarea != null)
         {
-            if ($tarea->estado == 'Solicitado')
+            if ($tarea->estado == 'Solicitado' && $tarea->user_id_pro == null)
             {
                 $profe = Profesore::where('user_id', $request['user_id'])->first();
                 if ($profe != null)
@@ -304,10 +304,10 @@ class ProfesorController extends Controller
                     return response()->json(['error' => 'No se encontró al Profesor para aplicar'], 401);
                 }
             }
+            else if ($tarea->user_id_pro == null)
+                return response()->json(['error' => 'Ya no se puede aplicar a la Tarea'], 401);
             else
-            {
-                return response()->json(['error' => 'Tarea no disponible'], 401);
-            }
+                return response()->json(['error' => 'La Tarea ya ha sido Asignada'], 401);
         }
         else
         {
@@ -330,7 +330,7 @@ class ProfesorController extends Controller
         $clase = Clase::where('id', $request['clase_id'])->first();
         if ($clase != null)
         {
-            if ($clase->estado == 'Solicitado')
+            if ($clase->estado == 'Solicitado' && $clase->user_id_pro == null)
             {
                 $profe = Profesore::where('user_id', $request['user_id'])->first();
                 if ($profe != null)
@@ -403,8 +403,10 @@ class ProfesorController extends Controller
                 else
                     return response()->json(['error' => 'No se encontró al Profesor para aplicar'], 401);
             }
+            else if  ($clase->user_id_pro == null)
+                return response()->json(['error' => 'Ya no se puede aplicar a la Clase'], 401);
             else
-                return response()->json(['error' => 'Clase no disponible'], 401);
+                return response()->json(['error' => 'La Clase ya ha sido Asignada'], 401);
         }
         else
             return response()->json(['error' => 'No se encontró la Clase para aplicar'], 401);
@@ -479,5 +481,32 @@ class ProfesorController extends Controller
         {
             return response()->json(['error' => 'Usuario no especificado'], 401);
         }
+    }
+
+    public function calificacionPendiente()
+    {
+        $respuesta['tarea_id'] = 0;
+        $respuesta['clase_id'] = 0;
+        $respuesta['tarea'] = null;
+        $respuesta['clase'] = null;
+        $search = \Request::get('user_id');
+        $clase = Clase::where('user_id_pro', $search)->where('estado', 'Terminado')
+                ->where('califacion_alumno', null)->where('comentario_alumno', null)->first();
+        if ($clase != null)
+        {
+            $respuesta['clase_id'] = $clase->id;
+            $respuesta['clase'] = $clase;
+        }
+        else
+        {
+            $tarea = Tarea::where('user_id_pro', $search)->where('estado', 'Terminado')
+                    ->where('califacion_alumno', null)->where('comentario_alumno', null)->first();
+            if ($tarea != null)
+            {
+                $respuesta['tarea_id'] = $tarea->id;
+                $respuesta['tarea'] = $tarea;
+            }
+        }
+        return response()->json($respuesta, 200);
     }
 }

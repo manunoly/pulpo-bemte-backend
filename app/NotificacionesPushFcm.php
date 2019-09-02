@@ -8,7 +8,7 @@ use App\Notificacione;
 
 class NotificacionesPushFcm
 {
-    static public function enviar($notification)
+    public function enviar($notification)
     {
         $url = 'https://fcm.googleapis.com/fcm/send';
         $headers = [
@@ -57,7 +57,7 @@ class NotificacionesPushFcm
         //var_dump($result);
     }
 
-    static public function enviarNotificacion($notificacion, $user)
+     public function enviarNotificacion($notificacion, $user)
     {
         $errorNotif = 'OK';
         try 

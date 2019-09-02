@@ -237,12 +237,13 @@ class ClasesController extends Controller
             $data['activa'] = false;
             if ($request['cancelar'] == 1)
             {
+                $data['estado'] = 'Cancelado';
                 $data['fecha_canc'] = date("Y-m-d H:i:s");
                 $data['user_canc'] = $request['user_id'];
                 $actualizado = Clase::where('id', $request['clase_id'] )->update( $data );
                 if(!$actualizado )
                 {
-                    return response()->json(['error' => 'Ocurrió un error al terminar la Clase.'], 401);
+                    return response()->json(['error' => 'Ocurrió un error al Cancelar la Clase.'], 401);
                 }
                 else
                 {
@@ -302,28 +303,6 @@ class ClasesController extends Controller
                         {
                             //devolver las horas al alumno 
                             $penHoras = $duracion;
-                            //quitar pago al profesor
-                            $pagoClase = Pago::where('user_id', $clase->user_id_pro)->where('clase_id', $clase->id)->first();
-                            if ($pagoClase->estado == 'Aprobado')
-                            {
-                                $multaProf = Multa::create([
-                                            'user_id' => $clase->user_id_pro,
-                                            'tarea_id' => 0,
-                                            'clase_id' => $clase->id,
-                                            'valor' => $pagoClase->valor,
-                                            'comentario' => 'Clase Cancelada por Profesor con Pago Aprobado',
-                                            'estado' => 'Solicitado'
-                                            ]);
-                                if (!$multaProf->id)
-                                    return response()->json(['error' => 'Ocurrió un error al crear Multa al Profesor'], 401);
-                            }
-                            else if ($pagoClase->estado == 'Solicitado')
-                            {
-                                $pago['estado'] = 'Cancelado';
-                                $actualizado = Pago::where('user_id', $clase->user_id_pro)->where('clase_id', $clase->id)->update( $pago );
-                                if(!$actualizado )
-                                    return response()->json(['error' => 'Ocurrió un error al Cancelar Pago al Profesor'], 401);
-                            }
                         }
                         //verificar tercera cancelacion para avisar al ADMIN
                         $mes = date("Y-m-1");
@@ -371,6 +350,31 @@ class ClasesController extends Controller
                             }
                         }
                     }
+                    if ($clase->estado == 'Aceptado' || $clase->estado == 'Pago_Aprobado')
+                    {
+                        //quitar pago al profesor
+                        $pagoClase = Pago::where('user_id', $clase->user_id_pro)->where('clase_id', $clase->id)->first();
+                        if ($pagoClase->estado == 'Aprobado')
+                        {
+                            $multaProf = Multa::create([
+                                        'user_id' => $clase->user_id_pro,
+                                        'tarea_id' => 0,
+                                        'clase_id' => $clase->id,
+                                        'valor' => $pagoClase->valor,
+                                        'comentario' => 'Clase Cancelada por Profesor con Pago Aprobado',
+                                        'estado' => 'Solicitado'
+                                        ]);
+                            if (!$multaProf->id)
+                                return response()->json(['error' => 'Ocurrió un error al crear Multa al Profesor'], 401);
+                        }
+                        else if ($pagoClase->estado == 'Solicitado')
+                        {
+                            $pago['estado'] = 'Cancelado';
+                            $actualizado = Pago::where('user_id', $clase->user_id_pro)->where('clase_id', $clase->id)->update( $pago );
+                            if(!$actualizado )
+                                return response()->json(['error' => 'Ocurrió un error al Cancelar Pago al Profesor'], 401);
+                        }
+                    }
                     if ($penHoras != 0)
                     {
                         //quitar las horas del combo del Alumno
@@ -388,7 +392,7 @@ class ClasesController extends Controller
                         if(!$actCombo)
                             return response()->json(['error' => 'Ocurrió un error al Actualizar Billetera del Alumno'], 401);
                     }
-                    return response()->json(['success' => 'Clase terminada exitosamente'], 200);
+                    return response()->json(['success' => 'Clase Cancelada exitosamente'], 200);
                 }
             }
             else
@@ -425,7 +429,7 @@ class ClasesController extends Controller
                 {
                     if ($tipo == 'ACTUAL')
                         $clases = Clase::leftJoin('users', 'users.id', '=', 'clases.user_id_pro')
-                                ->where('user_id', $search)->where('fecha', $nowDate)
+                                ->where('user_id', $search)->where('fecha', '>=', $nowDate)
                                 ->select('clases.id','users.name', 'materia', 'tema', 'personas', 'duracion', 'hora1', 'hora2', 
                                 'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc', 'precioCombo',
                                 'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 'horasCombo',
@@ -446,7 +450,7 @@ class ClasesController extends Controller
                 {
                     if ($tipo == 'ACTUAL')
                         $clases = Clase::join('users', 'users.id', '=', 'clases.user_id')
-                                ->where('user_id_pro', $search)->where('fecha', $nowDate)
+                                ->where('user_id_pro', $search)->where('fecha', '>=', $nowDate)
                                 ->select('clases.id','users.name', 'materia', 'tema', 'personas', 'duracion', 'hora1', 'hora2', 
                                 'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc', 'precioCombo',
                                 'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 'horasCombo',

@@ -188,6 +188,7 @@ class TareasController extends Controller
             if ($request['cancelar'] == 1)
             {
                 $data['activa'] = false;
+                $data['estado'] = 'Cancelado';
                 $data['fecha_canc'] = date("Y-m-d H:i:s");
                 $data['user_canc'] = $request['user_id'];
                 $actualizado = Tarea::where('id', $request['tarea_id'] )->update( $data );
@@ -204,28 +205,6 @@ class TareasController extends Controller
                         {
                             //devolver las horas al alumno 
                             $penHoras = $tarea->tiempo_estimado;
-                            //quitar pago al profesor
-                            $pagoTarea = Pago::where('user_id', $tarea->user_id_pro)->where('tarea_id', $tarea->id)->first();
-                            if ($pagoTarea->estado == 'Aprobado')
-                            {
-                                $multaProf = Multa::create([
-                                            'user_id' => $tarea->user_id_pro,
-                                            'clase_id' => 0,
-                                            'tarea_id' => $tarea->id,
-                                            'valor' => $pagoTarea->valor,
-                                            'comentario' => 'Tarea Cancelada por Profesor con Pago Aprobado',
-                                            'estado' => 'Solicitado'
-                                            ]);
-                                if (!$multaProf->id)
-                                    return response()->json(['error' => 'Ocurrió un error al crear Multa al Profesor'], 401);
-                            }
-                            else if ($pagoTarea->estado == 'Solicitado')
-                            {
-                                $pago['estado'] = 'Cancelado';
-                                $actualizado = Pago::where('user_id', $tarea->user_id_pro)->where('tarea_id', $tarea->id)->update( $pago );
-                                if(!$actualizado)
-                                    return response()->json(['error' => 'Ocurrió un error al Cancelar Pago al Profesor'], 401);
-                            }
                         }
                         else
                         {
@@ -249,6 +228,28 @@ class TareasController extends Controller
                             $actCombo = Alumno::where('user_id', $bill->user_id )->update( $dataCombo );
                             if(!$actCombo)
                                 return response()->json(['error' => 'Ocurrió un error al Actualizar Billetera del Alumno'], 401);
+                        }
+                        //quitar pago al profesor
+                        $pagoTarea = Pago::where('user_id', $tarea->user_id_pro)->where('tarea_id', $tarea->id)->first();
+                        if ($pagoTarea->estado == 'Aprobado')
+                        {
+                            $multaProf = Multa::create([
+                                        'user_id' => $tarea->user_id_pro,
+                                        'clase_id' => 0,
+                                        'tarea_id' => $tarea->id,
+                                        'valor' => $pagoTarea->valor,
+                                        'comentario' => 'Tarea Cancelada por Profesor con Pago Aprobado',
+                                        'estado' => 'Solicitado'
+                                        ]);
+                            if (!$multaProf->id)
+                                return response()->json(['error' => 'Ocurrió un error al crear Multa al Profesor'], 401);
+                        }
+                        else if ($pagoTarea->estado == 'Solicitado')
+                        {
+                            $pago['estado'] = 'Cancelado';
+                            $actualizado = Pago::where('user_id', $tarea->user_id_pro)->where('tarea_id', $tarea->id)->update( $pago );
+                            if(!$actualizado)
+                                return response()->json(['error' => 'Ocurrió un error al Cancelar Pago al Profesor'], 401);
                         }
                     }
                     $correoAdmin = '';
@@ -292,7 +293,7 @@ class TareasController extends Controller
                         }
                     }
 
-                    return response()->json(['success' => 'Tarea terminada exitosamente'], 200);
+                    return response()->json(['success' => 'Tarea Cancelada exitosamente'], 200);
                 }  
             }
         }

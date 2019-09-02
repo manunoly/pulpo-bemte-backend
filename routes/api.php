@@ -54,6 +54,7 @@ Route::post('aplicar-tarea', 'ProfesorController@aplicarTarea');
 Route::post('aplicar-clase', 'ProfesorController@aplicarClase');
 Route::post('actualiza-cuenta', 'ProfesorController@actualizaCuenta');
 Route::get('cuenta-profesor', 'ProfesorController@cuentaProfesor');
+Route::get('calificaciones-profesor', 'ProfesorController@calificacionPendiente');
 
 
 Route::post('solicitar-tarea', 'TareasController@solicitarTarea');
@@ -68,6 +69,8 @@ Route::post('calificar-alumno', 'AlumnosController@calificarAlumno');
 Route::post('pagar-con-combo', 'AlumnosController@pagarConCombo');
 Route::post('aplicar-profesor', 'AlumnosController@aplicarProfesor');
 Route::get('alumno', 'AlumnosController@alumnoHeader');
+Route::get('calificaciones-alumno', 'AlumnosController@calificacionPendiente');
+Route::get('notificaciones', 'AlumnosController@listadoNotificaciones');
 
 
 Route::post('solicitar-clase', 'ClasesController@solicitarClase');
