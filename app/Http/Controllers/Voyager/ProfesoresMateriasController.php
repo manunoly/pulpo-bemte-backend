@@ -12,14 +12,11 @@ use TCG\Voyager\Events\BreadDataRestored;
 use TCG\Voyager\Events\BreadDataUpdated;
 use TCG\Voyager\Events\BreadImagesDeleted;
 use TCG\Voyager\Facades\Voyager;
-use Illuminate\Support\Facades\Mail;
 use TCG\Voyager\Http\Controllers\Traits\BreadRelationshipParser;
 
 use Auth;
-use App\User;
-use App\Mail\Notificacion;
 
-class ProfesoresController extends Controller
+class ProfesoresMateriasController extends Controller
 {
     use BreadRelationshipParser;
 
@@ -293,40 +290,8 @@ class ProfesoresController extends Controller
         // Validate fields with ajax
         $val = $this->validateBread($request->all(), $dataType->editRows, $dataType->name, $id)->validate();
         $this->insertUpdateData($request, $slug, $dataType->editRows, $data);
-        event(new BreadDataUpdated($dataType, $data));
 
-        $v = \Validator::make($request->all(), [
-            'correo'    => 'required|email',
-        ]);
-        if ($v->fails())
-        {
-            $messages["error"] = 'Correo electrónico Inválido';
-            return redirect()->back()->withErrors($messages)->withInput();
-        }
-        $user = User::where('email', $data['correo'])->select('*')->first();
-        if ($user != null && $user->id != $id)
-        {
-            $messages["error"] = 'Correo electrónico no disponible';
-            return redirect()->back()->withErrors($messages)->withInput();
-        }
-        $user = User::where('id', $id)->select('*')->first();
-        $dataUser = [
-            "name" => $data['nombres'].' '.$data['apellidos'], "email" => $data['correo'],
-        ];
-        $actualizado = User::where('id', $id )->update( $dataUser );
-        if ($data['activo'] == 1)
-        {
-            try 
-            {
-                Mail::to($data['correo'])->send(new Notificacion($data['nombres'], 
-                        'Su registro como Profesor ha sido ', 'Aprobado', 'Bienvenido!', env('EMPRESA')));
-            }
-            catch (Exception $e) 
-            {
-                $messages["error"] = 'Actualización realizada pero No se ha podido enviar el correo';
-                return redirect()->back()->withErrors($messages)->withInput();
-            }
-        }
+        event(new BreadDataUpdated($dataType, $data));
 
         return redirect()
         ->route("voyager.{$dataType->slug}.index")
@@ -334,7 +299,6 @@ class ProfesoresController extends Controller
             'message'    => __('voyager::generic.successfully_updated')." {$dataType->display_name_singular}",
             'alert-type' => 'success',
         ]);
-       
     }
 
     //***************************************
