@@ -391,4 +391,12 @@ class AlumnosController extends Controller
                                      ->orderBy('id', 'desc')->get();
         return response()->json($respuesta, 200);
     }
+
+    public function devuelveDisponible()
+    {
+        $search = \Request::get('user_id');
+        $alumno = Alumno::where('user_id', $search)->first();
+        $respuesta = $alumno != null ? $alumno->activo : false;
+        return response()->json($respuesta, 200);
+    }
 }

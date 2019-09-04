@@ -515,4 +515,12 @@ class ProfesorController extends Controller
         }
         return response()->json($respuesta, 200);
     }
+
+    public function devuelveDisponible()
+    {
+        $search = \Request::get('user_id');
+        $profesor = Profesore::where('user_id', $search)->first();
+        $respuesta = $profesor != null ? $profesor->disponible : false;
+        return response()->json($respuesta, 200);
+    }
 }
