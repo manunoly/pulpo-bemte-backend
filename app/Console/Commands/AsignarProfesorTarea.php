@@ -158,7 +158,7 @@ class AsignarProfesorTarea extends Command
                     if ($actualizado)
                     {
                         $dataTarea['estado'] = 'Aceptado';
-                        $estado = 'Muchas Gracias por el pago de su Tarea.';
+                        $estado = 'Su Tarea ha sido asignada.';
                         $estadoProf = 'El Alumno ha realizado el Pago de la Tarea Exitosamente.';
                         //pagar al profesor
                         $profe = Profesore::where('user_id', $propuestaSeleccionada->user_id)->first();

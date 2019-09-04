@@ -416,6 +416,8 @@ class ClasesController extends Controller
         if ( \Request::get('user_id') )
         {
             $tipo = \Request::get('tipo');
+            if ($tipo != 'ACTUAL' && $tipo != 'ANTERIOR')
+                $tipo = 'ACTUAL';
             if ( $tipo == 'ACTUAL' || $tipo == 'ANTERIOR')
             {
                 $search = \Request::get('user_id');

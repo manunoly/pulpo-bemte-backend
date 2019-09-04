@@ -107,6 +107,7 @@
             <td ></td> 
             <td class="cuerpo">
                 <p class="hola">Hola!</p>
+                <p>Su pago ha sido procesado correctamente.<p>
                 <p>La Clase solicitada ha sido asignada. A continuación los detalles de la misma.<p>
                 <p>Número: {{$clase->id}}<p>
                 <p>Alumno: {{$alumno}}<p>

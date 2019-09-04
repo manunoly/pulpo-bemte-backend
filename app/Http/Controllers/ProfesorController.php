@@ -355,7 +355,7 @@ class ProfesorController extends Controller
                             if (!$actualizado)
                                 return response()->json(['error' => 'No se pudo actualizar Billetera del Alumno'], 401);
                             $data['estado'] = 'Aceptado';
-                            $estado = 'Muchas Gracias por el pago de su Clase.';
+                            $estado = 'Su Clase ha sido asignada.';
                             //pagar al profesor
                             $pagoProf = Pago::create([
                                         'user_id' => $profe->user_id,
@@ -490,8 +490,11 @@ class ProfesorController extends Controller
         $respuesta['tarea'] = null;
         $respuesta['clase'] = null;
         $search = \Request::get('user_id');
-        $clase = Clase::where('user_id_pro', $search)->where('estado', 'Terminado')
-                ->where('califacion_alumno', null)->where('comentario_alumno', null)->first();
+        $clase = Clase::join('users', 'users.id', '=', 'clases.user_id')
+                ->where('user_id_pro', $search)->where('estado', 'Terminado')
+                ->where('califacion_alumno', null)->where('comentario_alumno', null)
+                ->select('clases.id', 'clases.fecha', 'clases.hora_prof', 'clases.materia', 'clases.tema',
+                        'clases.estado', 'clases.user_id', 'users.name', 'users.avatar')->first();
         if ($clase != null)
         {
             $respuesta['clase_id'] = $clase->id;
@@ -499,8 +502,11 @@ class ProfesorController extends Controller
         }
         else
         {
-            $tarea = Tarea::where('user_id_pro', $search)->where('estado', 'Terminado')
-                    ->where('califacion_alumno', null)->where('comentario_alumno', null)->first();
+            $tarea = Tarea::join('users', 'users.id', '=', 'tareas.user_id')
+                    ->where('user_id_pro', $search)->where('estado', 'Terminado')
+                    ->where('califacion_alumno', null)->where('comentario_alumno', null)
+                    ->select('tareas.id', 'tareas.fecha_entrega', 'tareas.materia', 'tareas.tema',
+                            'tareas.estado', 'tareas.user_id', 'users.name', 'users.avatar')->first();
             if ($tarea != null)
             {
                 $respuesta['tarea_id'] = $tarea->id;
