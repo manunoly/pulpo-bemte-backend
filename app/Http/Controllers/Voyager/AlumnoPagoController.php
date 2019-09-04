@@ -23,6 +23,7 @@ use App\Profesore;
 use App\AlumnoCompra;
 use App\AlumnoPago;
 use App\Alumno;
+use App\NotificacionesPushFcm;
 use App\Mail\Notificacion;
 use App\Mail\NotificacionClases;
 use App\Mail\NotificacionTareas;
@@ -391,6 +392,7 @@ class AlumnoPagoController extends Controller
         $dataAct['estado'] = 'Aceptado';
         if ($request['estado'] != 'Aprobado')
             $dataAct['activa'] = false;
+        $dateTime = date("Y-m-d H:i:s");
         if ($tarea != null)
         {
             if ($request['estado'] != 'Aprobado')
@@ -442,6 +444,9 @@ class AlumnoPagoController extends Controller
                     Mail::to($userAlumno->email)->send(new Notificacion($userAlumno->name, 
                             'Su Pago para la Tarea '.$tarea->id.' no ha sido Aprobado.', '',
                             'Por favor, contactar con el administrador.', env('EMPRESA')));
+                    Mail::to($userProf->email)->send(new Notificacion($userProf->name, 
+                            'El Pago para la Tarea '.$tarea->id.' no ha sido Aprobado.', '',
+                            'La Tarea no ha sido Asignada.', env('EMPRESA')));
                 }
                 catch (Exception $e) 
                 {
@@ -449,13 +454,22 @@ class AlumnoPagoController extends Controller
                     return redirect()->back()->withErrors($messages)->withInput();
                 }
             }
+            //enviar notificacion al profesor y al alumno
+            $notificacion['titulo'] = 'Pago Tarea '.$request['estado'];
+            $notificacion['texto'] = 'El pago de la Tarea '.$tarea->id.' ha sido '.$request['estado'];
+            if ($request['estado'] == 'Aprobado')
+                $notificacion['texto'] = $notificacion['texto'].'. La Tarea ha sido Asignada, '.$dateTime;
+            else
+                $notificacion['texto'] = $notificacion['texto'].'. La Tarea no ha sido Asignada, '.$dateTime;
+            $notificacion['estado'] = 'NO';
+            $pushClass = new NotificacionesPushFcm();
+            $pushClass->enviarNotificacion($notificacion, $userAlumno);
+            $pushClass->enviarNotificacion($notificacion, $userProf);
         }
         if ($clase != null)
         {
             if ($request['estado'] != 'Aprobado')
-            {
                 $dataAct['estado'] = 'Pago_Rechazado';
-            }
             else
             {
                 //$dataAct['estado'] = 'Pago_Aprobado';
@@ -504,6 +518,9 @@ class AlumnoPagoController extends Controller
                     Mail::to($userAlumno->email)->send(new Notificacion($userAlumno->name, 
                             'Su Pago para la Clase '.$clase->id.' no ha sido Aprobado.', '',
                             'Por favor, contactar con el administrador.', env('EMPRESA')));
+                    Mail::to($userProf->email)->send(new Notificacion($userProf->name, 
+                            'El Pago para la Clase '.$clase->id.' no ha sido Aprobado.', '',
+                            'La Clase no ha sido Asignada.', env('EMPRESA')));
                 }
                 catch (Exception $e) 
                 {
@@ -511,6 +528,17 @@ class AlumnoPagoController extends Controller
                     return redirect()->back()->withErrors($messages)->withInput();
                 }
             }
+            //enviar notificacion al profesor y al alumno
+            $notificacion['titulo'] = 'Pago Clase '.$request['estado'];
+            $notificacion['texto'] = 'El pago de la Clase '.$clase->id.' ha sido '.$request['estado'];
+            if ($request['estado'] == 'Aprobado')
+                $notificacion['texto'] = $notificacion['texto'].'. La Clase ha sido Asignada, '.$dateTime;
+            else
+                $notificacion['texto'] = $notificacion['texto'].'. La Clase no ha sido Asignada, '.$dateTime;
+            $notificacion['estado'] = 'NO';
+            $pushClass = new NotificacionesPushFcm();
+            $pushClass->enviarNotificacion($notificacion, $userAlumno);
+            $pushClass->enviarNotificacion($notificacion, $userProf);
         }
         if ($compra != null)
         {
@@ -534,6 +562,17 @@ class AlumnoPagoController extends Controller
                     return redirect()->back()->withErrors($messages)->withInput();
                 }
             }
+            //enviar notificacion al alumno
+            $userAlumno = User::where('id', $compra->user_id)->first();
+            $notificacion['titulo'] = 'Pago Horas '.$request['estado'];
+            $notificacion['texto'] = 'El pago de '.$compra->horas.' Horas ha sido '.$request['estado'].'. Por favor,';
+            if ($request['estado'] == 'Aprobado')
+                $notificacion['texto'] = $notificacion['texto'].' revise su Billetera, '.$dateTime;
+            else
+                $notificacion['texto'] = $notificacion['texto'].' contactar con el administrador, '.$dateTime;
+            $notificacion['estado'] = 'NO';
+            $pushClass = new NotificacionesPushFcm();
+            $pushClass->enviarNotificacion($notificacion, $userAlumno);
         }
         
         $this->insertUpdateData($request, $slug, $dataType->editRows, $data);
