@@ -459,7 +459,7 @@ class ProfesorController extends Controller
                             ->select('multas.clase_id', 'multas.tarea_id', 'multas.valor', 
                             'multas.comentario', 'multas.created_at', 'multas.estado')->get();
                 $respuesta['total'] = $multas->where('estado', '!=', 'Cancelado')->sum('valor');
-                $respuesta['multas'] = $multas;
+                $respuesta['data'] = $multas;
             }
             else if ($tipo == 'TAREAS')
             {
@@ -470,7 +470,7 @@ class ProfesorController extends Controller
                             'tareas.fecha_entrega', 'pagos.valor', 'pagos.created_at', 
                             'pagos.estado as pago', 'tareas.estado')->get();
                 $respuesta['total'] = $tareas->where('pago', '!=', 'Cancelado')->sum('valor');
-                $respuesta['tareas'] = $tareas;
+                $respuesta['data'] = $tareas;
             }
             else
             {
@@ -481,7 +481,7 @@ class ProfesorController extends Controller
                             'clases.duracion', 'clases.fecha', 'pagos.horas', 'clases.estado',
                             'pagos.valor', 'pagos.created_at', 'pagos.estado as pago')->get();
                 $respuesta['total'] = $clases->where('pago', '!=', 'Cancelado')->sum('valor');
-                $respuesta['clases'] = $clases;
+                $respuesta['data'] = $clases;
             }
             return response()->json($respuesta, 200);
         }
