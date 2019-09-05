@@ -466,7 +466,7 @@ class ProfesorController extends Controller
                 $tareas = Pago::join('tareas', 'pagos.tarea_id', '=', 'tareas.id')
                             ->where('pagos.user_id', $search)
                             ->where('tareas.user_id_pro', $search)
-                            ->select('tareas.id', 'tareas.materia', 'tareas.tiempo_estimado',  'pagos.horas',
+                            ->select('tareas.id', 'tareas.materia', 'tareas.tema',  'pagos.horas',
                             'tareas.fecha_entrega', 'pagos.valor', 'pagos.created_at', 
                             'pagos.estado as pago', 'tareas.estado')->get();
                 $respuesta['total'] = $tareas->where('pago', '!=', 'Cancelado')->sum('valor');
@@ -477,7 +477,7 @@ class ProfesorController extends Controller
                 $clases = Pago::join('clases', 'pagos.clase_id', '=', 'clases.id')
                             ->where('pagos.user_id', $search)
                             ->where('clases.user_id_pro', $search)
-                            ->select('clases.id', 'clases.materia', 'clases.personas', 
+                            ->select('clases.id', 'clases.materia', 'clases.tema', 
                             'clases.duracion', 'clases.fecha', 'pagos.horas', 'clases.estado',
                             'pagos.valor', 'pagos.created_at', 'pagos.estado as pago')->get();
                 $respuesta['total'] = $clases->where('pago', '!=', 'Cancelado')->sum('valor');
