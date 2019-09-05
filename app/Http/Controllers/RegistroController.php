@@ -41,10 +41,10 @@ class RegistroController extends Controller
             }
             if ($result)
             {
-                return response()->json(['success' => 'Cuenta desactivada correctamente' ], 200);
+                return response()->json(['success' => 'Cuenta Desactivada' ], 200);
             }
         }
-        return response()->json(['error' => 'Ocurrió un error al desactivar su cuenta'], 401);
+        return response()->json(['error' => 'Error al desactivar su cuenta'], 401);
     }
 
     public function actualizarCuenta(Request $request)
@@ -89,7 +89,7 @@ class RegistroController extends Controller
                 $emailVerified = User::where('email', '=', $request['email'] )->first();
                 if ($emailVerified !== null) 
                 {
-                    return response()->json([ 'exist' => 'El email pertenece a otro usuario!'], 401);
+                    return response()->json([ 'exist' => 'Email pertenece a otro usuario!'], 401);
                 }
                 $data['email'] = $request['email'];
             }
@@ -126,7 +126,7 @@ class RegistroController extends Controller
                     if ($actualizado)
                     {
                         $userDev = $this->datosUser($id_usuario);
-                        return response()->json(['success' => 'Datos actualizados correctamente', 'profile' => $userDev], 200);
+                        return response()->json(['success' => 'Datos Actualizados!', 'profile' => $userDev], 200);
                     }
                     else
                     {
@@ -160,7 +160,7 @@ class RegistroController extends Controller
                     if ($actualizado)
                     {
                         $userDev = $this->datosUser($id_usuario);
-                        return response()->json(['success' => 'Datos actualizados correctamente', 'profile' => $userDev], 200);
+                        return response()->json(['success' => 'Datos Actualizados!', 'profile' => $userDev], 200);
                     }
                     else
                     {
@@ -195,7 +195,7 @@ class RegistroController extends Controller
         {
             if($user['activo'] == false)
             {
-                return response()->json(['error' => '¡Cuenta inactiva! Por favor comunicarse con atención al cliente'], 401);
+                return response()->json(['error' => '¡Cuenta inactiva!'], 401);
             }
         }
         else
@@ -243,7 +243,7 @@ class RegistroController extends Controller
                 $message->to( $this->actual_email );
                 $message->subject('Código de verificación');
             });
-            return response()->json([ 'success' => 'Correo enviado correctamente'], 200);
+            return response()->json([ 'success' => 'Correo Enviado'], 200);
         }
         else
         {
@@ -269,7 +269,7 @@ class RegistroController extends Controller
             $act = User::where('id', $email->id )->update($data);
             if(!$act )
             {
-                return response()->json(['error' => 'Ocurrió un error al cambiar contraseña'], 401);
+                return response()->json(['error' => 'Error al cambiar contraseña'], 401);
             }
             try 
             {
@@ -279,10 +279,10 @@ class RegistroController extends Controller
             catch (Exception $e) 
             {
                 return response()->json(
-                            ['error' => 'No se ha podido enviar el correo',
+                            ['error' => 'No se pudo enviar el correo',
                             'detalle' => $e->getMessage()], 401);
             }
-            return response()->json([ 'success' => 'Correo enviado correctamente'], 200);
+            return response()->json([ 'success' => 'Correo Enviado'], 200);
         }
         else
         {
@@ -321,7 +321,7 @@ class RegistroController extends Controller
             $request['password']=bcrypt( $request['password']);
             DB::table('users')->where('email', $request['email'])->update(['password' => $request['password']]);
             DB::table('password_resets')->where('token', $request['token'])->delete();
-            return response()->json([ 'success' => 'Contraseña actualizada con éxito'], 200);
+            return response()->json([ 'success' => 'Contraseña Actualizada!'], 200);
         }
         else
         {
@@ -426,7 +426,7 @@ class RegistroController extends Controller
                     if($alumno)
                     {
                         $userDev = $this->datosUser($user->id);
-                        return response()->json(['success' => 'Cuenta creada correctamente', 'profile' => $userDev], 200);
+                        return response()->json(['success' => 'Cuenta Creada!', 'profile' => $userDev], 200);
                     }
                 }
                 else
@@ -497,7 +497,7 @@ class RegistroController extends Controller
                             ]);
 
                         $userDev = $this->datosUser($user->id);
-                        return response()->json(['success' => 'Cuenta creada correctamente', 'profile' => $userDev], 200);
+                        return response()->json(['success' => 'Cuenta Creada!', 'profile' => $userDev], 200);
                     }
                 }
             }
@@ -540,7 +540,7 @@ class RegistroController extends Controller
             $actualizado = User::where('id', $id_usuario )->update( $data );
             if( $actualizado )
             {
-                return response()->json(['success' => 'Datos actualizados correctamente'], 200);
+                return response()->json(['success' => 'Token Actualizado!'], 200);
             }
             else
             {
@@ -549,7 +549,7 @@ class RegistroController extends Controller
         } 
         else
         {
-            return response()->json(['error' => 'No se encontró el Usuario'], 401);
+            return response()->json(['error' => 'No se encontró Usuario'], 401);
         }
     }
 

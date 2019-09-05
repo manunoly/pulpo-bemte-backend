@@ -36,12 +36,12 @@ class ChatController extends Controller
                     if ($tarea != null)
                     {
                         if ($tarea->user_id != $user && $tarea->user_id_pro != $user)
-                            return response()->json(['error' => 'El usuario no está relacionado con la Tarea'], 401);
+                            return response()->json(['error' => 'Usuario no relacionado a la Tarea'], 401);
                     }
                     else
                     {
                         if ($clase->user_id != $user && $clase->user_id_pro != $user)
-                            return response()->json(['error' => 'Usuario no relacionado con la Clase'], 401);
+                            return response()->json(['error' => 'Usuario no relacionado a la Clase'], 401);
                     }
                     $chats = Chat::where('clase_id', $claseID)->where('tarea_id', $tareaID)->get();
 
@@ -95,18 +95,18 @@ class ChatController extends Controller
         if ($tarea != null)
         {
             if ($tarea->user_id != $request['user_id'] && $tarea->user_id_pro != $request['user_id'])
-                return response()->json(['error' => 'Usuario no relacionado con la Tarea'], 401);
+                return response()->json(['error' => 'Usuario no relacionado a la Tarea'], 401);
             if ($tarea->user_id_pro == null || $tarea->estado != 'Aceptado')
-                return response()->json(['error' => 'El Chat no se encuentra activo para la Tarea'], 401);
+                return response()->json(['error' => 'Chat inactivo para la Tarea'], 401);
             $alumno = $tarea->user_id;
             $profesor = $tarea->user_id_pro;
         }
         else
         {
             if ($clase->user_id != $request['user_id'] && $clase->user_id_pro != $request['user_id'])
-                return response()->json(['error' => 'Usuario no relacionado con la Clase'], 401);
+                return response()->json(['error' => 'Usuario no relacionado a la Clase'], 401);
             if ($clase->user_id_pro == null || $clase->estado != 'Aceptado')
-                return response()->json(['error' => 'El Chat no se encuentra activo para la Clase'], 401);
+                return response()->json(['error' => 'Chat inactivo para la Clase'], 401);
             $alumno = $clase->user_id;
             $profesor = $clase->user_id_pro;
         }
@@ -123,8 +123,8 @@ class ChatController extends Controller
         ]);
         if (!$chat->id)
         {
-            return response()->json(['error' => 'Ocurrió un error al subir el chat!'], 401);
+            return response()->json(['error' => 'Error al subir el chat!'], 401);
         }
-        return response()->json(['success'=> 'Su Chat ha sido enviado'], 200);
+        return response()->json(['success'=> 'Chat Enviado'], 200);
     }
 }

@@ -79,13 +79,13 @@ class CombosController extends Controller
         else if ($tarea == null && $clase == null)
             return response()->json(['error' => 'Especifique una opción, Clase o Tarea'], 401);
         if ($tarea != null && $tarea->estado != 'Sin_Horas')
-            return response()->json(['error' => 'El estado de la Tarea no permite comprar horas'], 401);
+            return response()->json(['error' => 'Estado de Tarea no permite comprar horas'], 401);
         if ($tarea != null && $tarea->user_id != $request['user_id'])
-            return response()->json(['error' => 'El usuario no tiene relación con la Clase'], 401);
+            return response()->json(['error' => 'Usuario no relacionado a la Clase'], 401);
         if ($clase != null && $clase->estado != 'Sin_Horas')
-            return response()->json(['error' => 'El estado de la Clase no permite comprar horas'], 401);
+            return response()->json(['error' => 'Estado de Clase no permite comprar horas'], 401);
         if ($clase != null && $clase->user_id != $request['user_id'])
-            return response()->json(['error' => 'El usuario no tiene relación con la Clase'], 401);
+            return response()->json(['error' => 'Usuario no relacionado a la Clase'], 401);
         $usuario = Alumno::where('user_id', $request['user_id'])->first();
         if ($usuario != null)
         {
@@ -153,10 +153,10 @@ class CombosController extends Controller
                     return response()->json(['success' => 'Compra de Combo Solicitada'], 200);
                 }
                 else
-                    return response()->json(['error' => 'Ocurrió un error al registrar solicitud!'], 401);
+                    return response()->json(['error' => 'Error al registrar solicitud!'], 401);
             }
             else
-                return response()->json(['error' => 'El Alumno no puede comprar un Combo'], 401); 
+                return response()->json(['error' => 'Alumno no puede comprar Combo'], 401); 
         }
         else
             return response()->json(['error' => 'No existe el Alumno'], 401);

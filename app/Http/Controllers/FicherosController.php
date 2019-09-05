@@ -51,11 +51,11 @@ class FicherosController extends Controller
             {
                 return response()->json(['error' => $e->getMessage()], 401);
             }
-            return response()->json(['success' => 'Archivo subido correctamente'], 200);
+            return response()->json(['success' => 'Archivo Subido'], 200);
         }
         else
         {
-            return response()->json(['error' => 'Usuario no autorizado a subir un Archivo'], 401);
+            return response()->json(['error' => 'Usuario no autorizado'], 401);
         }
     }
     
@@ -74,7 +74,7 @@ class FicherosController extends Controller
         $archivo = isset($request['archivo']) ? trim($request['archivo']) : NULL;
         if (($drive == NULL) && ($archivo == NULL))
         {
-            return response()->json(['error' => 'Archivo con ejercicio sin especificar'], 401);
+            return response()->json(['error' => 'Ejercicio sin especificar'], 401);
         }
         $tarea = Tarea::where('id', $request['tarea_id'])->first();
         $clase = Clase::where('id', $request['clase_id'])->first();
@@ -90,7 +90,7 @@ class FicherosController extends Controller
             }
             else if (($tarea->user_id != $request['user_id']) && ($tarea->user_id_pro != $request['user_id']))
             {
-                return response()->json(['error' => 'El usuario no tiene relación con la Tarea'], 401);
+                return response()->json(['error' => 'Usuario no relacionado a la Tarea'], 401);
             }
         }
         if ($clase != null)
@@ -101,7 +101,7 @@ class FicherosController extends Controller
             }
             else if (($clase->user_id != $request['user_id']) && ($clase->user_id_pro != $request['user_id']))
             {
-                return response()->json(['error' => 'El usuario no tiene relación con la Clase'], 401);
+                return response()->json(['error' => 'Usuario no relacionado a la Clase'], 401);
             }
         }
         $alumno = Alumno::where('user_id', $request['user_id'])->first();
@@ -120,7 +120,7 @@ class FicherosController extends Controller
                     ]);
                     if (!$aplica->id)
                     {
-                        return response()->json(['error' => 'Ocurrió un error al subir el ejercicio!'], 401);
+                        return response()->json(['error' => 'Error al subir el ejercicio!'], 401);
                     }
                 }
                 if ($clase != null)
@@ -133,14 +133,14 @@ class FicherosController extends Controller
                     ]);
                     if (!$aplica->id)
                     {
-                        return response()->json(['error' => 'Ocurrió un error al subir el ejercicio!'], 401);
+                        return response()->json(['error' => 'Error al subir el ejercicio!'], 401);
                     }
                 }
-                return response()->json(['success' => 'Ejercicio guardado exitosamente'], 200);
+                return response()->json(['success' => 'Ejercicio Guardado'], 200);
             }
             else
             {
-                return response()->json(['error' => 'El usuario no se encuentra activo'], 401);
+                return response()->json(['error' => 'Usuario no se encuentra activo'], 401);
             }
         }
         else
@@ -170,7 +170,7 @@ class FicherosController extends Controller
         $archivo = isset($request['archivo']) ? 'uploads'.'\\'.$request['user_id'].'\\'.trim($request['archivo']) : NULL;
         if (($drive == NULL) && ($archivo == NULL))
         {
-            return response()->json(['error' => 'Archivo de transferencia sin especificar'], 401);
+            return response()->json(['error' => 'Transferencia sin especificar'], 401);
         }
         $tarea = null;
         if ($request['tarea_id'] > 0)
@@ -182,11 +182,11 @@ class FicherosController extends Controller
             $tarea = Tarea::where('id', $request['tarea_id'])->first();
             if ($tarea == null)
             {
-                return response()->json(['error' => 'No existe la tarea a pagar'], 401);
+                return response()->json(['error' => 'No existe Tarea a pagar'], 401);
             }
             else if ($tarea->estado != 'Confirmado')
             {
-                return response()->json(['error' => 'La Tarea no se encuentra Confirmada para pagar'], 401);
+                return response()->json(['error' => 'Tarea no Confirmada para pagar'], 401);
             }
         }
         $clase = null;
@@ -199,11 +199,11 @@ class FicherosController extends Controller
             $clase = Clase::where('id', $request['clase_id'])->first();
             if ($clase == null)
             {
-                return response()->json(['error' => 'No existe la Clase a pagar'], 401);
+                return response()->json(['error' => 'No existe Clase a pagar'], 401);
             }
             else if ($clase->estado != 'Confirmado')
             {
-                return response()->json(['error' => 'La Clase no se encuentra Confirmada para pagar'], 401);
+                return response()->json(['error' => 'Clase no Confirmada para pagar'], 401);
             }
         }
         $combo = null;
@@ -240,7 +240,7 @@ class FicherosController extends Controller
                     ]);
                     if (!$combo->id)
                     {
-                        return response()->json(['error' => 'Ocurrió un error al registrar solicitud!'], 401);
+                        return response()->json(['error' => 'Error al registrar solicitud!'], 401);
                     }
                 }
                 $solicitud = AlumnoPago::where('user_id', $request['user_id'])
@@ -260,7 +260,7 @@ class FicherosController extends Controller
                     ]);
                     if (!$aplica->id)
                     {
-                        return response()->json(['error' => 'Ocurrió un error al registrar solicitud!'], 401);
+                        return response()->json(['error' => 'Error al registrar solicitud!'], 401);
                     }
                 }
                 else
@@ -271,7 +271,7 @@ class FicherosController extends Controller
                     $actualizado = AlumnoPago::where('id', $solicitud->id )->update( $data );
                     if(!$actualizado )
                     {
-                        return response()->json(['error' => 'Ocurrió un error al actualizar solicitud'], 401);
+                        return response()->json(['error' => 'Error al actualizar solicitud'], 401);
                     }
                 }
                 if ($clase != null)
@@ -281,7 +281,7 @@ class FicherosController extends Controller
                     $detalle = 'Para la Clase '.$clase->id;
                     if(!$actualizado )
                     {
-                        return response()->json(['error' => 'Ocurrió un error al actualizar solicitud'], 401);
+                        return response()->json(['error' => 'Error al actualizar solicitud'], 401);
                     }
                 }
                 if ($tarea != null)
@@ -291,7 +291,7 @@ class FicherosController extends Controller
                     $detalle = 'Para la Tarea '.$tarea->id;
                     if(!$actualizado )
                     {
-                        return response()->json(['error' => 'Ocurrió un error al actualizar solicitud'], 401);
+                        return response()->json(['error' => 'Error al actualizar solicitud'], 401);
                     }
                 }
                 try 
@@ -303,16 +303,16 @@ class FicherosController extends Controller
                 }
                 catch (Exception $e) { }
 
-                return response()->json(['success' => 'Transferencia solicitada exitosamente'], 200);
+                return response()->json(['success' => 'Transferencia Solicitada'], 200);
             }
             else
             {
-                return response()->json(['error' => 'El alumno no se encuentra activo'], 401);
+                return response()->json(['error' => 'Alumno Inactivo'], 401);
             }
         }
         else
         {
-            return response()->json(['error' => 'No se encontró Alumno para subir Transferencia'], 401);
+            return response()->json(['error' => 'Sin Alumno para subir Transferencia'], 401);
         }
     }
 }

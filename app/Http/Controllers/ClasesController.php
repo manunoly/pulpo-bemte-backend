@@ -58,17 +58,17 @@ class ClasesController extends Controller
             $user = User::where('id', '=', $request['user_id'] )->first();
             if ($user == null) 
             {
-                return response()->json([ 'error' => 'El usuario no existe!'], 401);
+                return response()->json([ 'error' => 'Usuario no existe!'], 401);
             }
             $alumno = Alumno::where('user_id', '=', $request['user_id'] )->first();
             if (($alumno == null) || ($alumno != null && !$alumno->activo) )
             {
-                return response()->json([ 'error' => 'El usuario no puede solicitar Clase'], 401);
+                return response()->json([ 'error' => 'Usuario no puede solicitar Clase'], 401);
             }
             $materia = Materia::where('nombre', '=', $request['materia'] )->first();
             if ($materia == null)
             {
-                return response()->json(['error' => 'La Materia enviada no es válida'], 401);
+                return response()->json(['error' => 'Materia enviada inválida'], 401);
             }
             $claseAnterior = null;
             if ($request['selProfesor']==1)
@@ -77,7 +77,7 @@ class ClasesController extends Controller
                                 ->whereIn('estado', ['Aceptado', 'Terminado', 'Calificado'])
                                 ->orderBy('id', 'desc')->first();
                 if ($claseAnterior == nul)
-                    return response()->json(['error' => 'No existe Clase anterior para seleccionar Profesor'], 401);
+                    return response()->json(['error' => 'Sin Clase Anterior para seleccionar Profesor'], 401);
             }
             $duracion = $request['duracion'] + ($request['personas'] - 1);
             if ($duracion < 2)
@@ -148,7 +148,7 @@ class ClasesController extends Controller
                     foreach($profesores as $solicitar)
                         $pushClass->enviarNotificacion($notificacion, $solicitar);
                 }
-                return response()->json(['success'=> 'Clase solicitada exitosamente',
+                return response()->json(['success'=> 'Clase Solicitada',
                                         'clase' => $clase], 200);
             }
             else
@@ -227,12 +227,12 @@ class ClasesController extends Controller
         if ($clase != null)
         {
             if ($request['user_id'] != $clase->user_id_pro && $request['user_id'] != $clase->user_id)
-                return response()->json(['error' => 'Usuario no coincide con datos de la Clase'], 401);
+                return response()->json(['error' => 'Usuario no relacionado a la Clase'], 401);
 
             if ($clase->estado == 'Sin_Profesor' || $clase->estado == 'Pago_Rechazado' ||
                 $clase->estado == 'Sin_Pago' || $clase->estado == 'Terminado' || 
                 $clase->estado == 'Calificado' || $clase->activa == 0)
-                return response()->json(['error' => 'La Clase no permite modificación'], 401);
+                return response()->json(['error' => 'Clase no permite modificación'], 401);
 
             $data['activa'] = false;
             if ($request['cancelar'] == 1)
@@ -243,7 +243,7 @@ class ClasesController extends Controller
                 $actualizado = Clase::where('id', $request['clase_id'] )->update( $data );
                 if(!$actualizado )
                 {
-                    return response()->json(['error' => 'Ocurrió un error al Cancelar la Clase.'], 401);
+                    return response()->json(['error' => 'Error al Cancelar la Clase.'], 401);
                 }
                 else
                 {
@@ -296,7 +296,7 @@ class ClasesController extends Controller
                                 ]);
                             if (!$multaProf->id)
                             {
-                                return response()->json(['error' => 'Ocurrió un error al crear Multa al Profesor'], 401);
+                                return response()->json(['error' => 'Error al crear Multa al Profesor'], 401);
                             }
                         }
                         if ($clase->estado == 'Aceptado' || $clase->estado == 'Pago_Aprobado')
@@ -365,14 +365,14 @@ class ClasesController extends Controller
                                         'estado' => 'Solicitado'
                                         ]);
                             if (!$multaProf->id)
-                                return response()->json(['error' => 'Ocurrió un error al crear Multa al Profesor'], 401);
+                                return response()->json(['error' => 'Error al crear Multa al Profesor'], 401);
                         }
                         else if ($pagoClase->estado == 'Solicitado')
                         {
                             $pago['estado'] = 'Cancelado';
                             $actualizado = Pago::where('user_id', $clase->user_id_pro)->where('clase_id', $clase->id)->update( $pago );
                             if(!$actualizado )
-                                return response()->json(['error' => 'Ocurrió un error al Cancelar Pago al Profesor'], 401);
+                                return response()->json(['error' => 'Error al Cancelar Pago al Profesor'], 401);
                         }
                     }
                     if ($penHoras != 0)
@@ -390,9 +390,9 @@ class ClasesController extends Controller
                         }
                         $actCombo = Alumno::where('user_id', $bill->user_id )->update( $dataCombo );
                         if(!$actCombo)
-                            return response()->json(['error' => 'Ocurrió un error al Actualizar Billetera del Alumno'], 401);
+                            return response()->json(['error' => 'Error al Actualizar Billetera del Alumno'], 401);
                     }
-                    return response()->json(['success' => 'Clase Cancelada exitosamente'], 200);
+                    return response()->json(['success' => 'Clase Cancelada'], 200);
                 }
             }
             else
@@ -400,9 +400,9 @@ class ClasesController extends Controller
                 $data['estado'] = 'Terminado';
                 $actualizado = Clase::where('id', $request['clase_id'] )->update( $data );
                 if(!$actualizado )
-                    return response()->json(['error' => 'Ocurrió un error al Finalizar la Clase'], 401);
+                    return response()->json(['error' => 'Error al Finalizar la Clase'], 401);
                 else
-                    return response()->json(['success' => 'Clase Finalizada exitosamente'], 200);
+                    return response()->json(['success' => 'Clase Finalizada'], 200);
             }  
         }
         else
@@ -424,7 +424,7 @@ class ClasesController extends Controller
                 $user = User::where('id', '=', $search )->first();
                 if ($user == null) 
                 {
-                    return response()->json([ 'error' => 'El usuario no existe!'], 401);
+                    return response()->json([ 'error' => 'Usuario no existe!'], 401);
                 }
                 $nowDate = date_format(date_create(date("Y-m-d H:i:s")), "Y-m-d");
                 if ($user['tipo'] == 'Alumno') 
@@ -502,7 +502,7 @@ class ClasesController extends Controller
                 $actualizado = Clase::where('id', $request['clase_id'] )->update( $data );
                 if(!$actualizado )
                 {
-                    return response()->json(['error' => 'Ocurrió un error al Confirmar la Clase'], 401);
+                    return response()->json(['error' => 'Error al Confirmar la Clase'], 401);
                 }
                 else
                 {
@@ -517,12 +517,12 @@ class ClasesController extends Controller
                     $pushClass = new NotificacionesPushFcm();
                     $pushClass->enviarNotificacion($notificacion, $userNotif);
 
-                    return response()->json(['success' => 'Clase confirmada exitosamente'], 200);
+                    return response()->json(['success' => 'Clase Confirmada'], 200);
                 }  
             }
             else
             {
-                return response()->json(['error' => 'La Clase no puede ser modificada'], 401);
+                return response()->json(['error' => 'Clase no se puede modificar'], 401);
             }
         }
         else
@@ -552,7 +552,7 @@ class ClasesController extends Controller
                     if ($clase->estado == 'Sin_Profesor' || $clase->estado == 'Pago_Rechazado' ||
                         $clase->estado == 'Sin_Pago' || $clase->estado == 'Terminado' || 
                         $clase->estado == 'Calificado' || $clase->activa == 0)
-                        return response()->json(['error' => 'La Clase no permite modificación'], 401);
+                        return response()->json(['error' => 'Clase no permite modificación'], 401);
 
                     $duracion = $clase->duracion - ($clase->personas - 1);
                     if ($duracion < 2)
@@ -601,7 +601,7 @@ class ClasesController extends Controller
                         }
                     }
                     else
-                        return response()->json(['error' => 'Usuario no coincide con datos de la Clase'], 401);
+                        return response()->json(['error' => 'Usuario no relacionado a la Clase'], 401);
                 }
                 else
                 {

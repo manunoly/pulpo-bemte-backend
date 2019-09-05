@@ -52,17 +52,17 @@ class TareasController extends Controller
             $user = User::where('id', '=', $request['user_id'] )->first();
             if ($user == null) 
             {
-                return response()->json([ 'error' => 'El usuario no existe!'], 401);
+                return response()->json([ 'error' => 'Usuario no existe!'], 401);
             }
             $alumno = Alumno::where('user_id', '=', $request['user_id'] )->first();
             if ($alumno == null) 
             {
-                return response()->json([ 'error' => 'El usuario no puede solicitar Tarea'], 401);
+                return response()->json([ 'error' => 'Usuario no puede solicitar Tarea'], 401);
             }
             $materia = Materia::where('nombre', '=', $request['materia'] )->first();
             if ($materia == null)
             {
-                return response()->json(['error' => 'La Materia enviada no es válida'], 401);
+                return response()->json(['error' => 'Materia enviada Inválida'], 401);
             }
 
             $archivo = isset($request['archivo']) ? $request['archivo'] : NULL;
@@ -104,7 +104,7 @@ class TareasController extends Controller
                 foreach($profesores as $solicitar)
                     $pushClass->enviarNotificacion($notificacion, $solicitar);
 
-                return response()->json(['success'=> 'Tarea solicitada exitosamente',
+                return response()->json(['success'=> 'Tarea Solicitada!',
                                         'tarea' => $tarea], 200);
             }
             else
@@ -179,11 +179,11 @@ class TareasController extends Controller
         if ($tarea != null)
         {
             if ($request['user_id'] != $tarea->user_id_pro && $request['user_id'] != $tarea->user_id)
-                return response()->json(['error' => 'Usuario no coincide con datos de la Tarea'], 401);
+                return response()->json(['error' => 'Usuario no relacionado a la Tarea'], 401);
 
             if ($tarea->estado == 'Sin_Profesor' || $tarea->estado == 'Pago_Rechazado' ||
                 $tarea->estado == 'Sin_Pago' || $tarea->estado == 'Terminado' || $tarea->estado == 'Calificado')
-                return response()->json(['error' => 'La Tarea no permite modificación'], 401);
+                return response()->json(['error' => 'Tarea no permite modificación'], 401);
             
             if ($request['cancelar'] == 1)
             {
@@ -194,7 +194,7 @@ class TareasController extends Controller
                 $actualizado = Tarea::where('id', $request['tarea_id'] )->update( $data );
                 if(!$actualizado )
                 {
-                    return response()->json(['error' => 'Ocurrió un error al terminar la tarea'], 401);
+                    return response()->json(['error' => 'Error al Terminar Tarea'], 401);
                 }
                 else
                 {
@@ -227,7 +227,7 @@ class TareasController extends Controller
                             }
                             $actCombo = Alumno::where('user_id', $bill->user_id )->update( $dataCombo );
                             if(!$actCombo)
-                                return response()->json(['error' => 'Ocurrió un error al Actualizar Billetera del Alumno'], 401);
+                                return response()->json(['error' => 'Error al Actualizar Billetera del Alumno'], 401);
                         }
                         //quitar pago al profesor
                         $pagoTarea = Pago::where('user_id', $tarea->user_id_pro)->where('tarea_id', $tarea->id)->first();
@@ -242,14 +242,14 @@ class TareasController extends Controller
                                         'estado' => 'Solicitado'
                                         ]);
                             if (!$multaProf->id)
-                                return response()->json(['error' => 'Ocurrió un error al crear Multa al Profesor'], 401);
+                                return response()->json(['error' => 'Error al crear Multa al Profesor'], 401);
                         }
                         else if ($pagoTarea->estado == 'Solicitado')
                         {
                             $pago['estado'] = 'Cancelado';
                             $actualizado = Pago::where('user_id', $tarea->user_id_pro)->where('tarea_id', $tarea->id)->update( $pago );
                             if(!$actualizado)
-                                return response()->json(['error' => 'Ocurrió un error al Cancelar Pago al Profesor'], 401);
+                                return response()->json(['error' => 'Error al Cancelar Pago al Profesor'], 401);
                         }
                     }
                     $correoAdmin = '';
@@ -293,13 +293,13 @@ class TareasController extends Controller
                         }
                     }
 
-                    return response()->json(['success' => 'Tarea Cancelada exitosamente'], 200);
+                    return response()->json(['success' => 'Tarea Cancelada!'], 200);
                 }  
             }
         }
         else
         {
-            return response()->json(['error' => 'No se encontró la Tarea'], 401);
+            return response()->json(['error' => 'No se encontró Tarea'], 401);
         }            
     }
     
@@ -316,7 +316,7 @@ class TareasController extends Controller
                 $user = User::where('id', '=', $search )->first();
                 if ($user == null) 
                 {
-                    return response()->json([ 'error' => 'El usuario no existe!'], 401);
+                    return response()->json([ 'error' => 'Usuario no existe!'], 401);
                 }
                 $nowDate = date_format(date_create(date("Y-m-d H:i:s")), "Y-m-d");
                 if ($user['tipo'] == 'Alumno') 
