@@ -9,6 +9,6 @@ class Notificacione extends Model
     protected $table = 'notificaciones'; 
 
     protected $fillable = [
-        'id', 'user_id', 'created_at', 'notificacion', 'estado',
+        'id', 'user_id', 'created_at', 'titulo', 'notificacion', 'estado',
     ];
 }

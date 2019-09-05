@@ -79,7 +79,8 @@ class NotificacionesPushFcm
         }
         $notifBD = Notificacione::create([
                                 'user_id' => $user->id,
-                                'notificacion' => $notificacion['titulo'].'|'.$notificacion['texto'],
+                                'titulo' => $notificacion['titulo'],
+                                'notificacion' => $notificacion['texto'],
                                 'estado' => $errorNotif
                                 ]);
         if ($notificacion['estado'] != 'NO')
