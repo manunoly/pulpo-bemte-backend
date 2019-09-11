@@ -266,13 +266,13 @@ class TareasController extends Controller
                         if ($request['user_id'] == $tarea->user_id_pro)
                         {
                             $userNotif = User::where('id', $tarea->user_id)->first();
-                            $correoAdmin = $texto.'Profesor '.$userNotif->name.' a las '.$dateTime;
-                            $texto = $texto.'Profesor, '.$dateTime;
+                            $correoAdmin = $notificacion['texto'].'Profesor '.$userNotif->name.' a las '.$dateTime;
+                            $notificacion['texto'] = $notificacion['texto'].'Profesor, '.$dateTime;
                         }
                         else
                         {
                             $userNotif = User::where('id', $tarea->user_id_pro)->first();
-                            $texto = $texto.'Alumno, '.$dateTime;
+                            $notificacion['texto'] = $notificacion['texto'].'Alumno, '.$dateTime;
                         }
                         $pushClass = new NotificacionesPushFcm();
                         $pushClass->enviarNotificacion($notificacion, $userNotif);
