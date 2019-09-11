@@ -215,7 +215,7 @@ class TareasController extends Controller
                         if ($penHoras != 0)
                         {
                             //quitar las horas del combo del Alumno
-                            $bill = Alumno::where('user_id', $clase->user_id)->first();
+                            $bill = Alumno::where('user_id', $tarea->user_id)->first();
                             $resto = 0;
                             if ($bill->billetera > $penHoras * -1)
                                 $dataCombo['billetera'] = $bill->billetera + $penHoras;
