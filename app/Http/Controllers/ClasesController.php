@@ -203,8 +203,15 @@ class ClasesController extends Controller
                         ->select('clases.id', 'clases.user_id', 'clases.materia', 'clases.tema', 
                         'clases.personas', 'clases.duracion', 'clases.hora1', 'clases.hora2', 'fecha',
                         'clases.ubicacion', 'clases.coordenadas', 'clases.seleccion_profesor', 
-                        'descripcion')->orderBy('clases.id', 'desc')->get();
-            return response()->json($clases, 200);
+                        'descripcion', 'profesores.valor_clase')
+                        ->orderBy('clases.id', 'desc')->get();
+            $respuesta = [];
+            foreach ($clases as $item)
+            {
+                $respuesta[] = $item;
+                $respuesta[count($respuesta) - 1]['valor'] = ($item->duracion * $item->valor_clase) + ($item->personas - 1);
+            }
+            return response()->json($respuesta, 200);
         }
         else
         {

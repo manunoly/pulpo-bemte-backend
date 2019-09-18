@@ -153,8 +153,8 @@ class TareasController extends Controller
                         ->where('profesores.tareas', true)
                         ->select('tareas.id', 'tareas.user_id', 'tareas.materia', 'tareas.tema', 
                         'tareas.fecha_entrega', 'tareas.hora_inicio', 'tareas.hora_fin', 
-                        'tareas.descripcion', 'tareas.formato_entrega', 'tareas.archivo')
-                        ->orderBy('tareas.id', 'desc')->get();
+                        'tareas.descripcion', 'tareas.formato_entrega', 'tareas.archivo',
+                        'profesores.valor_tarea')->orderBy('tareas.id', 'desc')->get();
             return response()->json($tarea, 200);
         }
         else
