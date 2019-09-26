@@ -204,7 +204,7 @@ class ClasesController extends Controller
                         'clases.personas', 'clases.duracion', 'clases.hora1', 'clases.hora2', 'fecha',
                         'clases.ubicacion', 'clases.coordenadas', 'clases.seleccion_profesor', 
                         'descripcion', 'profesores.valor_clase')
-                        ->orderBy('clases.id', 'desc')->get();
+                        ->orderBy('clases.id', 'desc')->take(100)->get();
             $respuesta = [];
             foreach ($clases as $item)
             {
@@ -476,7 +476,7 @@ class ClasesController extends Controller
                                 'coordenadas', 'descripcion')
                                 ->orderBy('clases.id', 'desc')->get();
                 }
-                return response()->json($clases, 200);
+                return response()->json($clases->take(100), 200);
             }
             else
                 return response()->json(['error' => 'Tipo no válido'], 401);

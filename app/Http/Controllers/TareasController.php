@@ -154,7 +154,7 @@ class TareasController extends Controller
                         ->select('tareas.id', 'tareas.user_id', 'tareas.materia', 'tareas.tema', 
                         'tareas.fecha_entrega', 'tareas.hora_inicio', 'tareas.hora_fin', 
                         'tareas.descripcion', 'tareas.formato_entrega', 'tareas.archivo',
-                        'profesores.valor_tarea')->orderBy('tareas.id', 'desc')->get();
+                        'profesores.valor_tarea')->orderBy('tareas.id', 'desc')->take(100)->get();
             return response()->json($tarea, 200);
         }
         else
@@ -356,7 +356,7 @@ class TareasController extends Controller
                                 'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor', 'fecha_canc')
                                 ->orderBy('tareas.id', 'desc')->get();
                 }
-                return response()->json($tareas, 200);
+                return response()->json($tareas->take(100), 200);
             }
             else
                 return response()->json(['error' => 'Tipo no válido'], 401);

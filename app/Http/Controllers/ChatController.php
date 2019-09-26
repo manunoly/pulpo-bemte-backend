@@ -43,7 +43,8 @@ class ChatController extends Controller
                         if ($clase->user_id != $user && $clase->user_id_pro != $user)
                             return response()->json(['error' => 'Usuario no relacionado a la Clase'], 401);
                     }
-                    $chats = Chat::where('clase_id', $claseID)->where('tarea_id', $tareaID)->get();
+                    $chats = Chat::where('clase_id', $claseID)->where('tarea_id', $tareaID)
+                                    ->orderBy('id', 'desc')->get();
 
                     $data['leidoA'] = true;
                     foreach($chats->where('leidoA', false)->where('user_id', $user) as $item)
@@ -53,7 +54,7 @@ class ChatController extends Controller
                     foreach($chats->where('leidoP', false)->where('user_id_pro', $user) as $item)
                         Chat::where('id', $item->id )->update( $data );
                     
-                    return response()->json($chats, 200);
+                    return response()->json($chats->take(100), 200);
                 }
                 else
                     return response()->json(['error' => 'Clase no especificada'], 401);

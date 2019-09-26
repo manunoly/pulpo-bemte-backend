@@ -393,7 +393,7 @@ class AlumnosController extends Controller
         foreach($respuesta->where('leida', false) as $item)
             Notificacione::where('id', $item->id )->update( $data );
 
-        return response()->json($respuesta, 200);
+        return response()->json($respuesta->take(100), 200);
     }
 
     public function devuelveDisponible()
