@@ -389,6 +389,10 @@ class AlumnosController extends Controller
         $search = \Request::get('user_id');
         $respuesta = Notificacione::where('user_id', $search)
                                      ->orderBy('id', 'desc')->get();
+        $data['leida'] = true;
+        foreach($respuesta->where('leida', false) as $item)
+            Notificacione::where('id', $item->id )->update( $data );
+
         return response()->json($respuesta, 200);
     }
 
@@ -398,5 +402,13 @@ class AlumnosController extends Controller
         $alumno = Alumno::where('user_id', $search)->first();
         $respuesta = $alumno != null ? $alumno->activo : false;
         return response()->json($respuesta, 200);
+    }
+
+    public function nuevasNotificaciones()
+    {
+        $search = \Request::get('user_id');
+        $respuesta = Notificacione::where('user_id', $search)->where('leida', false)
+                                     ->orderBy('id', 'desc')->get();
+        return response()->json($respuesta->count() > 0, 200);
     }
 }

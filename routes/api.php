@@ -73,6 +73,7 @@ Route::get('alumno', 'AlumnosController@alumnoHeader');
 Route::get('calificaciones-alumno', 'AlumnosController@calificacionPendiente');
 Route::get('notificaciones', 'AlumnosController@listadoNotificaciones');
 Route::get('disponible-alumno', 'AlumnosController@devuelveDisponible');
+Route::get('nueva-notificacion', 'AlumnosController@nuevasNotificaciones');
 
 
 Route::post('solicitar-clase', 'ClasesController@solicitarClase');

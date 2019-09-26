@@ -81,7 +81,8 @@ class NotificacionesPushFcm
                                 'user_id' => $user->id,
                                 'titulo' => $notificacion['titulo'],
                                 'notificacion' => $notificacion['texto'],
-                                'estado' => $errorNotif
+                                'estado' => $errorNotif,
+                                'leida' => false
                                 ]);
         if ($notificacion['estado'] != 'NO')
         {
