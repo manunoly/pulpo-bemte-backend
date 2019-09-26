@@ -195,6 +195,7 @@ class ClasesController extends Controller
             $clases = Profesore::join('profesor_materia', 'profesor_materia.user_id', '=', 'profesores.user_id')
                         ->join('clases', 'profesor_materia.materia', '=', 'clases.materia')
                         ->join('alumnos', 'alumnos.user_id', '=', 'clases.user_id')
+                        ->join('users', 'users.id', '=', 'clases.user_id')
                         ->where('clases.estado', 'Solicitado')
                         ->where('profesores.user_id', $search)
                         ->where('profesores.activo', true)
@@ -203,7 +204,8 @@ class ClasesController extends Controller
                         ->select('clases.id', 'clases.user_id', 'clases.materia', 'clases.tema', 
                         'clases.personas', 'clases.duracion', 'clases.hora1', 'clases.hora2', 'fecha',
                         'clases.ubicacion', 'clases.coordenadas', 'clases.seleccion_profesor', 
-                        'descripcion', 'profesores.valor_clase')
+                        'descripcion', 'profesores.valor_clase',
+                        'users.name', 'alumnos.calificacion', 'users.avatar')
                         ->orderBy('clases.id', 'desc')->take(100)->get();
             $respuesta = [];
             foreach ($clases as $item)
@@ -438,42 +440,46 @@ class ClasesController extends Controller
                 {
                     if ($tipo == 'ACTUAL')
                         $clases = Clase::leftJoin('users', 'users.id', '=', 'clases.user_id_pro')
-                                ->where('user_id', $search)->where('fecha', '>=', $nowDate)
+                                ->leftJoin('profesores', 'profesores.user_id', '=', 'clases.user_id_pro')
+                                ->where('clases.user_id', $search)->where('fecha', '>=', $nowDate)
                                 ->select('clases.id','users.name', 'materia', 'tema', 'personas', 'duracion', 'hora1', 'hora2', 
-                                'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc', 'precioCombo',
+                                'clases.ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc', 'precioCombo',
                                 'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 'horasCombo',
                                 'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor',
-                                'coordenadas', 'descripcion')
+                                'coordenadas', 'descripcion', 'users.avatar', 'profesores.calificacion')
                                 ->orderBy('clases.id', 'desc')->get();
                     else
                         $clases = Clase::leftJoin('users', 'users.id', '=', 'clases.user_id_pro')
-                            ->where('user_id', $search)->where('fecha', '<', $nowDate)
+                            ->leftJoin('profesores', 'profesores.user_id', '=', 'clases.user_id_pro')
+                            ->where('clases.user_id', $search)->where('fecha', '<', $nowDate)
                             ->select('clases.id','users.name', 'materia', 'tema', 'personas', 'duracion', 'hora1', 'hora2', 
-                            'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc', 'precioCombo',
+                            'clases.ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc', 'precioCombo',
                             'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 'horasCombo',
                             'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor',
-                            'coordenadas', 'descripcion')
+                            'coordenadas', 'descripcion', 'users.avatar', 'profesores.calificacion')
                             ->orderBy('clases.id', 'desc')->get();
                 }
                 else
                 {
                     if ($tipo == 'ACTUAL')
                         $clases = Clase::join('users', 'users.id', '=', 'clases.user_id')
+                                ->join('alumnos', 'alumnos.user_id', '=', 'clases.user_id')
                                 ->where('user_id_pro', $search)->where('fecha', '>=', $nowDate)
                                 ->select('clases.id','users.name', 'materia', 'tema', 'personas', 'duracion', 'hora1', 'hora2', 
-                                'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc', 'precioCombo',
+                                'clases.ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc', 'precioCombo',
                                 'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 'horasCombo',
                                 'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor',
-                                'coordenadas', 'descripcion')
+                                'coordenadas', 'descripcion', 'users.avatar', 'alumnos.calificacion')
                                 ->orderBy('clases.id', 'desc')->get();
                     else
                         $clases = Clase::join('users', 'users.id', '=', 'clases.user_id')
+                                ->join('alumnos', 'alumnos.user_id', '=', 'clases.user_id')
                                 ->where('user_id_pro', $search)->where('fecha', '<', $nowDate)
                                 ->select('clases.id','users.name', 'materia', 'tema', 'personas', 'duracion', 'hora1', 'hora2', 
-                                'ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc', 'precioCombo',
+                                'clases.ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc', 'precioCombo',
                                 'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'activa', 'horasCombo',
                                 'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor',
-                                'coordenadas', 'descripcion')
+                                'coordenadas', 'descripcion', 'users.avatar', 'alumnos.calificacion')
                                 ->orderBy('clases.id', 'desc')->get();
                 }
                 return response()->json($clases->take(100), 200);
@@ -639,7 +645,15 @@ class ClasesController extends Controller
     public function devuelveClase()
     {
         $search = \Request::get('clase_id');
-        $clase = Clase::where('id', $search)->first();
+        $clase = Clase::join('alumnos', 'alumnos.user_id', '=', 'clases.user_id')
+                ->join('users', 'users.id', '=', 'clases.user_id')
+                ->leftJoin('profesores', 'profesores.user_id', '=', 'clases.user_id_pro')
+                ->leftJoin('users as p', 'p.id', '=', 'clases.user_id_pro')
+                ->where('clases.id', $search)
+                ->select( 'clases.*',
+                'users.name as alumno', 'alumnos.calificacion as alumnoCalif', 'users.avatar as alumnoAvatar',
+                'p.name as profesor', 'profesores.calificacion as profCalif', 'p.avatar as profAvatar')
+                ->first();
         if ($clase != null)
         {
             return response()->json($clase, 200);
