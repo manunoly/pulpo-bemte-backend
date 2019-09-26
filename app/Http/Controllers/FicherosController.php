@@ -71,7 +71,7 @@ class FicherosController extends Controller
             return response()->json(['error' => $validator->errors()], 406);
         }
         $drive = isset($request['drive']) ? trim($request['drive']) : NULL;
-        $archivo = isset($request['archivo']) ? trim($request['archivo']) : NULL;
+        $archivo = isset($request['archivo']) ? 'uploads'.'/'.$request['user_id'].'/'.trim($request['archivo']) : NULL;
         if (($drive == NULL) && ($archivo == NULL))
         {
             return response()->json(['error' => 'Ejercicio sin especificar'], 401);
@@ -167,7 +167,7 @@ class FicherosController extends Controller
             return response()->json(['error' => 'Especifique una opción'], 401);
         }
         $drive = isset($request['drive']) ? trim($request['drive']) : NULL;
-        $archivo = isset($request['archivo']) ? 'uploads'.'\\'.$request['user_id'].'\\'.trim($request['archivo']) : NULL;
+        $archivo = isset($request['archivo']) ? 'uploads'.'/'.$request['user_id'].'/'.trim($request['archivo']) : NULL;
         if (($drive == NULL) && ($archivo == NULL))
         {
             return response()->json(['error' => 'Transferencia sin especificar'], 401);

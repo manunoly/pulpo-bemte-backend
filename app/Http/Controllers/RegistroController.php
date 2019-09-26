@@ -102,14 +102,15 @@ class RegistroController extends Controller
             }
 
             $data['name'] = $request['nombre'].' '.$request['apellido'];
-            $avatar = $user['avatar'];
             $token = $user['token'];
             $sistema = $user['sistema'];
-            if (isset($request['avatar']) && $user['avatar'] != $request['avatar'])
+            if (isset($request['avatar']))
             {
-                $data['avatar'] = 'users/'.$request['avatar'];
-                $avatar = $data['avatar'];
+                $archivo = 'uploads'.'/'.$id_usuario.'/'.trim($request['avatar']);
+                if ($user['avatar'] != $archivo && strpos($archivo, 'http') === FALSE)
+                    $data['avatar'] = $archivo;
             }
+            
             $actualizado = User::where('id', $id_usuario )->update( $data );
             if( $actualizado )
             {
@@ -388,7 +389,7 @@ class RegistroController extends Controller
                 return response()->json(['error' => 'Cédula inválida'], 401);
             }
 
-            $avatar = isset($request['avatar']) ? 'users/'.$request['avatar'] : NULL;
+            $avatar = isset($request['avatar']) ? 'uploads'.'/'.$id_usuario.'/'.trim($request['avatar']) : NULL;
             $token = isset($request['token']) ? $request['token'] : NULL;
             $sistema = isset($request['sistema']) ? $request['sistema'] : NULL;
             $user = User::create([
