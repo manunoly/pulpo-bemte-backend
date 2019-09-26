@@ -56,6 +56,7 @@ Route::post('actualiza-cuenta', 'ProfesorController@actualizaCuenta');
 Route::get('cuenta-profesor', 'ProfesorController@cuentaProfesor');
 Route::get('calificaciones-profesor', 'ProfesorController@calificacionPendiente');
 Route::get('disponible-profesor', 'ProfesorController@devuelveDisponible');
+Route::get('profesor', 'ProfesorController@profesorHeader');
 
 
 Route::post('solicitar-tarea', 'TareasController@solicitarTarea');

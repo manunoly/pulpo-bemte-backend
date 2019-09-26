@@ -531,4 +531,47 @@ class ProfesorController extends Controller
         $respuesta = $profesor != null ? $profesor->disponible : false;
         return response()->json($respuesta, 200);
     }
+
+    public function profesorHeader()
+    {
+        $search = \Request::get('user_id');
+        $profesor = Profesore::where('user_id', $search)->first();
+        if ($profesor != null)
+        {
+            $clases = Clase::where('user_id_pro', $search)
+                        ->select('clases.id', 'clases.materia', 'clases.personas', 
+                        'clases.duracion', 'clases.fecha')->get();
+            $tareas = Tarea::where('user_id_pro', $search)
+                        ->select('tareas.id', 'tareas.materia', 'tareas.tiempo_estimado', 'tareas.fecha_entrega')->get();
+            $respuesta['clases'] = $clases->count();
+            $respuesta['tareas'] = $tareas->count();
+            $respuesta['ranking'] = $profesor->calificacion == null ? 5 : $profesor->calificacion;
+            
+            //calcular ganancias
+            $clases = Pago::join('clases', 'pagos.clase_id', '=', 'clases.id')
+                        ->where('pagos.user_id', $search)
+                        ->where('clases.user_id_pro', $search)
+                        ->where('pagos.estado', '!=', 'Cancelado')
+                        ->select('clases.id', 'clases.materia', 'clases.tema', 
+                        'clases.duracion', 'clases.fecha', 'pagos.horas', 'clases.estado',
+                        'pagos.valor', 'pagos.created_at', 'pagos.estado as pago')->get();
+            $tareas = Pago::join('tareas', 'pagos.tarea_id', '=', 'tareas.id')
+                        ->where('pagos.user_id', $search)
+                        ->where('tareas.user_id_pro', $search)
+                        ->where('pagos.estado', '!=', 'Cancelado')
+                        ->select('tareas.id', 'tareas.materia', 'tareas.tema',  'pagos.horas',
+                        'tareas.fecha_entrega', 'pagos.valor', 'pagos.created_at', 
+                        'pagos.estado as pago', 'tareas.estado')->get();
+            $multas = Multa::where('multas.user_id', $search)
+                        ->where('estado', '!=', 'Cancelado')
+                        ->select('multas.clase_id', 'multas.tarea_id', 'multas.valor', 
+                        'multas.comentario', 'multas.created_at', 'multas.estado')->get();
+            $respuesta['ganancia'] = $clases->sum('valor') + $tareas->sum('valor')
+                                    - $multas->sum('valor');
+            
+            return response()->json($respuesta, 200);
+        }
+        else
+            return response()->json(['error' => 'Profesor Incorrecto'], 401);
+    }
 }
