@@ -456,31 +456,34 @@ class ProfesorController extends Controller
             if ($tipo == 'MULTAS')
             {
                 $multas = Multa::where('multas.user_id', $search)
+                            ->where('multas.estado', 'Solicitado')
                             ->select('multas.clase_id', 'multas.tarea_id', 'multas.valor', 
                             'multas.comentario', 'multas.created_at', 'multas.estado')->get();
-                $respuesta['total'] = $multas->where('estado', '!=', 'Cancelado')->sum('valor');
+                $respuesta['total'] = $multas->sum('valor');
                 $respuesta['data'] = $multas;
             }
             else if ($tipo == 'TAREAS')
             {
                 $tareas = Pago::join('tareas', 'pagos.tarea_id', '=', 'tareas.id')
+                            ->where('pagos.estado', 'Solicitado')
                             ->where('pagos.user_id', $search)
                             ->where('tareas.user_id_pro', $search)
                             ->select('tareas.id', 'tareas.materia', 'tareas.tema',  'pagos.horas',
                             'tareas.fecha_entrega', 'pagos.valor', 'pagos.created_at', 
                             'pagos.estado as pago', 'tareas.estado')->get();
-                $respuesta['total'] = $tareas->where('pago', '!=', 'Cancelado')->sum('valor');
+                $respuesta['total'] = $tareas->sum('valor');
                 $respuesta['data'] = $tareas;
             }
             else
             {
                 $clases = Pago::join('clases', 'pagos.clase_id', '=', 'clases.id')
+                            ->where('pagos.estado', 'Solicitado')
                             ->where('pagos.user_id', $search)
                             ->where('clases.user_id_pro', $search)
                             ->select('clases.id', 'clases.materia', 'clases.tema', 
                             'clases.duracion', 'clases.fecha', 'pagos.horas', 'clases.estado',
                             'pagos.valor', 'pagos.created_at', 'pagos.estado as pago')->get();
-                $respuesta['total'] = $clases->where('pago', '!=', 'Cancelado')->sum('valor');
+                $respuesta['total'] = $clases->sum('valor');
                 $respuesta['data'] = $clases;
             }
             return response()->json($respuesta, 200);
@@ -551,19 +554,19 @@ class ProfesorController extends Controller
             $clases = Pago::join('clases', 'pagos.clase_id', '=', 'clases.id')
                         ->where('pagos.user_id', $search)
                         ->where('clases.user_id_pro', $search)
-                        ->where('pagos.estado', '!=', 'Cancelado')
+                        ->where('pagos.estado', 'Solicitado')
                         ->select('clases.id', 'clases.materia', 'clases.tema', 
                         'clases.duracion', 'clases.fecha', 'pagos.horas', 'clases.estado',
                         'pagos.valor', 'pagos.created_at', 'pagos.estado as pago')->get();
             $tareas = Pago::join('tareas', 'pagos.tarea_id', '=', 'tareas.id')
                         ->where('pagos.user_id', $search)
                         ->where('tareas.user_id_pro', $search)
-                        ->where('pagos.estado', '!=', 'Cancelado')
+                        ->where('pagos.estado', 'Solicitado')
                         ->select('tareas.id', 'tareas.materia', 'tareas.tema',  'pagos.horas',
                         'tareas.fecha_entrega', 'pagos.valor', 'pagos.created_at', 
                         'pagos.estado as pago', 'tareas.estado')->get();
             $multas = Multa::where('multas.user_id', $search)
-                        ->where('estado', '!=', 'Cancelado')
+                        ->where('estado', 'Solicitado')
                         ->select('multas.clase_id', 'multas.tarea_id', 'multas.valor', 
                         'multas.comentario', 'multas.created_at', 'multas.estado')->get();
             $respuesta['ganancia'] = $clases->sum('valor') + $tareas->sum('valor')
