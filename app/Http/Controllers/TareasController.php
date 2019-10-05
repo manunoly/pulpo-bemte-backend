@@ -128,8 +128,10 @@ class TareasController extends Controller
         if( \Request::get('user_id') )
         {
             $search = \Request::get('user_id');
-            $tarea = Tarea::where('user_id', $search)
-                        ->where('activa', true)->first();
+            $tarea = Tarea::join('materias', 'tareas.materia', '=', 'materias.nombre')
+                        ->where('user_id', $search)
+                        ->where('tareas.activa', true)
+                        ->select('tareas.*', 'icono')->first();
             if (isset($tarea->user_id_pro) && $tarea->user_id_pro > 0)
             {
                 $prof = User::where('id', $tarea->user_id_pro)->first();
@@ -152,6 +154,7 @@ class TareasController extends Controller
                         ->join('tareas', 'profesor_materia.materia', '=', 'tareas.materia')
                         ->join('alumnos', 'alumnos.user_id', '=', 'tareas.user_id')
                         ->join('users', 'users.id', '=', 'tareas.user_id')
+                        ->join('materias', 'tareas.materia', '=', 'materias.nombre')
                         ->where('tareas.estado', 'Solicitado')
                         ->where('profesores.user_id', $search)
                         ->where('profesores.activo', true)
@@ -161,7 +164,7 @@ class TareasController extends Controller
                         'tareas.fecha_entrega', 'tareas.hora_inicio', 'tareas.hora_fin', 
                         'tareas.descripcion', 'tareas.formato_entrega', 'tareas.archivo',
                         'profesores.valor_tarea',
-                        'users.name', 'alumnos.calificacion', 'users.avatar')
+                        'users.name', 'alumnos.calificacion', 'users.avatar', 'icono')
                         ->orderBy('tareas.id', 'desc')->take(100)->get();
             return response()->json($tarea, 200);
         }
@@ -339,20 +342,22 @@ class TareasController extends Controller
                     if ($tipo == 'ACTUAL')
                         $tareas = Tarea::leftJoin('users', 'users.id', '=', 'tareas.user_id_pro')
                                     ->leftJoin('profesores', 'profesores.user_id', '=', 'tareas.user_id_pro')
+                                    ->join('materias', 'tareas.materia', '=', 'materias.nombre')
                                     ->where('tareas.user_id', $search)->where('fecha_entrega', '>=', $nowDate)
                                     ->select('tareas.id','users.name', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
-                                    'descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 'archivo',
+                                    'tareas.descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 'archivo',
                                     'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor', 'fecha_canc',
-                                    'users.avatar', 'profesores.calificacion')
+                                    'users.avatar', 'profesores.calificacion', 'icono', 'tareas.activa')
                                     ->orderBy('tareas.id', 'desc')->get();
                     else
                         $tareas = Tarea::leftJoin('users', 'users.id', '=', 'tareas.user_id_pro')
                                     ->leftJoin('profesores', 'profesores.user_id', '=', 'tareas.user_id_pro')
+                                    ->join('materias', 'tareas.materia', '=', 'materias.nombre')
                                     ->where('tareas.user_id', $search)->where('fecha_entrega', '<', $nowDate)
                                     ->select('tareas.id','users.name', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
-                                    'descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 'archivo',
+                                    'tareas.descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 'archivo',
                                     'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor', 'fecha_canc',
-                                    'users.avatar', 'profesores.calificacion')
+                                    'users.avatar', 'profesores.calificacion', 'icono', 'tareas.activa')
                                     ->orderBy('tareas.id', 'desc')->get();
                 }
                 else
@@ -360,20 +365,22 @@ class TareasController extends Controller
                     if ($tipo == 'ACTUAL')
                         $tareas = Tarea::join('users', 'users.id', '=', 'tareas.user_id')
                                 ->join('alumnos', 'alumnos.user_id', '=', 'tareas.user_id')
+                                ->join('materias', 'tareas.materia', '=', 'materias.nombre')
                                 ->where('tareas.user_id_pro', $search)->where('fecha_entrega', '>=', $nowDate)
                                 ->select('tareas.id','users.name', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
-                                'descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 'archivo',
+                                'tareas.descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 'archivo',
                                 'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor', 'fecha_canc',
-                                'users.avatar', 'alumnos.calificacion')
+                                'users.avatar', 'alumnos.calificacion', 'icono', 'tareas.activa')
                                 ->orderBy('tareas.id', 'desc')->get();
                     else
                         $tareas = Tarea::join('users', 'users.id', '=', 'tareas.user_id')
                                 ->join('alumnos', 'alumnos.user_id', '=', 'tareas.user_id')
+                                ->join('materias', 'tareas.materia', '=', 'materias.nombre')
                                 ->where('tareas.user_id_pro', $search)->where('fecha_entrega', '<', $nowDate)
                                 ->select('tareas.id','users.name', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
-                                'descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 'archivo',
+                                'tareas.descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 'archivo',
                                 'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor', 'fecha_canc',
-                                'users.avatar', 'alumnos.calificacion')
+                                'users.avatar', 'alumnos.calificacion', 'icono', 'tareas.activa')
                                 ->orderBy('tareas.id', 'desc')->get();
                 }
                 return response()->json($tareas->take(100), 200);
@@ -390,10 +397,11 @@ class TareasController extends Controller
         $search = \Request::get('tarea_id');
         $tarea = Tarea::join('alumnos', 'alumnos.user_id', '=', 'tareas.user_id')
                     ->join('users', 'users.id', '=', 'tareas.user_id')
+                    ->join('materias', 'tareas.materia', '=', 'materias.nombre')
                     ->leftJoin('profesores', 'profesores.user_id', '=', 'tareas.user_id_pro')
                     ->leftJoin('users as p', 'p.id', '=', 'tareas.user_id_pro')
                     ->where('tareas.id', $search)
-                    ->select( 'tareas.*', 'profesores.descripcion as profDescripcion',
+                    ->select( 'tareas.*', 'profesores.descripcion as profDescripcion', 'icono',
                     'users.name as alumno', 'alumnos.calificacion as alumnoCalif', 'users.avatar as alumnoAvatar',
                     'p.name as profesor', 'profesores.calificacion as profCalif', 'p.avatar as profAvatar')
                     ->first();

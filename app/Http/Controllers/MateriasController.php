@@ -9,7 +9,7 @@ class MateriasController extends Controller
 {
     public function listaMaterias()
     {
-        $materia = Materia::where('activa', '1' )->select('nombre')->get();
+        $materia = Materia::where('activa', '1' )->select('nombre', 'icono')->get();
         return response()->json($materia, 200);
     }
 }
