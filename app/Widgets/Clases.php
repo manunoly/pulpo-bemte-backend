@@ -3,11 +3,11 @@
 namespace App\Widgets;
 
 use Auth;
-use App\Alumno;
+use App\Clase;
 use Illuminate\Support\Str;
 use TCG\Voyager\Facades\Voyager;
 
-class Alumnos extends BaseDimmer
+class Clases extends BaseDimmer
 {
     /**
      * The configuration array.
@@ -22,24 +22,24 @@ class Alumnos extends BaseDimmer
      */
     public function run()
     {
-        if (Auth::user()->tipo == 'Alumno')
-            $count = \App\Alumno::where('user_id', Auth::user()->id)->count();
+        if (Auth::user()->tipo == 'Profesor')
+            $count = \App\Clase::where('user_id_pro', Auth::user()->id)
+                    ->orWhere('user_id_pro', null)->count();
         else
-            $count = \App\Alumno::count();
-
-        $string = $count == 1 ? 'Alumno' : 'Alumnos';
-        $plural = 'Alumnos';
+            $count = \App\Clase::count();
+        $string = $count == 1 ? 'Clase' : 'Clases';
+        $plural = 'Clases';
 
         return view('voyager::dimmer', array_merge($this->config, [
-            'icon'   => 'voyager-study',
+            'icon'   => 'voyager-book',
             'title'  => "{$count} {$string}",
             'text'   => __('Tiene :count :string en su base de datos.', 
                         ['count' => $count, 'string' => Str::lower($string), 'plural' => Str::lower($plural)]),
             'button' => [
-                'text' => 'Ver todos los '.$plural,
-                'link' => route('voyager.alumnos.index'),
+                'text' => 'Ver todos las '.$plural,
+                'link' => route('voyager.clases.index'),
             ],
-            'image' => env('APP_URL').'/images/alumno.png',
+            'image' => env('APP_URL').'/images/combo.png',
         ]));
     }
 
@@ -50,6 +50,6 @@ class Alumnos extends BaseDimmer
      */
     public function shouldBeDisplayed()
     {
-        return app('VoyagerAuth')->user()->hasPermission('browse_alumnos');
+        return app('VoyagerAuth')->user()->hasPermission('browse_clases');
     }
 }

@@ -145,9 +145,13 @@ return [
         ],
 
         'widgets' => [
+            'App\\Widgets\\Clases',
+            'App\\Widgets\\Tareas',
             'App\\Widgets\\Alumnos',
             'App\\Widgets\\Profesores',
-            'App\\Widgets\\Combos',
+            'App\\Widgets\\Ciudades',
+            'App\\Widgets\\Materias',
+            //'App\\Widgets\\Combos',
         ],
 
     ],
