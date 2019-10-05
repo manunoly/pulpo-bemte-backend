@@ -82,7 +82,11 @@ class NotificacionesPushFcm
                                 'titulo' => $notificacion['titulo'],
                                 'notificacion' => $notificacion['texto'],
                                 'estado' => $errorNotif,
-                                'leida' => false
+                                'leida' => false,
+                                'tarea_id' => $notificacion['tarea_id'],
+                                'clase_id' => $notificacion['clase_id'],
+                                'chat_id' => $notificacion['chat_id'],
+                                'compra_id' => $notificacion['compra_id']
                                 ]);
         if ($notificacion['estado'] != 'NO')
         {

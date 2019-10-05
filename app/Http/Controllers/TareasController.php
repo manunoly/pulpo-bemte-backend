@@ -101,6 +101,10 @@ class TareasController extends Controller
                                         .$tarea->hora_inicio.' a '.$tarea->hora_fin
                                         .', en '.$tarea->formato_entrega.', por '.$user->name.', '.$dateTime;
                 $notificacion['estado'] = 'NO';
+                $notificacion['tarea_id'] = $tarea->id;
+                $notificacion['clase_id'] = 0;
+                $notificacion['chat_id'] = 0;
+                $notificacion['compra_id'] = 0;
                 $pushClass = new NotificacionesPushFcm();
                 foreach($profesores as $solicitar)
                     $pushClass->enviarNotificacion($notificacion, $solicitar);
@@ -267,6 +271,10 @@ class TareasController extends Controller
                         $notificacion['titulo'] = 'Tarea Cancelada';
                         $notificacion['texto'] = 'La Tarea '.$tarea->id.' ha sido cancelada por el ';
                         $notificacion['estado'] = 'NO';
+                        $notificacion['tarea_id'] = $tarea->id;
+                        $notificacion['clase_id'] = 0;
+                        $notificacion['chat_id'] = 0;
+                        $notificacion['compra_id'] = 0;
                         if ($request['user_id'] == $tarea->user_id_pro)
                         {
                             $userNotif = User::where('id', $tarea->user_id)->first();

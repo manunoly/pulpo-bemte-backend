@@ -65,6 +65,10 @@ class NotificarProfesorClase extends Command
 
             //lanzar notificaciones a los profesores
             $user = User::where('id', '=', $item->user_id )->first();
+            $notificacion['clase_id'] = $item->id;
+            $notificacion['tarea_id'] = 0;
+            $notificacion['chat_id'] = 0;
+            $notificacion['compra_id'] = 0;
             $notificacion['texto'] = 'Ha sido solicitada la Clase '.$item->id.' de '.$item->materia
                     .', para el '.$item->fecha.' a las '.$item->hora1
                     .', en '.$item->ubicacion.' para '.$item->personas.' estudiantes con una duracion de '

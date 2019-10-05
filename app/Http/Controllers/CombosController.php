@@ -140,6 +140,10 @@ class CombosController extends Controller
                         //lanzar notificaciones a los profesores
                         $notificacion['titulo'] = 'Solicitud de Clase';
                         $dateTime = date("Y-m-d H:i:s");
+                        $notificacion['clase_id'] = $clase->id;
+                        $notificacion['tarea_id'] = 0;
+                        $notificacion['chat_id'] = 0;
+                        $notificacion['compra_id'] = 0;
                         $notificacion['texto'] = 'Ha sido solicitada la Clase '.$clase->id.' de '.$clase->materia
                                     .', para el '.$clase->fecha.' a las '.$clase->hora1
                                     .', en '.$clase->ubicacion.' para '.$clase->personas.' estudiantes con una duracion de '

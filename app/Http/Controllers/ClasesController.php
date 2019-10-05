@@ -140,6 +140,10 @@ class ClasesController extends Controller
                     //lanzar notificaciones a los profesores
                     $notificacion['titulo'] = 'Solicitud de Clase';
                     $dateTime = date("Y-m-d H:i:s");
+                    $notificacion['clase_id'] = $clase->id;
+                    $notificacion['tarea_id'] = 0;
+                    $notificacion['chat_id'] = 0;
+                    $notificacion['compra_id'] = 0;
                     $notificacion['texto'] = 'Ha sido solicitada la Clase '.$clase->id.' de '.$clase->materia
                             .', para el '.$clase->fecha.' a las '.$clase->hora1
                             .', en '.$clase->ubicacion.' para '.$clase->personas.' estudiantes con una duracion de '
@@ -265,6 +269,10 @@ class ClasesController extends Controller
                         $notificacion['titulo'] = 'Clase Cancelada';
                         $notificacion['texto'] = 'La Clase '.$clase->id.' ha sido cancelada por el ';
                         $notificacion['estado'] = 'NO';
+                        $notificacion['clase_id'] = $clase->id;
+                        $notificacion['tarea_id'] = 0;
+                        $notificacion['chat_id'] = 0;
+                        $notificacion['compra_id'] = 0;
                         if ($request['user_id'] == $clase->user_id_pro)
                         {
                             $userNotif = User::where('id', $clase->user_id)->first();
@@ -527,6 +535,10 @@ class ClasesController extends Controller
                         .', Referencia: '.$request['referencia'].', Preguntar: '.$request['quien_preguntar']
                         .', '.$dateTime;
                     $notificacion['estado'] = 'NO';
+                    $notificacion['clase_id'] = $clase->id;
+                    $notificacion['tarea_id'] = 0;
+                    $notificacion['chat_id'] = 0;
+                    $notificacion['compra_id'] = 0;
                     $userNotif = User::where('id', $clase->user_id_pro)->first();
                     $pushClass = new NotificacionesPushFcm();
                     $pushClass->enviarNotificacion($notificacion, $userNotif);

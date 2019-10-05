@@ -187,6 +187,10 @@ class AsignarProfesorTarea extends Command
                 //enviar notificacion al profesor y al alumno
                 $dateTime = date("Y-m-d H:i:s");
                 $notificacion['titulo'] = 'Tarea Confirmada';
+                $notificacion['tarea_id'] = $item->id;
+                $notificacion['clase_id'] = 0;
+                $notificacion['chat_id'] = 0;
+                $notificacion['compra_id'] = 0;
                 $notificacion['estado'] = $estado;
                 $notificacion['texto'] = 'La Tarea '.$item->id.' ha sido confirmada por el profesor '
                                             .$userProfesor->name.', '.$dateTime;

@@ -462,6 +462,10 @@ class AlumnoPagoController extends Controller
             else
                 $notificacion['texto'] = $notificacion['texto'].'. La Tarea no ha sido Asignada, '.$dateTime;
             $notificacion['estado'] = 'NO';
+            $notificacion['tarea_id'] = $tarea->id;
+            $notificacion['clase_id'] = 0;
+            $notificacion['chat_id'] = 0;
+            $notificacion['compra_id'] = 0;
             $pushClass = new NotificacionesPushFcm();
             $pushClass->enviarNotificacion($notificacion, $userAlumno);
             $pushClass->enviarNotificacion($notificacion, $userProf);
@@ -536,6 +540,10 @@ class AlumnoPagoController extends Controller
             else
                 $notificacion['texto'] = $notificacion['texto'].'. La Clase no ha sido Asignada, '.$dateTime;
             $notificacion['estado'] = 'NO';
+            $notificacion['clase_id'] = $clase->id;
+            $notificacion['tarea_id'] = 0;
+            $notificacion['chat_id'] = 0;
+            $notificacion['compra_id'] = 0;
             $pushClass = new NotificacionesPushFcm();
             $pushClass->enviarNotificacion($notificacion, $userAlumno);
             $pushClass->enviarNotificacion($notificacion, $userProf);
@@ -571,6 +579,10 @@ class AlumnoPagoController extends Controller
             else
                 $notificacion['texto'] = $notificacion['texto'].' contactar con el administrador, '.$dateTime;
             $notificacion['estado'] = 'NO';
+            $notificacion['clase_id'] = 0;
+            $notificacion['tarea_id'] = 0;
+            $notificacion['chat_id'] = 0;
+            $notificacion['compra_id'] = $compra->id;
             $pushClass = new NotificacionesPushFcm();
             $pushClass->enviarNotificacion($notificacion, $userAlumno);
         }
