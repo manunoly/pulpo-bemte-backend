@@ -88,6 +88,7 @@ class TareasController extends Controller
                                     ->join('users', 'users.id', '=', 'profesores.user_id')
                                     ->where('profesores.activo', true)
                                     ->where('profesores.tareas', true)
+                                    ->where('profesores.ciudad', $alumno->ciudad)
                                     ->where('profesores.disponible', true)
                                     ->where('profesor_materia.activa', true)
                                     ->where('profesor_materia.materia', $tarea->materia)

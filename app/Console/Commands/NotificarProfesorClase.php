@@ -42,8 +42,10 @@ class NotificarProfesorClase extends Command
     public function handle()
     {
         $newDate = date("Y-m-d H:i:s", strtotime(date("d/m/y H:i:s"). '-15 minutes'));
-        $clases = Clase::where('estado','Solicitado')->where('activa', true)
-                ->where('seleccion_profesor', true)->where('updated_at','<=', $newDate)->get();
+        $clases = Clase::join('alumnos', 'alumnos.user_id', '=', 'clases.user_id')
+                ->where('clases.estado','Solicitado')->where('clases.activa', true)
+                ->where('clases.seleccion_profesor', true)->where('clases.updated_at','<=', $newDate)
+                ->select('clases.*', 'alumnos.ciudad')->get();
         $notificacion['titulo'] = 'Solicitud de Clase';
         $dateTime = date("Y-m-d H:i:s");
         $notificacion['estado'] = 'NO';
@@ -57,7 +59,7 @@ class NotificarProfesorClase extends Command
                     ->where('profesores.activo', true)
                     ->where('profesores.clases', true)
                     ->where('profesores.disponible', true)
-                    //->where('profesores.ciudad', $sede)
+                    ->where('profesores.ciudad', $item->ciudad)
                     ->where('profesor_materia.activa', true)
                     ->where('profesor_materia.materia', $item->materia)
                     ->select('users.email', 'users.token', 'users.sistema', 'users.id', 'users.name')

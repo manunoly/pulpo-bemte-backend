@@ -119,7 +119,7 @@ class ClasesController extends Controller
                                             ->where('profesores.activo', true)
                                             ->where('profesores.clases', true)
                                             ->where('profesores.disponible', true)
-                                            //->where('profesores.ciudad', $sede)
+                                            ->where('profesores.ciudad', $alumno->ciudad)
                                             ->where('profesor_materia.activa', true)
                                             ->where('profesor_materia.materia', $clase->materia)
                                             ->select('users.email', 'users.token', 'users.sistema', 'users.id', 'users.name')
