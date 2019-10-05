@@ -26,6 +26,10 @@ Route::get('eliminar-cuenta', 'RegistroController@eliminarCuenta');
 Route::get('devuelve-usuario', 'RegistroController@devuelveUsuario');
 Route::post('resetPass', 'RegistroController@resetPassApp');
 
+Route::get('terminos', 'BemteController@terminos');
+Route::get('reglamento', 'BemteController@reglamento');
+Route::get('video', 'BemteController@video');
+
 Route::post('reset', 'RegistroController@resetPassword');
 Route::get('reset/{confirmation_code}/{email}', 'RegistroController@validar'); 
 Route::post('reset_pw', 'RegistroController@actualizarPW');
