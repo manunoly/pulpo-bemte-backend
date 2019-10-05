@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Materia;
 use App\User;
 use App\Clase;
+use App\Tarea;
 use App\Multa;
 use App\Alumno;
 use App\Pago;
@@ -650,12 +651,23 @@ class ClasesController extends Controller
                 ->leftJoin('profesores', 'profesores.user_id', '=', 'clases.user_id_pro')
                 ->leftJoin('users as p', 'p.id', '=', 'clases.user_id_pro')
                 ->where('clases.id', $search)
-                ->select( 'clases.*',
+                ->select( 'clases.*', 'profesores.descripcion as profDescripcion',
                 'users.name as alumno', 'alumnos.calificacion as alumnoCalif', 'users.avatar as alumnoAvatar',
                 'p.name as profesor', 'profesores.calificacion as profCalif', 'p.avatar as profAvatar')
                 ->first();
         if ($clase != null)
         {
+            $clase['profClases'] = 0;
+            $clase['profTareas'] = 0;
+            if ($clase->user_id_pro > 0)
+            {
+                $clases = Clase::where('user_id_pro', $clase->user_id_pro)
+                            ->where('estado', 'Terminado')->get();
+                $tareas = Tarea::where('user_id_pro', $clase->user_id_pro)
+                            ->where('estado', 'Terminado')->get();
+                $clase['profClases'] = $clases->count();
+                $clase['profTareas'] = $tareas->count();
+            }
             return response()->json($clase, 200);
         }
         else

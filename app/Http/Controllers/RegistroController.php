@@ -157,6 +157,18 @@ class RegistroController extends Controller
                     {
                         $dataUser['tipo_cuenta'] = $request['tipoCuenta'];
                     }
+                    if ( isset($request['descripcion']) )
+                    {
+                        $dataUser['descripcion'] = $request['descripcion'];
+                    }
+                    if ( isset($request['fecha_nacimiento']) )
+                    {
+                        $dataUser['fecha_nacimiento'] = $request['fecha_nacimiento'];
+                    }
+                    if ( isset($request['genero']) )
+                    {
+                        $dataUser['genero'] = $request['genero'];
+                    }
                     $actualizado = Profesore::where('user_id', $id_usuario )->update( $dataUser );
                     if ($actualizado)
                     {
@@ -436,7 +448,10 @@ class RegistroController extends Controller
                     $titulo = isset($request['titulo']) ? $request['titulo'] : NULL;
                     $cuenta = isset($request['cuenta']) ? $request['cuenta'] : NULL;
                     $banco = isset($request['banco']) ? $request['banco'] : NULL;
-                    $banco = isset($request['tipoCuenta']) ? $request['tipoCuenta'] : NULL;
+                    $tipo_cuenta = isset($request['tipoCuenta']) ? $request['tipoCuenta'] : NULL;
+                    $descripcion = isset($request['descripcion']) ? $request['descripcion'] : NULL;
+                    $fecha_nacimiento = isset($request['fecha_nacimiento']) ? $request['fecha_nacimiento'] : NULL;
+                    $genero = isset($request['genero']) ? $request['genero'] : NULL;
                     $profesor = Profesore::create([
                         'user_id' => $user->id,
                         'celular' => $request['celular'],
@@ -457,7 +472,10 @@ class RegistroController extends Controller
                         'updated_at' => $request['created_at'],
                         'cuenta' => $cuenta,
                         'banco' => $banco,
-                        'tipo_cuenta' => $tipo_cuenta
+                        'tipo_cuenta' => $tipo_cuenta,
+                        'descripcion' => $descripcion,
+                        'fecha_nacimiento' => $fecha_nacimiento,
+                        'genero' => $genero
                     ]);
                     if($profesor)
                     {
@@ -596,7 +614,7 @@ class RegistroController extends Controller
                 ->select('user_id', 'celular', 'correo', 'nombres', 'apellidos', 'cedula', 'correo', 
                     'apodo', 'ubicacion', 'profesores.ciudad', 'clases', 'tareas', 'disponible', 'hoja_vida', 
                     'titulo', 'activo', 'cuenta', 'banco', 'tipo_cuenta', 'valor_clase', 'valor_tarea',
-                    'pais', 'codigo')->first();
+                    'pais', 'codigo', 'descripcion', 'fecha_nacimiento', 'genero')->first();
                 $user['tipo'] = 'Profesor';
                 $user['avatar'] = $userPro->avatar;
                 $user['token'] = $userPro->token; 
