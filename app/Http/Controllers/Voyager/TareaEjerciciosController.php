@@ -15,6 +15,7 @@ use TCG\Voyager\Facades\Voyager;
 use TCG\Voyager\Http\Controllers\Traits\BreadRelationshipParser;
 
 use Auth;
+use App\Tarea;
 
 class TareaEjerciciosController extends Controller
 {
@@ -72,7 +73,7 @@ class TareaEjerciciosController extends Controller
             } else {
                 if (Auth::user()->tipo == 'Profesor')
                     $query = $model::join('tareas', 'tareas.id', '=', 'tarea_ejercicio.tarea_id')
-                    ->where('user_id_pro', Auth::user()->id)->select('tareas.*');
+                    ->where('user_id_pro', Auth::user()->id)->select('tarea_ejercicio.*');
                 else
                     $query = $model::select('*');
             }
@@ -365,6 +366,24 @@ class TareaEjerciciosController extends Controller
 
         // Validate fields with ajax
         $val = $this->validateBread($request->all(), $dataType->addRows)->validate();
+
+        $tarea = Tarea::where('id', $request['tarea_id'])->where('user_id_pro', Auth::user()->id)->first();
+        if ($tarea == null)
+        {
+            $messages["error"] = 'Usted no tiene relación con la Tarea';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+        if ($tarea->estado != 'Aceptado')
+        {
+            $messages["error"] = 'El estado de la Tarea no permite subir Archivos';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+        if ($request['archivo'] == null && trim($request['drive']) == null)
+        {
+            $messages["error"] = 'Debe subir un archivo o especificar la dirección del Drive';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+
         $data = $this->insertUpdateData($request, $slug, $dataType->addRows, new $dataType->model_name());
 
         event(new BreadDataAdded($dataType, $data));

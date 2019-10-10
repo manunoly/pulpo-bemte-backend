@@ -71,8 +71,8 @@ class TareasController extends Controller
                 $query = $model->{$dataType->scope}();
             } else {
                 if (Auth::user()->tipo == 'Profesor')
-                    $query = $model::where('user_id', Auth::user()->id)
-                                    ->orWhere('user_id_pro')->select('*');
+                    $query = $model::where('user_id_pro', Auth::user()->id)
+                                    ->orWhere('user_id_pro', null)->select('*');
                 else
                     $query = $model::select('*');
             }

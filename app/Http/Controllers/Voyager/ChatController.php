@@ -71,7 +71,7 @@ class ChatController extends Controller
                 $query = $model->{$dataType->scope}();
             } else {
                 if (Auth::user()->tipo == 'Profesor')
-                    $query = $model::where('user_id', Auth::user()->id)->select('*');
+                    $query = $model::where('user_id_pro', Auth::user()->id)->select('*');
                 else
                     $query = $model::select('*');
             }

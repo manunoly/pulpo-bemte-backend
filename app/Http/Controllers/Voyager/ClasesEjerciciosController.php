@@ -15,6 +15,7 @@ use TCG\Voyager\Facades\Voyager;
 use TCG\Voyager\Http\Controllers\Traits\BreadRelationshipParser;
 
 use Auth;
+use App\Clase;
 
 class ClasesEjerciciosController extends Controller
 {
@@ -72,7 +73,7 @@ class ClasesEjerciciosController extends Controller
             } else {
                 if (Auth::user()->tipo == 'Profesor')
                     $query = $model::join('clases', 'clases.id', '=', 'clase_ejercicio.clase_id')
-                            ->where('user_id_pro', Auth::user()->id)->select('clases.*');
+                            ->where('user_id_pro', Auth::user()->id)->select('clase_ejercicio.*');
                 else
                     $query = $model::select('*');
             }
@@ -318,6 +319,7 @@ class ClasesEjerciciosController extends Controller
     public function create(Request $request)
     {
         $slug = $this->getSlug($request);
+        $request['user_id'] = Auth::user()->id;
 
         $dataType = Voyager::model('DataType')->where('slug', '=', $slug)->first();
 
@@ -365,6 +367,24 @@ class ClasesEjerciciosController extends Controller
 
         // Validate fields with ajax
         $val = $this->validateBread($request->all(), $dataType->addRows)->validate();
+
+        $clase = Clase::where('id', $request['clase_id'])->where('user_id_pro', Auth::user()->id)->first();
+        if ($clase == null)
+        {
+            $messages["error"] = 'Usted no tiene relación con la Clase';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+        if ($clase->estado != 'Aceptado')
+        {
+            $messages["error"] = 'El estado de la Clase no permite subir Archivos';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+        if ($request['archivo'] == null && trim($request['drive']) == null)
+        {
+            $messages["error"] = 'Debe subir un archivo o especificar la dirección del Drive';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+        
         $data = $this->insertUpdateData($request, $slug, $dataType->addRows, new $dataType->model_name());
 
         event(new BreadDataAdded($dataType, $data));
