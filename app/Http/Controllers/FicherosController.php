@@ -84,9 +84,9 @@ class FicherosController extends Controller
         }
         if ($tarea != null)
         {
-            if ($tarea->estado != 'Aceptado')
+            if (($tarea->estado != 'Aceptado') && ($tarea->estado != 'Solicitado') && ($tarea->estado != 'Confirmado'))
             {
-                return response()->json(['error' => 'La Tarea no se encuentra Pagada'], 401);
+                return response()->json(['error' => 'La Tarea no se encuentra Disponible'], 401);
             }
             else if (($tarea->user_id != $request['user_id']) && ($tarea->user_id_pro != $request['user_id']))
             {
@@ -97,7 +97,7 @@ class FicherosController extends Controller
         {
             if (($clase->estado != 'Aceptado') && ($clase->estado != 'Solicitado') && ($clase->estado != 'Confirmado'))
             {
-                return response()->json(['error' => 'La Clase ya finalizó'], 401);
+                return response()->json(['error' => 'La Clase no se encuentra Disponible'], 401);
             }
             else if (($clase->user_id != $request['user_id']) && ($clase->user_id_pro != $request['user_id']))
             {
