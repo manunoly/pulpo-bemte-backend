@@ -25,6 +25,9 @@ Route::post('actualizar-token', 'RegistroController@actualizarToken');
 Route::get('eliminar-cuenta', 'RegistroController@eliminarCuenta');
 Route::get('devuelve-usuario', 'RegistroController@devuelveUsuario');
 Route::post('resetPass', 'RegistroController@resetPassApp');
+Route::get('correo-disponible', 'RegistroController@correoDisponible');
+Route::get('apodo-disponible', 'RegistroController@apodoDisponible');
+
 
 Route::get('terminos', 'BemteController@terminos');
 Route::get('reglamento', 'BemteController@reglamento');

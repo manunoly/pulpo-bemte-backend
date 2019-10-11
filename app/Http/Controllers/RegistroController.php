@@ -170,6 +170,58 @@ class RegistroController extends Controller
                         $dataUser['genero'] = $request['genero'];
                     }
                     $actualizado = Profesore::where('user_id', $id_usuario )->update( $dataUser );
+
+                    $materia1 = Materia::where('nombre', $request['materia1'])->first();
+                    $materia2 = Materia::where('nombre', $request['materia2'])->first();
+                    $materia3 = Materia::where('nombre', $request['materia3'])->first();
+                    $materia4 = Materia::where('nombre', $request['materia4'])->first();
+                    $materia5 = Materia::where('nombre', $request['materia5'])->first();
+                    $materias = ProfesorMaterium::where('user_id', $user->id)->get();
+                    foreach($materias as $mat)
+                    {
+                        if (($materia1 != null && $mat->materia == $materia1->nombre) 
+                            || ($materia2 != null && $mat->materia == $materia2->nombre) 
+                            || ($materia3 != null && $mat->materia == $materia3->nombre)
+                            || ($materia4 != null && $mat->materia == $materia4->nombre) 
+                            || ($materia5 != null && $mat->materia == $materia5->nombre))
+                        {
+                            if (!$mat->activa)
+                            {
+                                $dataMat['activa'] = true;
+                                ProfesorMaterium::where('id', $mat->id )->update( $dataMat );
+                            }
+                        }
+                    }
+                    if ($materia1 != null && $materias->where('materia', $materia1->nombre)->count()== 0)
+                        ProfesorMaterium::create([
+                                'user_id' => $user->id,
+                                'materia' => $materia1->nombre,
+                                'activa' => true
+                            ]);
+                    if ($materia2 != null && $materias->where('materia', $materia2->nombre)->count()== 0)
+                        ProfesorMaterium::create([
+                                'user_id' => $user->id,
+                                'materia' => $materia2->nombre,
+                                'activa' => true
+                            ]);
+                    if ($materia3 != null && $materias->where('materia', $materia3->nombre)->count()== 0)
+                        ProfesorMaterium::create([
+                                'user_id' => $user->id,
+                                'materia' => $materia3->nombre,
+                                'activa' => true
+                            ]);
+                    if ($materia4 != null && $materias->where('materia', $materia4->nombre)->count()== 0)
+                        ProfesorMaterium::create([
+                                'user_id' => $user->id,
+                                'materia' => $materia4->nombre,
+                                'activa' => true
+                            ]);
+                    if ($materia5 != null && $materias->where('materia', $materia5->nombre)->count()== 0)
+                        ProfesorMaterium::create([
+                                'user_id' => $user->id,
+                                'materia' => $materia5->nombre,
+                                'activa' => true
+                            ]);
                     if ($actualizado)
                     {
                         $userDev = $this->datosUser($id_usuario);
@@ -487,31 +539,31 @@ class RegistroController extends Controller
                         if ($materia1 != null)
                             ProfesorMaterium::create([
                                 'user_id' => $user->id,
-                                'materia' => $materia1,
+                                'materia' => $materia1->nombre,
                                 'activa' => true
                             ]);
                         if ($materia2 != null)
                             ProfesorMaterium::create([
                                 'user_id' => $user->id,
-                                'materia' => $materia2,
+                                'materia' => $materia2->nombre,
                                 'activa' => true
                             ]);
                         if ($materia3 != null)
                             ProfesorMaterium::create([
                                 'user_id' => $user->id,
-                                'materia' => $materia3,
+                                'materia' => $materia3->nombre,
                                 'activa' => true
                             ]);
                         if ($materia4 != null)
                             ProfesorMaterium::create([
                                 'user_id' => $user->id,
-                                'materia' => $materia4,
+                                'materia' => $materia4->nombre,
                                 'activa' => true
                             ]);
                         if ($materia5 != null)
                             ProfesorMaterium::create([
                                 'user_id' => $user->id,
-                                'materia' => $materia5,
+                                'materia' => $materia5->nombre,
                                 'activa' => true
                             ]);
 
@@ -623,5 +675,24 @@ class RegistroController extends Controller
         }
         return $user;
 
+    }
+
+    public function correoDisponible()
+    {
+        $search = \Request::get('email');
+        $user = User::where('email', $search)->first();
+        $respuesta = $user != null ? false : true;
+        return response()->json($respuesta, 200);
+    }
+
+    public function apodoDisponible()
+    {
+        $search = \Request::get('apodo');
+        $profesor = Profesore::where('apodo', $search)->first();
+        $alumno = Alumno::where('apodo', $search)->first();
+        $respuesta = true;
+        if ($profesor != null || $alumno != null)
+            $respuesta = false;
+        return response()->json($respuesta, 200);
     }
 }
