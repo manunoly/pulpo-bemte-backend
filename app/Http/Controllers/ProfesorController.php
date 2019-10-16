@@ -462,11 +462,15 @@ class ProfesorController extends Controller
             {
                 $multas = Multa::leftjoin('tareas', 'multas.tarea_id', '=', 'tareas.id')
                             ->leftjoin('clases', 'multas.clase_id', '=', 'clases.id')
+                            ->leftjoin('materias as clasesMateria', 'clasesMateria.nombre', '=', 'clases.materia')
+                            ->leftjoin('materias as tareasMateria', 'tareasMateria.nombre', '=', 'tareas.materia')
                             ->where('multas.user_id', $search)
                             ->where('multas.estado', 'Solicitado')
                             ->select('multas.clase_id', 'multas.tarea_id', 'multas.valor', 
                             'multas.comentario', 'multas.created_at', 'multas.estado',
-                            DB::raw('(CASE WHEN multas.tarea_id = 0 THEN clases.materia ELSE tareas.materia END) AS materia')
+                            DB::raw('(CASE WHEN multas.tarea_id = 0 THEN clases.materia ELSE tareas.materia END) AS materia'),
+                            DB::raw('(CASE WHEN multas.tarea_id = 0 THEN clases.tema ELSE tareas.tema END) AS tema'),
+                            DB::raw('(CASE WHEN multas.tarea_id = 0 THEN clasesMateria.icono ELSE tareasMateria.icono END) AS icono')
                             )->get();
                 $respuesta['total'] = $multas->sum('valor');
                 $respuesta['data'] = $multas;
@@ -474,24 +478,26 @@ class ProfesorController extends Controller
             else if ($tipo == 'TAREAS')
             {
                 $tareas = Pago::join('tareas', 'pagos.tarea_id', '=', 'tareas.id')
+                            ->join('materias', 'materias.nombre', '=', 'tareas.materia')
                             ->where('pagos.estado', 'Solicitado')
                             ->where('pagos.user_id', $search)
                             ->where('tareas.user_id_pro', $search)
                             ->select('tareas.id', 'tareas.materia', 'tareas.tema',  'pagos.horas',
                             'tareas.fecha_entrega', 'pagos.valor', 'pagos.created_at', 
-                            'pagos.estado as pago', 'tareas.estado')->get();
+                            'pagos.estado as pago', 'tareas.estado', 'materias.icono')->get();
                 $respuesta['total'] = $tareas->sum('valor');
                 $respuesta['data'] = $tareas;
             }
             else
             {
                 $clases = Pago::join('clases', 'pagos.clase_id', '=', 'clases.id')
+                            ->join('materias', 'materias.nombre', '=', 'clases.materia')
                             ->where('pagos.estado', 'Solicitado')
                             ->where('pagos.user_id', $search)
                             ->where('clases.user_id_pro', $search)
                             ->select('clases.id', 'clases.materia', 'clases.tema', 
                             'clases.duracion', 'clases.fecha', 'pagos.horas', 'clases.estado',
-                            'pagos.valor', 'pagos.created_at', 'pagos.estado as pago')->get();
+                            'pagos.valor', 'pagos.created_at', 'pagos.estado as pago', 'materias.icono')->get();
                 $respuesta['total'] = $clases->sum('valor');
                 $respuesta['data'] = $clases;
             }
