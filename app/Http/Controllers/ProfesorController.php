@@ -12,6 +12,7 @@ use App\User;
 use App\TareaProfesor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
 use Validator;
 use App\Mail\Notificacion;
 use App\Mail\NotificacionClases;
@@ -459,10 +460,14 @@ class ProfesorController extends Controller
             $tipo = \Request::get('tipo');
             if ($tipo == 'MULTAS')
             {
-                $multas = Multa::where('multas.user_id', $search)
+                $multas = Multa::leftjoin('tareas', 'multas.tarea_id', '=', 'tareas.id')
+                            ->leftjoin('clases', 'multas.clase_id', '=', 'clases.id')
+                            ->where('multas.user_id', $search)
                             ->where('multas.estado', 'Solicitado')
                             ->select('multas.clase_id', 'multas.tarea_id', 'multas.valor', 
-                            'multas.comentario', 'multas.created_at', 'multas.estado')->get();
+                            'multas.comentario', 'multas.created_at', 'multas.estado',
+                            DB::raw('(CASE WHEN multas.tarea_id = 0 THEN clases.materia ELSE tareas.materia END) AS materia')
+                            )->get();
                 $respuesta['total'] = $multas->sum('valor');
                 $respuesta['data'] = $multas;
             }
