@@ -680,19 +680,26 @@ class RegistroController extends Controller
     public function correoDisponible()
     {
         $search = \Request::get('email');
+        $userID = \Request::get('user_id');
         $user = User::where('email', $search)->first();
-        $respuesta = $user != null ? false : true;
+        $respuesta = ($user != null && $user->id != $userID) ? false : true;
         return response()->json($respuesta, 200);
     }
 
     public function apodoDisponible()
     {
-        $search = \Request::get('apodo');
-        $profesor = Profesore::where('apodo', $search)->first();
-        $alumno = Alumno::where('apodo', $search)->first();
         $respuesta = true;
-        if ($profesor != null || $alumno != null)
+        $search = \Request::get('apodo');
+        $userID = \Request::get('user_id');
+        $profesor = Profesore::where('apodo', $search)->first();
+        if ($profesor != null && $profesor->user_id != $userID)
             $respuesta = false;
+        if ($profesor == null)
+        {
+            $alumno = Alumno::where('apodo', $search)->first();
+            if ($alumno != null && $alumno->user_id != $userID)
+                $respuesta = false;
+        }
         return response()->json($respuesta, 200);
     }
 }
