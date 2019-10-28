@@ -296,28 +296,19 @@ class ClasesController extends Controller
                         $duracion = 2;
                     if ($request['user_id'] == $clase->user_id_pro)
                     {
-                        $nowDate = date_format(date_create($dateTime), "Y-m-d");
-                        $nowTime = date_format(date_create($dateTime), "H:i:s");
-                        $limit = date("Y-m-d H:i:s", strtotime($clase->fecha.' '.$clase->hora_prof. '-24 hours'));
-                        $limitDate = date_format(date_create($limit), "Y-m-d");
-                        $limitTime = date_format(date_create($limit), "H:i:s");
-                        if (($nowDate > $limitDate) || (($nowDate == $limitDate)
-                            && ($nowTime > $limitTime)))
+                        //penalizar 2 hora al profesor
+                        $profeClase = Profesore::where('user_id', $clase->user_id_pro)->first();
+                        $multaProf = Multa::create([
+                            'user_id' => $clase->user_id_pro,
+                            'tarea_id' => 0,
+                            'clase_id' => $clase->id,
+                            'valor' => 2 * $profeClase->valor_clase,
+                            'comentario' => 'Clase Cancelada',
+                            'estado' => 'Solicitado'
+                            ]);
+                        if (!$multaProf->id)
                         {
-                            //penalizar 1 hora al profesor
-                            $profeClase = Profesore::where('user_id', $clase->user_id_pro)->first();
-                            $multaProf = Multa::create([
-                                'user_id' => $clase->user_id_pro,
-                                'tarea_id' => 0,
-                                'clase_id' => $clase->id,
-                                'valor' => $profeClase->valor_clase,
-                                'comentario' => 'Clase Cancelada dentro de las 24 horas',
-                                'estado' => 'Solicitado'
-                                ]);
-                            if (!$multaProf->id)
-                            {
-                                return response()->json(['error' => 'Error al crear Multa al Profesor'], 401);
-                            }
+                            return response()->json(['error' => 'Error al crear Multa al Profesor'], 401);
                         }
                         if ($clase->estado == 'Aceptado' || $clase->estado == 'Pago_Aprobado')
                         {
@@ -342,33 +333,8 @@ class ClasesController extends Controller
                     }
                     else if ($request['user_id'] == $clase->user_id)
                     {
-                        $nowDate = date_format(date_create($dateTime), "Y-m-d");
-                        $nowTime = date_format(date_create($dateTime), "H:i:s");
-                        $limit = date("Y-m-d H:i:s", strtotime($clase->fecha.' '.$clase->hora_prof. '-3 hours'));
-                        $limitDate = date_format(date_create($limit), "Y-m-d");
-                        $limitTime = date_format(date_create($limit), "H:i:s");
-                        if (($nowDate > $limitDate) || (($nowDate == $limitDate)
-                            && ($nowTime > $limitTime)))
-                        {
-                            //penalizar todas las horas al alumno
-                            if ($clase->estado == 'Confirmado' || $clase->estado == 'Confirmando_Pago')
-                            {
-                                $penHoras = -1 * $duracion;
-                            }
-                        }
-                        else
-                        {
-                            if ($clase->estado == 'Aceptado' || $clase->estado == 'Pago_Aprobado')
-                            {
-                                //devolver las horas menos 1 por penalizacion al alumno
-                                $penHoras = $duracion - 1;
-                            }
-                            if ($clase->estado == 'Confirmado' || $clase->estado == 'Confirmando_Pago')
-                            {
-                                //penalizar 1 hora al alumno
-                                $penHoras = -1;
-                            }
-                        }
+                        //penalizar 1 hora al alumno
+                        $penHoras = -1;
                     }
                     if ($clase->estado == 'Aceptado' || $clase->estado == 'Pago_Aprobado')
                     {
