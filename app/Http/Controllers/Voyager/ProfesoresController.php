@@ -290,11 +290,25 @@ class ProfesoresController extends Controller
         // Check permission
         $this->authorize('edit', $data);
 
+        if (Auth::user()->tipo == 'Profesor')
+        {
+            if ($request['valor_clase'] != $data['valor_clase'])
+            {
+                $messages["error"] = 'No puede modificar el Valor de la Clase';
+                return redirect()->back()->withErrors($messages)->withInput();
+            }
+            if ($request['valor_tarea'] != $data['valor_tarea'])
+            {
+                $messages["error"] = 'No puede modificar el Valor de la Tarea';
+                return redirect()->back()->withErrors($messages)->withInput();
+            }
+        }
+
         // Validate fields with ajax
         $val = $this->validateBread($request->all(), $dataType->editRows, $dataType->name, $id)->validate();
         $this->insertUpdateData($request, $slug, $dataType->editRows, $data);
         event(new BreadDataUpdated($dataType, $data));
-
+/*
         $v = \Validator::make($request->all(), [
             'correo'    => 'required|email',
         ]);
@@ -314,6 +328,7 @@ class ProfesoresController extends Controller
             "name" => $data['nombres'].' '.$data['apellidos'], "email" => $data['correo'],
         ];
         $actualizado = User::where('id', $id )->update( $dataUser );
+        */
         if ($data['activo'] == 1)
         {
             try 
