@@ -32,6 +32,7 @@ Route::get('apodo-disponible', 'RegistroController@apodoDisponible');
 Route::get('terminos', 'BemteController@terminos');
 Route::get('reglamento', 'BemteController@reglamento');
 Route::get('video', 'BemteController@video');
+Route::post('eliminar', 'BemteController@eliminar');
 
 Route::post('reset', 'RegistroController@resetPassword');
 Route::get('reset/{confirmation_code}/{email}', 'RegistroController@validar'); 
