@@ -466,12 +466,15 @@ class ProfesorController extends Controller
                             ->leftjoin('materias as tareasMateria', 'tareasMateria.nombre', '=', 'tareas.materia')
                             ->where('multas.user_id', $search)
                             ->where('multas.estado', 'Solicitado')
-                            ->select('multas.clase_id', 'multas.tarea_id', 'multas.valor', 
+                            ->select('multas.id', 'multas.clase_id', 'multas.tarea_id', 'multas.valor', 
                             'multas.comentario', 'multas.created_at', 'multas.estado',
                             DB::raw('(CASE WHEN multas.tarea_id = 0 THEN clases.materia ELSE tareas.materia END) AS materia'),
                             DB::raw('(CASE WHEN multas.tarea_id = 0 THEN clases.tema ELSE tareas.tema END) AS tema'),
-                            DB::raw('(CASE WHEN multas.tarea_id = 0 THEN clasesMateria.icono ELSE tareasMateria.icono END) AS icono')
-                            )->get();
+                            DB::raw('(CASE WHEN multas.tarea_id = 0 THEN clasesMateria.icono ELSE tareasMateria.icono END) AS icono'),
+                            DB::raw('(CASE WHEN multas.tarea_id = 0 THEN clases.fecha ELSE tareas.fecha_entrega END) AS fecha'),
+                            DB::raw('(CASE WHEN multas.tarea_id = 0 THEN clases.duracion ELSE TIMESTAMPDIFF(hour, tareas.hora_inicio, tareas.hora_fin) END) AS duracion'),
+                            DB::raw('(CASE WHEN multas.tarea_id = 0 THEN TIME_FORMAT(clases.hora1, "%H:%i") ELSE TIME_FORMAT(tareas.hora_inicio, "%H:%i") END) AS hora1')
+                            )->orderBy('fecha', 'desc')->orderBy('hora1', 'desc')->get();
                 $respuesta['total'] = $multas->sum('valor');
                 $respuesta['data'] = $multas;
             }
@@ -482,9 +485,13 @@ class ProfesorController extends Controller
                             ->where('pagos.estado', 'Solicitado')
                             ->where('pagos.user_id', $search)
                             ->where('tareas.user_id_pro', $search)
-                            ->select('tareas.id', 'tareas.materia', 'tareas.tema',  'pagos.horas',
-                            'tareas.fecha_entrega', 'pagos.valor', 'pagos.created_at', 
-                            'pagos.estado as pago', 'tareas.estado', 'materias.icono')->get();
+                            ->select('tareas.id', 'tareas.materia', 'tareas.tema', 
+                            DB::raw('TIME_FORMAT(tareas.hora_inicio, "%H:%i") as hora1'), 
+                            DB::raw('TIME_FORMAT(tareas.hora_fin, "%H:%i") as hora2'), 
+                            DB::raw('TIMESTAMPDIFF(hour, tareas.hora_inicio, tareas.hora_fin) as duracion'), 
+                            'tareas.fecha_entrega as fecha', 'pagos.valor', 'pagos.created_at', 'pagos.horas',
+                            'pagos.estado as pago', 'tareas.estado', 'materias.icono')
+                            ->orderBy('fecha', 'desc')->orderBy('hora1', 'desc')->get();
                 $respuesta['total'] = $tareas->sum('valor');
                 $respuesta['data'] = $tareas;
             }
@@ -496,8 +503,10 @@ class ProfesorController extends Controller
                             ->where('pagos.user_id', $search)
                             ->where('clases.user_id_pro', $search)
                             ->select('clases.id', 'clases.materia', 'clases.tema', 
+                            DB::raw('TIME_FORMAT(clases.hora1, "%H:%i") as hora1'),
                             'clases.duracion', 'clases.fecha', 'pagos.horas', 'clases.estado',
-                            'pagos.valor', 'pagos.created_at', 'pagos.estado as pago', 'materias.icono')->get();
+                            'pagos.valor', 'pagos.created_at', 'pagos.estado as pago', 'materias.icono')
+                            ->orderBy('fecha', 'desc')->orderBy('hora1', 'desc')->get();
                 $respuesta['total'] = $clases->sum('valor');
                 $respuesta['data'] = $clases;
             }
