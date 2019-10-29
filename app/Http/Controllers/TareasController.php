@@ -337,6 +337,82 @@ class TareasController extends Controller
                 {
                     return response()->json([ 'error' => 'Usuario no existe!'], 401);
                 }
+                if ($user['tipo'] == 'Alumno') 
+                {
+                    if ($tipo == 'ACTUAL')
+                        $tareas = Tarea::leftJoin('users', 'users.id', '=', 'tareas.user_id_pro')
+                                    ->leftJoin('profesores', 'profesores.user_id', '=', 'tareas.user_id_pro')
+                                    ->join('materias', 'tareas.materia', '=', 'materias.nombre')
+                                    ->where('tareas.user_id', $search)
+                                    ->whereIn('estado', ['Solicitado', 'Confirmado', 'Aceptado', 'Pago_Aprobado', 'Confirmando_Pago'])
+                                    ->select('tareas.id','users.name', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
+                                    'tareas.descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 'archivo',
+                                    'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor', 'fecha_canc',
+                                    'users.avatar', 'profesores.calificacion', 'icono', 'tareas.activa')
+                                    ->orderBy('tareas.id', 'desc')->get();
+                    else
+                        $tareas = Tarea::leftJoin('users', 'users.id', '=', 'tareas.user_id_pro')
+                                    ->leftJoin('profesores', 'profesores.user_id', '=', 'tareas.user_id_pro')
+                                    ->join('materias', 'tareas.materia', '=', 'materias.nombre')
+                                    ->where('tareas.user_id', $search)
+                                    ->whereIn('estado', ['Sin_Horas', 'Terminado', 'Calificado', 
+                                                        'Cancelado', 'Sin_Profesor', 'Sin_Pago', 'Pago_Rechazado'])
+                                    ->select('tareas.id','users.name', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
+                                    'tareas.descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 'archivo',
+                                    'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor', 'fecha_canc',
+                                    'users.avatar', 'profesores.calificacion', 'icono', 'tareas.activa')
+                                    ->orderBy('tareas.id', 'desc')->get();
+                }
+                else
+                {
+                    if ($tipo == 'ACTUAL')
+                        $tareas = Tarea::join('users', 'users.id', '=', 'tareas.user_id')
+                                ->join('alumnos', 'alumnos.user_id', '=', 'tareas.user_id')
+                                ->join('materias', 'tareas.materia', '=', 'materias.nombre')
+                                ->where('tareas.user_id_pro', $search)
+                                ->whereIn('estado', ['Solicitado', 'Confirmado', 'Aceptado', 'Pago_Aprobado', 'Confirmando_Pago'])
+                                ->select('tareas.id','users.name', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
+                                'tareas.descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 'archivo',
+                                'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor', 'fecha_canc',
+                                'users.avatar', 'alumnos.calificacion', 'icono', 'tareas.activa')
+                                ->orderBy('tareas.id', 'desc')->get();
+                    else
+                        $tareas = Tarea::join('users', 'users.id', '=', 'tareas.user_id')
+                                ->join('alumnos', 'alumnos.user_id', '=', 'tareas.user_id')
+                                ->join('materias', 'tareas.materia', '=', 'materias.nombre')
+                                ->where('tareas.user_id_pro', $search)
+                                ->whereIn('estado', ['Sin_Horas', 'Terminado', 'Calificado', 
+                                                    'Cancelado', 'Sin_Profesor', 'Sin_Pago', 'Pago_Rechazado'])
+                                ->select('tareas.id','users.name', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
+                                'tareas.descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 'archivo',
+                                'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor', 'fecha_canc',
+                                'users.avatar', 'alumnos.calificacion', 'icono', 'tareas.activa')
+                                ->orderBy('tareas.id', 'desc')->get();
+                }
+                return response()->json($tareas->take(100), 200);
+            }
+            else
+                return response()->json(['error' => 'Tipo no válido'], 401);
+        }
+        else
+            return response()->json(['error' => 'Usuario no especificado'], 401);
+    }
+
+    public function listaTareasHoras()
+    {
+        if( \Request::get('user_id') )
+        {
+            $tipo = \Request::get('tipo');
+            if ($tipo != 'ACTUAL' && $tipo != 'ANTERIOR')
+                $tipo = 'ACTUAL';
+            if ( $tipo == 'ACTUAL' || $tipo == 'ANTERIOR')
+            {
+                $search = \Request::get('user_id');
+                $user = User::where('id', '=', $search )->first();
+                if ($user == null) 
+                {
+                    return response()->json([ 'error' => 'Usuario no existe!'], 401);
+                }
                 $nowDate = date_format(date_create(date("Y-m-d H:i:s")), "Y-m-d");
                 if ($user['tipo'] == 'Alumno') 
                 {
