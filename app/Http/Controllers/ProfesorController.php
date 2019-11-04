@@ -385,14 +385,13 @@ class ProfesorController extends Controller
                         if ($actualizado)
                         {
                             //enviar notificacion al profesor o alumno
-                            $dateTime = date("Y-m-d H:i:s");
                             $notificacion['clase_id'] = $clase->id;
                             $notificacion['tarea_id'] = 0;
                             $notificacion['chat_id'] = 0;
                             $notificacion['compra_id'] = 0;
                             $notificacion['titulo'] = 'Clase Confirmada';
                             $notificacion['texto'] = 'La Clase de '.$clase->materia.', '.$clase->tema.', ha sido confirmada por el profesor '
-                                    .$profe->nombres.' '.$profe->apellidos.', '.$dateTime;
+                                    .$profe->nombres.' '.$profe->apellidos;
                             $notificacion['estado'] = $estado;
                             $pushClass = new NotificacionesPushFcm();
                             $pushClass->enviarNotificacion($notificacion, $userAlumno);

@@ -139,7 +139,6 @@ class CombosController extends Controller
                         }
                         //lanzar notificaciones a los profesores
                         $notificacion['titulo'] = 'Solicitud de Clase';
-                        $dateTime = date("Y-m-d H:i:s");
                         $notificacion['clase_id'] = $clase->id;
                         $notificacion['tarea_id'] = 0;
                         $notificacion['chat_id'] = 0;
@@ -147,8 +146,7 @@ class CombosController extends Controller
                         $notificacion['texto'] = 'Ha sido solicitada una Clase de '.$clase->materia.', '.$clase->tema
                                     .', para el '.$clase->fecha.' a las '.$clase->hora1
                                     .', en '.$clase->ubicacion.' para '.$clase->personas.' estudiantes con una duracion de '
-                                    .$clase->duracion.', por '.$usuario->nombres.' '.$usuario->apellidos
-                                    .', '.$dateTime;
+                                    .$clase->duracion.', por '.$usuario->nombres.' '.$usuario->apellidos;
                         $notificacion['estado'] = 'NO';
                         $pushClass = new NotificacionesPushFcm();
                         foreach($profesores as $solicitar)

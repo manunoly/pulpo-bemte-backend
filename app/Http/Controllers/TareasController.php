@@ -96,11 +96,10 @@ class TareasController extends Controller
                                     ->get();
                 
                 $notificacion['titulo'] = 'Solicitud de Tarea';
-                $dateTime = date("Y-m-d H:i:s");
                 $notificacion['texto'] = 'Ha sido solicitada una Tarea de '.$tarea->materia.', '.$tarea->tema
                                         .', para el '.$tarea->fecha_entrega.' de '
                                         .$tarea->hora_inicio.' a '.$tarea->hora_fin
-                                        .', en '.$tarea->formato_entrega.', por '.$user->name.', '.$dateTime;
+                                        .', en '.$tarea->formato_entrega.', por '.$user->name;
                 $notificacion['estado'] = 'NO';
                 $notificacion['tarea_id'] = $tarea->id;
                 $notificacion['clase_id'] = 0;
@@ -283,7 +282,7 @@ class TareasController extends Controller
                         {
                             $userNotif = User::where('id', $tarea->user_id)->first();
                             $correoAdmin = 'La Tarea de '.$tarea->materia.', '.$tarea->tema.', ha sido cancelada por el Profesor '.$userNotif->name.' a las '.$dateTime;
-                            $notificacion['texto'] = 'Lamentamos informarte que el Profesor ha cancelado la Tarea de '.$tarea->materia.', '.$tarea->tema.', '.$dateTime;
+                            $notificacion['texto'] = 'Lamentamos informarte que el Profesor ha cancelado la Tarea de '.$tarea->materia.', '.$tarea->tema;
                         }
                         else
                         {

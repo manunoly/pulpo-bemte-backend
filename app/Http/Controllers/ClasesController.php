@@ -139,7 +139,6 @@ class ClasesController extends Controller
                     }
                     //lanzar notificaciones a los profesores
                     $notificacion['titulo'] = 'Solicitud de Clase';
-                    $dateTime = date("Y-m-d H:i:s");
                     $notificacion['clase_id'] = $clase->id;
                     $notificacion['tarea_id'] = 0;
                     $notificacion['chat_id'] = 0;
@@ -147,7 +146,7 @@ class ClasesController extends Controller
                     $notificacion['texto'] = 'Ha sido solicitada una Clase de '.$clase->materia.', '.$clase->tema
                             .', para el '.$clase->fecha.' a las '.$clase->hora1
                             .', en '.$clase->ubicacion.' para '.$clase->personas.' estudiantes con una duracion de '
-                            .$clase->duracion.', por '.$user->name.', '.$dateTime;
+                            .$clase->duracion.', por '.$user->name;
                     $notificacion['estado'] = 'NO';
                     $pushClass = new NotificacionesPushFcm();
                     foreach($profesores as $solicitar)
@@ -279,7 +278,7 @@ class ClasesController extends Controller
                         {
                             $userNotif = User::where('id', $clase->user_id)->first();
                             $correoAdmin = 'La Clase de '.$clase->materia.', '.$clase->tema.', ha sido cancelada por el Profesor '.$userNotif->name.' a las '.$dateTime;
-                            $notificacion['texto'] = 'Lamentamos informarte que el Profesor ha cancelado la Clase de '.$clase->materia.', '.$clase->tema.', '.$dateTime;
+                            $notificacion['texto'] = 'Lamentamos informarte que el Profesor ha cancelado la Clase de '.$clase->materia.', '.$clase->tema;
                         }
                         else
                         {
@@ -580,11 +579,9 @@ class ClasesController extends Controller
                 else
                 {
                     //enviar notificacion al profesor
-                    $dateTime = date("Y-m-d H:i:s");
                     $notificacion['titulo'] = 'Clase Confirmada';
                     $notificacion['texto'] = 'Clase de '.$clase->materia.', '.$clase->tema.', confirmada en Calle: '.$request['calle']
-                        .', Referencia: '.$request['referencia'].', Preguntar: '.$request['quien_preguntar']
-                        .', '.$dateTime;
+                        .', Referencia: '.$request['referencia'].', Preguntar: '.$request['quien_preguntar'];
                     $notificacion['estado'] = 'NO';
                     $notificacion['clase_id'] = $clase->id;
                     $notificacion['tarea_id'] = 0;

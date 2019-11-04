@@ -185,7 +185,6 @@ class AsignarProfesorTarea extends Command
                 Tarea::where('id', $item->id )->update( $dataTarea );
 
                 //enviar notificacion al profesor y al alumno
-                $dateTime = date("Y-m-d H:i:s");
                 $notificacion['titulo'] = 'Tarea Confirmada';
                 $notificacion['tarea_id'] = $item->id;
                 $notificacion['clase_id'] = 0;
@@ -194,12 +193,12 @@ class AsignarProfesorTarea extends Command
                 $notificacion['estado'] = $estado;
                 $notificacion['texto'] = 'La Tarea de '.$item->materia.', '.$item->tema
                                             .', ha sido confirmada por el profesor '
-                                            .$userProfesor->name.', '.$dateTime;
+                                            .$userProfesor->name;
                 $pushClass = new NotificacionesPushFcm();
                 $pushClass->enviarNotificacion($notificacion, $userAlumno);
 
                 $notificacion['texto'] = 'La Tarea de '.$item->materia.', '.$item->tema
-                                            .' le ha sido Asignada, '.$dateTime;
+                                            .' le ha sido Asignada';
                 $notificacion['estado'] = $estadoProf;
                 $pushClass->enviarNotificacion($notificacion, $userProfesor);
             }

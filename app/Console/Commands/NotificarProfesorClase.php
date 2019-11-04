@@ -47,7 +47,6 @@ class NotificarProfesorClase extends Command
                 ->where('clases.seleccion_profesor', true)->where('clases.updated_at','<=', $newDate)
                 ->select('clases.*', 'alumnos.ciudad')->get();
         $notificacion['titulo'] = 'Solicitud de Clase';
-        $dateTime = date("Y-m-d H:i:s");
         $notificacion['estado'] = 'NO';
         $pushClass = new NotificacionesPushFcm();
         foreach($clases as $item)
@@ -74,7 +73,7 @@ class NotificarProfesorClase extends Command
             $notificacion['texto'] = 'Ha sido solicitada una Clase de '.$item->materia.', '.$item->tema
                     .', para el '.$item->fecha.' a las '.$item->hora1
                     .', en '.$item->ubicacion.' para '.$item->personas.' estudiantes con una duracion de '
-                    .$item->duracion.', por '.$user->name.', '.$dateTime;
+                    .$item->duracion.', por '.$user->name;
             foreach($profesores as $solicitar)
                 $pushClass->enviarNotificacion($notificacion, $solicitar);
         }
