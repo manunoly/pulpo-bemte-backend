@@ -146,8 +146,8 @@ class AsignarProfesorTarea extends Command
                 $dataTarea['user_id_pro'] = $propuestaSeleccionada->user_id;
 
                 $alumno = Alumno::where('user_id', $item->user_id)->first();
-                $estado  = 'Por favor, realizar el pago de su Tarea.';
-                $estadoProf = 'El Alumno, debe realizar el Pago de la Tarea.';
+                $estado  = 'Por favor, realizar el pago de la Tarea de '.$item->materia.', '.$item->tema.'.';
+                $estadoProf = 'El Alumno, debe realizar el Pago de la Tarea de '.$item->materia.', '.$item->tema.'.';
                 $userAlumno = User::where('id', $item->user_id)->first();
                 $userProfesor = User::where('id', $propuestaSeleccionada->user_id)->first();
                 if ($alumno->billtera >= $propuestaSeleccionada->tiempo)
@@ -158,8 +158,8 @@ class AsignarProfesorTarea extends Command
                     if ($actualizado)
                     {
                         $dataTarea['estado'] = 'Aceptado';
-                        $estado = 'Su Tarea ha sido asignada.';
-                        $estadoProf = 'El Alumno ha realizado el Pago de la Tarea Exitosamente.';
+                        $estado = 'La Tarea de '.$item->materia.', '.$item->tema.', ha sido asignada.';
+                        $estadoProf = 'El Alumno ha realizado el Pago Exitosamente de la Tarea de '.$item->materia.', '.$item->tema.'.';
                         //pagar al profesor
                         $profe = Profesore::where('user_id', $propuestaSeleccionada->user_id)->first();
                         $pagoProf = Pago::create([
@@ -192,12 +192,14 @@ class AsignarProfesorTarea extends Command
                 $notificacion['chat_id'] = 0;
                 $notificacion['compra_id'] = 0;
                 $notificacion['estado'] = $estado;
-                $notificacion['texto'] = 'La Tarea '.$item->id.' ha sido confirmada por el profesor '
+                $notificacion['texto'] = 'La Tarea de '.$item->materia.', '.$item->tema
+                                            .', ha sido confirmada por el profesor '
                                             .$userProfesor->name.', '.$dateTime;
                 $pushClass = new NotificacionesPushFcm();
                 $pushClass->enviarNotificacion($notificacion, $userAlumno);
 
-                $notificacion['texto'] = 'La Tarea '.$item->id.' le ha sido Asignada, '.$dateTime;
+                $notificacion['texto'] = 'La Tarea de '.$item->materia.', '.$item->tema
+                                            .' le ha sido Asignada, '.$dateTime;
                 $notificacion['estado'] = $estadoProf;
                 $pushClass->enviarNotificacion($notificacion, $userProfesor);
             }

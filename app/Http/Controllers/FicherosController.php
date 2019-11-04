@@ -288,7 +288,7 @@ class FicherosController extends Controller
                 {
                     $dataTarea['estado'] = 'Confirmando_Pago';
                     $actualizado = Tarea::where('id', $tarea->id )->update( $dataTarea );
-                    $detalle = 'Para la Tarea '.$tarea->id;
+                    $detalle = 'Para la Tarea de '.$tarea->materia.', '.$tarea->tema;
                     if(!$actualizado )
                     {
                         return response()->json(['error' => 'Error al actualizar solicitud'], 401);

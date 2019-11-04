@@ -97,8 +97,8 @@ class TareasController extends Controller
                 
                 $notificacion['titulo'] = 'Solicitud de Tarea';
                 $dateTime = date("Y-m-d H:i:s");
-                $notificacion['texto'] = 'Ha sido solicitada la Tarea '.$tarea->id.' de '.$tarea->materia
-                                        .' ('.$tarea->tema.'), para el '.$tarea->fecha_entrega.' de '
+                $notificacion['texto'] = 'Ha sido solicitada una Tarea de '.$tarea->materia.', '.$tarea->tema
+                                        .', para el '.$tarea->fecha_entrega.' de '
                                         .$tarea->hora_inicio.' a '.$tarea->hora_fin
                                         .', en '.$tarea->formato_entrega.', por '.$user->name.', '.$dateTime;
                 $notificacion['estado'] = 'NO';
@@ -273,7 +273,7 @@ class TareasController extends Controller
                         //enviar notificacion al profesor o alumno
                         $dateTime = date("Y-m-d H:i:s");
                         $notificacion['titulo'] = 'Tarea Cancelada';
-                        $notificacion['texto'] = 'La Tarea '.$tarea->id.' ha sido cancelada por el ';
+                        $notificacion['texto'] = 'Lamentamos informarte que el Alumno ha cancelado la Tarea de '.$tarea->materia.', '.$tarea->tema.', mantente pendiente a más solicitudes.';
                         $notificacion['estado'] = 'NO';
                         $notificacion['tarea_id'] = $tarea->id;
                         $notificacion['clase_id'] = 0;
@@ -282,13 +282,12 @@ class TareasController extends Controller
                         if ($request['user_id'] == $tarea->user_id_pro)
                         {
                             $userNotif = User::where('id', $tarea->user_id)->first();
-                            $correoAdmin = $notificacion['texto'].'Profesor '.$userNotif->name.' a las '.$dateTime;
-                            $notificacion['texto'] = $notificacion['texto'].'Profesor, '.$dateTime;
+                            $correoAdmin = 'La Tarea de '.$tarea->materia.', '.$tarea->tema.', ha sido cancelada por el Profesor '.$userNotif->name.' a las '.$dateTime;
+                            $notificacion['texto'] = 'Lamentamos informarte que el Profesor ha cancelado la Tarea de '.$tarea->materia.', '.$tarea->tema.', '.$dateTime;
                         }
                         else
                         {
                             $userNotif = User::where('id', $tarea->user_id_pro)->first();
-                            $notificacion['texto'] = $notificacion['texto'].'Alumno, '.$dateTime;
                         }
                         $pushClass = new NotificacionesPushFcm();
                         $pushClass->enviarNotificacion($notificacion, $userNotif);

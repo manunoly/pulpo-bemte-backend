@@ -169,6 +169,14 @@ class RegistroController extends Controller
                     {
                         $dataUser['genero'] = $request['genero'];
                     }
+                    if ( isset($request['clases']) )
+                    {
+                        $dataUser['clases'] = $request['clases'];
+                    }
+                    if ( isset($request['tareas']) )
+                    {
+                        $dataUser['tareas'] = $request['tareas'];
+                    }
                     $actualizado = Profesore::where('user_id', $id_usuario )->update( $dataUser );
 
                     $materia1 = Materia::where('nombre', $request['materia1'])->first();
@@ -190,6 +198,11 @@ class RegistroController extends Controller
                                 $dataMat['activa'] = true;
                                 ProfesorMaterium::where('id', $mat->id )->update( $dataMat );
                             }
+                        }
+                        else
+                        {
+                            $dataMat['activa'] = false;
+                            ProfesorMaterium::where('id', $mat->id )->update( $dataMat );
                         }
                     }
                     if ($materia1 != null && $materias->where('materia', $materia1->nombre)->count()== 0)
@@ -670,7 +683,14 @@ class RegistroController extends Controller
                 $user['tipo'] = 'Profesor';
                 $user['avatar'] = $userPro->avatar;
                 $user['token'] = $userPro->token; 
-                $user['sistema'] = $userPro->sistema;  
+                $user['sistema'] = $userPro->sistema;
+                $materias = ProfesorMaterium::where('user_id', $userPro['id'])->where('activa', true)->get();
+                $contador = 1;
+                foreach ($materias as $mat)
+                {
+                    $user['materia'.$contador] = $materias->nombre;
+                    $contador++;
+                }
             }
         }
         return $user;

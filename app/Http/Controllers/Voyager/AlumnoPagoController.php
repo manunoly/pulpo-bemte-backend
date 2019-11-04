@@ -442,11 +442,11 @@ class AlumnoPagoController extends Controller
                 try 
                 {
                     Mail::to($userAlumno->email)->send(new Notificacion($userAlumno->name, 
-                            'Su Pago para la Tarea '.$tarea->id.' no ha sido Aprobado.', '',
-                            'Por favor, contactar con el administrador.', env('EMPRESA')));
+                            'Su Pago para la Tarea de '.$tarea->materia.', '.$tarea->tema.', ha sido Rechazado.', '',
+                            ' Imagen borrosa o incorrecta. Si cree que ha sido un error, escriba al correo bemtepagos@gmail.com.', env('EMPRESA')));
                     Mail::to($userProf->email)->send(new Notificacion($userProf->name, 
-                            'El Pago para la Tarea '.$tarea->id.' no ha sido Aprobado.', '',
-                            'La Tarea no ha sido Asignada.', env('EMPRESA')));
+                            'Lo sentimos la Tarea de '.$tarea->materia.', '.$tarea->tema.', no ha sido Confirmada.', '',
+                            '', env('EMPRESA')));
                 }
                 catch (Exception $e) 
                 {
@@ -455,12 +455,12 @@ class AlumnoPagoController extends Controller
                 }
             }
             //enviar notificacion al profesor y al alumno
-            $notificacion['titulo'] = 'Pago Tarea '.$request['estado'];
-            $notificacion['texto'] = 'El pago de la Tarea '.$tarea->id.' ha sido '.$request['estado'];
+            $notificacion['titulo'] = 'Tarea '.$request['estado'];
+            $notificacion['texto'] = 'El pago de la Tarea de '.$tarea->materia.', '.$tarea->tema.', ha sido '.$request['estado'];
             if ($request['estado'] == 'Aprobado')
                 $notificacion['texto'] = $notificacion['texto'].'. La Tarea ha sido Asignada, '.$dateTime;
             else
-                $notificacion['texto'] = $notificacion['texto'].'. La Tarea no ha sido Asignada, '.$dateTime;
+                $notificacion['texto'] = $notificacion['texto'].'. Imagen borrosa o incorrecta. Si cree que ha sido un error, escriba al correo bemtepagos@gmail.com, '.$dateTime;
             $notificacion['estado'] = 'NO';
             $notificacion['tarea_id'] = $tarea->id;
             $notificacion['clase_id'] = 0;
@@ -468,6 +468,10 @@ class AlumnoPagoController extends Controller
             $notificacion['compra_id'] = 0;
             $pushClass = new NotificacionesPushFcm();
             $pushClass->enviarNotificacion($notificacion, $userAlumno);
+            if ($request['estado'] == 'Aprobado')
+                $notificacion['texto'] = 'La Tarea de '.$tarea->materia.', '.$tarea->tema.', ha sido Confirmada.';
+            else
+                $notificacion['texto'] = 'Lo sentimos la Tarea de '.$tarea->materia.', '.$tarea->tema.', no ha sido Confirmada.';
             $pushClass->enviarNotificacion($notificacion, $userProf);
         }
         if ($clase != null)
@@ -520,11 +524,11 @@ class AlumnoPagoController extends Controller
                 try 
                 {
                     Mail::to($userAlumno->email)->send(new Notificacion($userAlumno->name, 
-                            'Su Pago para la Clase '.$clase->id.' no ha sido Aprobado.', '',
-                            'Por favor, contactar con el administrador.', env('EMPRESA')));
+                            'Su Pago para la Clase de '.$clase->materia.', '.$clase->tema.', ha sido Rechazada.', '',
+                            ' Imagen borrosa o incorrecta. Si cree que ha sido un error, escriba al correo bemtepagos@gmail.com.', env('EMPRESA')));
                     Mail::to($userProf->email)->send(new Notificacion($userProf->name, 
-                            'El Pago para la Clase '.$clase->id.' no ha sido Aprobado.', '',
-                            'La Clase no ha sido Asignada.', env('EMPRESA')));
+                            'Lo sentimos la Clase de '.$clase->materia.', '.$clase->tema.', no ha sido Confirmada.', '',
+                            '', env('EMPRESA')));
                 }
                 catch (Exception $e) 
                 {
@@ -533,12 +537,12 @@ class AlumnoPagoController extends Controller
                 }
             }
             //enviar notificacion al profesor y al alumno
-            $notificacion['titulo'] = 'Pago Clase '.$request['estado'];
-            $notificacion['texto'] = 'El pago de la Clase '.$clase->id.' ha sido '.$request['estado'];
+            $notificacion['titulo'] = 'Clase '.$request['estado'];
+            $notificacion['texto'] = 'El pago de la Clase de '.$clase->materia.', '.$clase->tema.', ha sido '.$request['estado'];
             if ($request['estado'] == 'Aprobado')
                 $notificacion['texto'] = $notificacion['texto'].'. La Clase ha sido Asignada, '.$dateTime;
             else
-                $notificacion['texto'] = $notificacion['texto'].'. La Clase no ha sido Asignada, '.$dateTime;
+                $notificacion['texto'] = $notificacion['texto'].'. Imagen borrosa o incorrecta. Si cree que ha sido un error, escriba al correo bemtepagos@gmail.com, '.$dateTime;
             $notificacion['estado'] = 'NO';
             $notificacion['clase_id'] = $clase->id;
             $notificacion['tarea_id'] = 0;
@@ -546,6 +550,10 @@ class AlumnoPagoController extends Controller
             $notificacion['compra_id'] = 0;
             $pushClass = new NotificacionesPushFcm();
             $pushClass->enviarNotificacion($notificacion, $userAlumno);
+            if ($request['estado'] == 'Aprobado')
+                $notificacion['texto'] = 'La Clase de '.$clase->materia.', '.$clase->tema.', ha sido Confirmada.';
+            else
+                $notificacion['texto'] = 'Lo sentimos la Clase de '.$clase->materia.', '.$clase->tema.', no ha sido Confirmada.';
             $pushClass->enviarNotificacion($notificacion, $userProf);
         }
         if ($compra != null)

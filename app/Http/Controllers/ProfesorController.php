@@ -346,7 +346,7 @@ class ProfesorController extends Controller
                         $duracion = $clase->duracion + ($clase->personas - 1);
                         if ($duracion < 2)
                             $duracion = 2;
-                        $estado  = 'Por favor, realizar el pago de su Clase.';
+                        $estado  = 'Por favor, realizar el pago de la Clase de '.$clase->materia.', '.$clase->tema.'.';
                         if ($clase->compra_id == 0)
                         {
                             //quitar las horas al alumno
@@ -356,7 +356,7 @@ class ProfesorController extends Controller
                             if (!$actualizado)
                                 return response()->json(['error' => 'Error al actualizar Billetera del Alumno'], 401);
                             $data['estado'] = 'Aceptado';
-                            $estado = 'Su Clase ha sido asignada.';
+                            $estado = 'La Clase de '.$clase->materia.', '.$clase->tema.',  ha sido asignada.';
                             //pagar al profesor
                             $pagoProf = Pago::create([
                                         'user_id' => $profe->user_id,
@@ -391,7 +391,7 @@ class ProfesorController extends Controller
                             $notificacion['chat_id'] = 0;
                             $notificacion['compra_id'] = 0;
                             $notificacion['titulo'] = 'Clase Confirmada';
-                            $notificacion['texto'] = 'La Clase '.$clase->id.' ha sido confirmada por el profesor '
+                            $notificacion['texto'] = 'La Clase de '.$clase->materia.', '.$clase->tema.', ha sido confirmada por el profesor '
                                     .$profe->nombres.' '.$profe->apellidos.', '.$dateTime;
                             $notificacion['estado'] = $estado;
                             $pushClass = new NotificacionesPushFcm();

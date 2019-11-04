@@ -144,7 +144,7 @@ class ClasesController extends Controller
                     $notificacion['tarea_id'] = 0;
                     $notificacion['chat_id'] = 0;
                     $notificacion['compra_id'] = 0;
-                    $notificacion['texto'] = 'Ha sido solicitada la Clase '.$clase->id.' de '.$clase->materia
+                    $notificacion['texto'] = 'Ha sido solicitada una Clase de '.$clase->materia.', '.$clase->tema
                             .', para el '.$clase->fecha.' a las '.$clase->hora1
                             .', en '.$clase->ubicacion.' para '.$clase->personas.' estudiantes con una duracion de '
                             .$clase->duracion.', por '.$user->name.', '.$dateTime;
@@ -269,7 +269,7 @@ class ClasesController extends Controller
                         //enviar notificacion al profesor o alumno
                         $correoAdmin = '';
                         $notificacion['titulo'] = 'Clase Cancelada';
-                        $notificacion['texto'] = 'La Clase '.$clase->id.' ha sido cancelada por el ';
+                        $notificacion['texto'] = 'Lamentamos informarte que el Alumno ha cancelado la Clase de '.$clase->materia.', '.$clase->tema.', mantente pendiente a más solicitudes.';
                         $notificacion['estado'] = 'NO';
                         $notificacion['clase_id'] = $clase->id;
                         $notificacion['tarea_id'] = 0;
@@ -278,13 +278,12 @@ class ClasesController extends Controller
                         if ($request['user_id'] == $clase->user_id_pro)
                         {
                             $userNotif = User::where('id', $clase->user_id)->first();
-                            $correoAdmin = $notificacion['texto'].'Profesor '.$userNotif->name.' a las '.$dateTime;
-                            $notificacion['texto'] = $notificacion['texto'].'Profesor, '.$dateTime;
+                            $correoAdmin = 'La Clase de '.$clase->materia.', '.$clase->tema.', ha sido cancelada por el Profesor '.$userNotif->name.' a las '.$dateTime;
+                            $notificacion['texto'] = 'Lamentamos informarte que el Profesor ha cancelado la Clase de '.$clase->materia.', '.$clase->tema.', '.$dateTime;
                         }
                         else
                         {
                             $userNotif = User::where('id', $clase->user_id_pro)->first();
-                            $notificacion['texto'] = $notificacion['texto'].'Alumno, '.$dateTime;
                         }
                         $pushClass = new NotificacionesPushFcm();
                         $pushClass->enviarNotificacion($notificacion, $userNotif);
@@ -583,7 +582,7 @@ class ClasesController extends Controller
                     //enviar notificacion al profesor
                     $dateTime = date("Y-m-d H:i:s");
                     $notificacion['titulo'] = 'Clase Confirmada';
-                    $notificacion['texto'] = 'Clase '.$clase->id.' confirmada en Calle: '.$request['calle']
+                    $notificacion['texto'] = 'Clase de '.$clase->materia.', '.$clase->tema.', confirmada en Calle: '.$request['calle']
                         .', Referencia: '.$request['referencia'].', Preguntar: '.$request['quien_preguntar']
                         .', '.$dateTime;
                     $notificacion['estado'] = 'NO';

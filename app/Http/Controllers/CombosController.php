@@ -144,7 +144,7 @@ class CombosController extends Controller
                         $notificacion['tarea_id'] = 0;
                         $notificacion['chat_id'] = 0;
                         $notificacion['compra_id'] = 0;
-                        $notificacion['texto'] = 'Ha sido solicitada la Clase '.$clase->id.' de '.$clase->materia
+                        $notificacion['texto'] = 'Ha sido solicitada una Clase de '.$clase->materia.', '.$clase->tema
                                     .', para el '.$clase->fecha.' a las '.$clase->hora1
                                     .', en '.$clase->ubicacion.' para '.$clase->personas.' estudiantes con una duracion de '
                                     .$clase->duracion.', por '.$usuario->nombres.' '.$usuario->apellidos
