@@ -418,7 +418,7 @@ class ClasesController extends Controller
                                 ->leftJoin('profesores', 'profesores.user_id', '=', 'clases.user_id_pro')
                                 ->join('materias', 'clases.materia', '=', 'materias.nombre')
                                 ->where('clases.user_id', $search)
-                                ->whereIn('estado', ['Solicitado', 'Confirmado', 'Aceptado', 'Pago_Aprobado', 'Confirmando_Pago'])
+                                ->whereIn('estado', ['Solicitado', 'Sin_Horas', 'Confirmado', 'Aceptado', 'Pago_Aprobado', 'Confirmando_Pago'])
                                 ->select('clases.id','users.name', 'materia', 'tema', 'personas', 'duracion', 'hora1', 'hora2', 
                                 'clases.ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc', 'precioCombo',
                                 'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'clases.activa', 'horasCombo',
@@ -430,7 +430,7 @@ class ClasesController extends Controller
                             ->leftJoin('profesores', 'profesores.user_id', '=', 'clases.user_id_pro')
                             ->join('materias', 'clases.materia', '=', 'materias.nombre')
                             ->where('clases.user_id', $search)
-                            ->whereIn('estado', ['Sin_Horas', 'Terminado', 'Calificado', 
+                            ->whereIn('estado', ['Terminado', 'Calificado', 
                                                 'Cancelado', 'Sin_Profesor', 'Sin_Pago', 'Pago_Rechazado'])
                             ->select('clases.id','users.name', 'materia', 'tema', 'personas', 'duracion', 'hora1', 'hora2', 
                             'clases.ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc', 'precioCombo',
@@ -446,7 +446,7 @@ class ClasesController extends Controller
                                 ->join('alumnos', 'alumnos.user_id', '=', 'clases.user_id')
                                 ->join('materias', 'clases.materia', '=', 'materias.nombre')
                                 ->where('user_id_pro', $search)
-                                ->whereIn('estado', ['Solicitado', 'Confirmado', 'Aceptado', 'Pago_Aprobado', 'Confirmando_Pago'])
+                                ->whereIn('estado', ['Solicitado', 'Sin_Horas', 'Confirmado', 'Aceptado', 'Pago_Aprobado', 'Confirmando_Pago'])
                                 ->select('clases.id','users.name', 'materia', 'tema', 'personas', 'duracion', 'hora1', 'hora2', 
                                 'clases.ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc', 'precioCombo',
                                 'user_id_pro', 'estado', 'calle', 'referencia', 'quien_preguntar', 'clases.activa', 'horasCombo',
@@ -458,7 +458,7 @@ class ClasesController extends Controller
                                 ->join('alumnos', 'alumnos.user_id', '=', 'clases.user_id')
                                 ->join('materias', 'clases.materia', '=', 'materias.nombre')
                                 ->where('user_id_pro', $search)
-                                ->whereIn('estado', ['Sin_Horas', 'Terminado', 'Calificado', 
+                                ->whereIn('estado', ['Terminado', 'Calificado', 
                                                     'Cancelado', 'Sin_Profesor', 'Sin_Pago', 'Pago_Rechazado'])
                                 ->select('clases.id','users.name', 'materia', 'tema', 'personas', 'duracion', 'hora1', 'hora2', 
                                 'clases.ubicacion', 'seleccion_profesor', 'fecha', 'hora_prof', 'fecha_canc', 'precioCombo',

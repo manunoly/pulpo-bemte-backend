@@ -343,7 +343,7 @@ class TareasController extends Controller
                                     ->leftJoin('profesores', 'profesores.user_id', '=', 'tareas.user_id_pro')
                                     ->join('materias', 'tareas.materia', '=', 'materias.nombre')
                                     ->where('tareas.user_id', $search)
-                                    ->whereIn('estado', ['Solicitado', 'Confirmado', 'Aceptado', 'Pago_Aprobado', 'Confirmando_Pago'])
+                                    ->whereIn('estado', ['Solicitado', 'Sin_Horas', 'Confirmado', 'Aceptado', 'Pago_Aprobado', 'Confirmando_Pago'])
                                     ->select('tareas.id','users.name', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
                                     'tareas.descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 'archivo',
                                     'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor', 'fecha_canc',
@@ -354,7 +354,7 @@ class TareasController extends Controller
                                     ->leftJoin('profesores', 'profesores.user_id', '=', 'tareas.user_id_pro')
                                     ->join('materias', 'tareas.materia', '=', 'materias.nombre')
                                     ->where('tareas.user_id', $search)
-                                    ->whereIn('estado', ['Sin_Horas', 'Terminado', 'Calificado', 
+                                    ->whereIn('estado', ['Terminado', 'Calificado', 
                                                         'Cancelado', 'Sin_Profesor', 'Sin_Pago', 'Pago_Rechazado'])
                                     ->select('tareas.id','users.name', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
                                     'tareas.descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 'archivo',
@@ -369,7 +369,7 @@ class TareasController extends Controller
                                 ->join('alumnos', 'alumnos.user_id', '=', 'tareas.user_id')
                                 ->join('materias', 'tareas.materia', '=', 'materias.nombre')
                                 ->where('tareas.user_id_pro', $search)
-                                ->whereIn('estado', ['Solicitado', 'Confirmado', 'Aceptado', 'Pago_Aprobado', 'Confirmando_Pago'])
+                                ->whereIn('estado', ['Solicitado', 'Sin_Horas', 'Confirmado', 'Aceptado', 'Pago_Aprobado', 'Confirmando_Pago'])
                                 ->select('tareas.id','users.name', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
                                 'tareas.descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 'archivo',
                                 'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor', 'fecha_canc',
@@ -380,7 +380,7 @@ class TareasController extends Controller
                                 ->join('alumnos', 'alumnos.user_id', '=', 'tareas.user_id')
                                 ->join('materias', 'tareas.materia', '=', 'materias.nombre')
                                 ->where('tareas.user_id_pro', $search)
-                                ->whereIn('estado', ['Sin_Horas', 'Terminado', 'Calificado', 
+                                ->whereIn('estado', ['Terminado', 'Calificado', 
                                                     'Cancelado', 'Sin_Profesor', 'Sin_Pago', 'Pago_Rechazado'])
                                 ->select('tareas.id','users.name', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
                                 'tareas.descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 'archivo',

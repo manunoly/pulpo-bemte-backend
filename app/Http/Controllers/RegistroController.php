@@ -688,7 +688,12 @@ class RegistroController extends Controller
                 $contador = 1;
                 foreach ($materias as $mat)
                 {
-                    $user['materia'.$contador] = $materias->nombre;
+                    $user['materia'.$contador] = $mat->materia;
+                    $contador++;
+                }
+                while ($contador < 6)
+                {
+                    $user['materia'.$contador] = '';
                     $contador++;
                 }
             }
