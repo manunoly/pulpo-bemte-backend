@@ -17,6 +17,9 @@ use TCG\Voyager\Http\Controllers\Traits\BreadRelationshipParser;
 
 use Auth;
 use App\User;
+use App\Ciudad;
+use App\Profesore;
+use Validator;
 use App\Mail\Notificacion;
 
 class ProfesoresController extends Controller
@@ -415,8 +418,115 @@ class ProfesoresController extends Controller
 
         // Validate fields with ajax
         $val = $this->validateBread($request->all(), $dataType->addRows)->validate();
-        $data = $this->insertUpdateData($request, $slug, $dataType->addRows, new $dataType->model_name());
 
+        $v = \Validator::make($request->all(), [
+            'correo'  => 'required|email',
+        ]);
+        if ($v->fails())
+        {
+            $messages["error"] = 'Correo Inválido';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+        else
+        {
+            $posArroba = strpos($request['correo'], '@');
+            $posPunto = strripos($request['correo'], '.');
+            if ($posArroba === false || $posPunto === false || $posArroba > $posPunto)
+            {
+                $messages["error"] = 'Correo Inválido';
+                return redirect()->back()->withErrors($messages)->withInput();
+            }
+        }
+        $user = User::where('email', $request['correo'])->select('*')->first();
+        if ($user != null)
+        {
+            $messages["error"] = 'Correo electrónico no disponible';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+        $v = \Validator::make($request->all(), [
+            'nombres' => 'required|min:3|max:50',
+            'apellidos' => 'required|min:3|max:50',
+            'apodo' => 'required|min:3|max:20',
+        ]);
+        if ($v->fails())
+        {
+            $messages["error"] = 'Complete los Datos: Nombres, Apellidos y Apodo';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+        $cedula = isset($request['cedula']) ? trim($request['cedula']) : NULL;
+        if (strlen($cedula) != 10 && strlen($cedula) != 0)
+        {
+            $messages["error"] = 'Cédula inválida';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+        $v = \Validator::make($request->all(), [
+            'celular' => 'required',
+        ]);
+        if ($v->fails())
+        {
+            $messages["error"] = 'Complete los Datos: Celular';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+        $v = \Validator::make($request->all(), [
+            'ubicacion' => 'required',
+            'ciudad' => 'required',
+        ]);
+        if ($v->fails())
+        {
+            $messages["error"] = 'Complete los Datos: Ubicación y Ciudad';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+        $ciudad = Ciudad::where('ciudad', '=', $request['ciudad'] )->first();
+        if (!$ciudad)
+        {
+            $messages["error"] = 'Ciudad inválida';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+
+        $newUser = User::create([
+            'role_id' => 4,
+            'name' => $request['nombres'].' '.$request['apellidos'],
+            'email' => $request['correo'],
+            'avatar' => 'users/default.png',
+            'password' => bcrypt('1234567890'),
+            'tipo' => 'Profesor',
+            'activo' => true
+        ]);;
+        if (!$newUser)
+        {
+            $messages["error"] = 'Error al crear usuario';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+        $data = Profesore::create([
+            'user_id' => $newUser->id,
+            'celular' => $request['celular'],
+            'correo' => $newUser->email,
+            'nombres' => $request['nombres'],
+            'apellidos' => $request['apellidos'],
+            'cedula' => $cedula,
+            'apodo' => $request['apodo'],
+            'ubicacion' => $request['ubicacion'],
+            'ciudad' => $request['ciudad'],
+            'clases' => $request['clases'] ? true : false,
+            'tareas' => $request['tareas'] ? true : false,
+            'disponible' => $request['disponible'] ? true : false,
+            'hoja_vida ' => $request['hoja_vida'],
+            'titulo ' => $request['titulo'],
+            'activo' => $request['activo'] ? true : false,
+            'created_at' => $request['created_at'],
+            'updated_at' => $request['created_at'],
+            'cuenta' => $request['cuenta'],
+            'banco' => $request['banco'],
+            'tipo_cuenta' => $request['tipo_cuenta'],
+            'descripcion' => $request['descripcion'],
+            'fecha_nacimiento' => date('Y-m-d', strtotime($request['fecha_nacimiento'])),
+            'genero' => $request['genero']
+        ]);
+        if (!$data)
+        {
+            $messages["error"] = 'Error al crear Profesor';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
         event(new BreadDataAdded($dataType, $data));
 
         return redirect()
