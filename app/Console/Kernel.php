@@ -7,6 +7,7 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
 use App\Tarea;
 use App\Clase;
+use Carbon\Carbon;
 
 class Kernel extends ConsoleKernel
 {
@@ -26,7 +27,7 @@ class Kernel extends ConsoleKernel
      * @return void
      */
     protected function schedule(Schedule $schedule)
-    {
+    {/*
         $schedule->command('asignar:profesor:tarea')->everyMinute()
             ->when(function () 
             {
@@ -35,7 +36,7 @@ class Kernel extends ConsoleKernel
                                 ->where('updated_at','<=', $newDate)->get();
                 return $tareas->count() > 0;
             })
-            ->sendOutputTo('C:\\virtual\\cron.txt');
+            ->sendOutputTo('/var/www/etg/bemte-backend/cron.txt');
             
         $schedule->command('asignar:pago:tarea')->everyMinute()
             ->when(function () 
@@ -45,8 +46,8 @@ class Kernel extends ConsoleKernel
                             ->where('activa', true)->where('updated_at','<=', $newDate)->get();
                 return $tareas->count() > 0;
             })
-            ->sendOutputTo('C:\\virtual\\cron.txt');
-        
+            ->sendOutputTo('/var/www/etg/bemte-backend/cron.txt');
+        */
         $schedule->command('terminar:tarea:clase')->everyMinute()
             ->when(function () 
             {
@@ -83,37 +84,38 @@ class Kernel extends ConsoleKernel
                     return true;
                 }
             })
-            ->sendOutputTo('C:\\virtual\\cron.txt');
+            ->sendOutputTo('/var/www/etg/bemte-backend/cron.txt');
 
         $schedule->command('notificar:profesor:clase')->everyMinute()
             ->when(function () 
             {
-                $newDate = date("Y-m-d H:i:s", strtotime(date("d/m/y H:i:s"). '-15 minutes'));
+                $timestamp = Carbon::now()->addMinutes(-15);
                 $clases = Clase::where('estado','Solicitado')->where('activa', true)
-                            ->where('seleccion_profesor', true)->where('updated_at','<=', $newDate)->get();
+                            ->where('seleccion_profesor', true)->where('updated_at','<=', $timestamp)->get();
                 return $clases->count() > 0;
             })
-            ->sendOutputTo('C:\\virtual\\cron.txt');
+            ->sendOutputTo('/var/www/etg/bemte-backend/cron.txt');
         
         $schedule->command('asignar:profesor:clase')->everyMinute()
             ->when(function () 
             {
-                $newDate = date("Y-m-d H:i:s", strtotime(date("d/m/y H:i:s"). '-60 minutes'));
-                $tareas = Clase::where('estado','Solicitado')->where('activa', true)
-                                ->where('updated_at','<=', $newDate)->get();
-                return $tareas->count() > 0;
+                $timestamp = Carbon::now()->addMinutes(-60);
+                $clases = Clase::whereIn('estado', ['Solicitado','Sin_Horas'])
+                                ->where('activa', true)
+                                ->where('updated_at','<=', $timestamp)->get();
+                return $clases->count() > 0;
             })
-            ->sendOutputTo('C:\\virtual\\cron.txt');
+            ->sendOutputTo('/var/www/etg/bemte-backend/cron.txt');
 
         $schedule->command('asignar:pago:clase')->everyMinute()
         ->when(function () 
         {
-            $newDate = date("Y-m-d H:i:s", strtotime(date("d/m/y H:i:s"). '-20 minutes'));
+            $timestamp = Carbon::now()->addMinutes(-20);
             $clases = Clase::whereIn('estado', ['Confirmado','Confirmando_Pago'])
-                            ->where('activa', true)->where('updated_at','<=', $newDate)->get();
+                            ->where('activa', true)->where('updated_at','<=', $timestamp)->get();
             return $clases->count() > 0;
         })
-        ->sendOutputTo('C:\\virtual\\cron.txt');    
+        ->sendOutputTo('/var/www/etg/bemte-backend/cron.txt');
     }
 
     /**

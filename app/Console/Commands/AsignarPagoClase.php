@@ -9,6 +9,7 @@ use App\AlumnoPago;
 use App\AlumnoCompra;
 use App\Mail\Notificacion;
 use App\NotificacionesPushFcm;
+use Carbon\Carbon;
 
 class AsignarPagoClase extends Command
 {
@@ -43,9 +44,9 @@ class AsignarPagoClase extends Command
      */
     public function handle()
     {
-        $newDate = date("Y-m-d H:i:s", strtotime(date("d/m/y H:i:s"). '-20 minutes'));
+        $timestamp = Carbon::now()->addMinutes(-20);
         $clases = Clase::whereIn('estado', ['Confirmado','Confirmando_Pago'])
-                        ->where('activa', true)->where('updated_at','<=', $newDate)->get();
+                        ->where('activa', true)->where('updated_at','<=', $timestamp)->get();
         $pushClass = new NotificacionesPushFcm();
         foreach($clases as $item)
         {
@@ -61,7 +62,7 @@ class AsignarPagoClase extends Command
                     $dataClase['activa'] = false;
                     Clase::where('id', $item->id )->update( $dataClase );
                     $dataTransfer['estado'] = 'Rechazado';
-                    if ($trasnfer->estado == 'Solicitado')
+                    if ($transfer->estado == 'Solicitado')
                         AlumnoPago::where('id', $transfer->id)->update( $dataTransfer );
                     if ($transfer->combo_id > 0)
                         AlumnoCompra::where('id', $transfer->combo_id)->update( $dataTransfer );
@@ -97,6 +98,7 @@ class AsignarPagoClase extends Command
                 $notificacion['chat_id'] = 0;
                 $notificacion['compra_id'] = 0;
                 $notificacion['estado'] = 'NO';
+                $notificacion['titulo'] = 'Clase No Confirmada';
                 $notificacion['texto'] = 'Lo sentimos la Clase de '.$item->materia.', '.$item->tema.', no ha sido confirmada.';
                 $pushClass->enviarNotificacion($notificacion, $profesor);
             }

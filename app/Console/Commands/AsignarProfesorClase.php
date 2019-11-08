@@ -8,6 +8,7 @@ use App\Clase;
 use App\Alumno;
 use App\User;
 use App\NotificacionesPushFcm;
+use Carbon\Carbon;
 
 class AsignarProfesorClase extends Command
 {
@@ -42,12 +43,15 @@ class AsignarProfesorClase extends Command
      */
     public function handle()
     {
-        $newDate = date("Y-m-d H:i:s", strtotime(date("d/m/y H:i:s"). '-60 minutes'));
-        $clase = Clase::where('estado','Solicitado')->where('activa', true)
-                        ->where('updated_at','<=', $newDate)->get();
+        $timestamp = Carbon::now()->addMinutes(-60);
+        $clases = Clase::whereIn('estado', ['Solicitado','Sin_Horas'])
+                        ->where('activa', true)->where('updated_at','<=', $timestamp)->get();
         foreach($clases as $item)
         {
-            $dataClase['estado'] = 'Sin_Profesor';
+            if ($item->estado == 'Solicitado')
+                $dataClase['estado'] = 'Sin_Profesor';
+            else
+                $dataClase['estado'] = 'Sin_Pago';
             $dataClase['activa'] = false;
             Clase::where('id', $item->id )->update( $dataClase );
         }

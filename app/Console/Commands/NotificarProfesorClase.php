@@ -7,6 +7,7 @@ use App\User;
 use App\Clase;
 use App\Profesore;
 use App\NotificacionesPushFcm;
+use Carbon\Carbon;
 
 class NotificarProfesorClase extends Command
 {
@@ -41,10 +42,10 @@ class NotificarProfesorClase extends Command
      */
     public function handle()
     {
-        $newDate = date("Y-m-d H:i:s", strtotime(date("d/m/y H:i:s"). '-15 minutes'));
+        $timestamp = Carbon::now()->addMinutes(-15);
         $clases = Clase::join('alumnos', 'alumnos.user_id', '=', 'clases.user_id')
                 ->where('clases.estado','Solicitado')->where('clases.activa', true)
-                ->where('clases.seleccion_profesor', true)->where('clases.updated_at','<=', $newDate)
+                ->where('clases.seleccion_profesor', true)->where('clases.updated_at','<=', $timestamp)
                 ->select('clases.*', 'alumnos.ciudad')->get();
         $notificacion['titulo'] = 'Solicitud de Clase';
         $notificacion['estado'] = 'NO';
