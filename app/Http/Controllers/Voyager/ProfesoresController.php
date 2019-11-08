@@ -309,6 +309,21 @@ class ProfesoresController extends Controller
 
         // Validate fields with ajax
         $val = $this->validateBread($request->all(), $dataType->editRows, $dataType->name, $id)->validate();
+        
+        if ($request['activo'] && !$data['activo'])
+        {
+            try 
+            {
+                Mail::to($data['correo'])->send(new Notificacion($data['nombres'], 
+                        'Su registro como Profesor ha sido ', 'Aprobado', 'Bienvenido!', env('EMPRESA')));
+            }
+            catch (Exception $e) 
+            {
+                $messages["error"] = 'Actualización realizada pero No se ha podido enviar el correo';
+                return redirect()->back()->withErrors($messages)->withInput();
+            }
+        }
+
         $this->insertUpdateData($request, $slug, $dataType->editRows, $data);
         event(new BreadDataUpdated($dataType, $data));
 /*
@@ -332,19 +347,6 @@ class ProfesoresController extends Controller
         ];
         $actualizado = User::where('id', $id )->update( $dataUser );
         */
-        if ($data['activo'] == 1)
-        {
-            try 
-            {
-                Mail::to($data['correo'])->send(new Notificacion($data['nombres'], 
-                        'Su registro como Profesor ha sido ', 'Aprobado', 'Bienvenido!', env('EMPRESA')));
-            }
-            catch (Exception $e) 
-            {
-                $messages["error"] = 'Actualización realizada pero No se ha podido enviar el correo';
-                return redirect()->back()->withErrors($messages)->withInput();
-            }
-        }
 
         return redirect()
         ->route("voyager.{$dataType->slug}.index")
@@ -519,6 +521,8 @@ class ProfesoresController extends Controller
             'banco' => $request['banco'],
             'tipo_cuenta' => $request['tipo_cuenta'],
             'descripcion' => $request['descripcion'],
+            'valor_clase' => $request['valor_clase'],
+            'valor_tarea' => $request['valor_tarea'],
             'fecha_nacimiento' => date('Y-m-d', strtotime($request['fecha_nacimiento'])),
             'genero' => $request['genero']
         ]);
@@ -528,6 +532,9 @@ class ProfesoresController extends Controller
             return redirect()->back()->withErrors($messages)->withInput();
         }
         event(new BreadDataAdded($dataType, $data));
+        unset($request['fecha_nacimiento']);
+        $request['fecha_nacimiento'] = $data->fecha_nacimiento;
+        $this->insertUpdateData($request, $slug, $dataType->editRows, $data);
 
         return redirect()
         ->route("voyager.{$dataType->slug}.index")
