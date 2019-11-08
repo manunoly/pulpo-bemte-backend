@@ -15,6 +15,8 @@ use TCG\Voyager\Facades\Voyager;
 use TCG\Voyager\Http\Controllers\Traits\BreadRelationshipParser;
 
 use Auth;
+use App\Tarea;
+use App\Clase;
 
 class MultasController extends Controller
 {
@@ -289,6 +291,17 @@ class MultasController extends Controller
 
         // Validate fields with ajax
         $val = $this->validateBread($request->all(), $dataType->editRows, $dataType->name, $id)->validate();
+        if ($request['valor'] < 0)
+        {
+            $messages["error"] = 'El valor debe ser mayor a Cero';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+        if ($request['user_id'] != $data['user_id'])
+        {
+            $messages["error"] = 'No puede cambiar la persona';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+        
         $this->insertUpdateData($request, $slug, $dataType->editRows, $data);
 
         event(new BreadDataUpdated($dataType, $data));
@@ -355,6 +368,7 @@ class MultasController extends Controller
      */
     public function store(Request $request)
     {
+        $request['estado'] = 'Solicitado';
         $slug = $this->getSlug($request);
 
         $dataType = Voyager::model('DataType')->where('slug', '=', $slug)->first();
@@ -364,6 +378,35 @@ class MultasController extends Controller
 
         // Validate fields with ajax
         $val = $this->validateBread($request->all(), $dataType->addRows)->validate();
+        if ($request['valor'] < 0)
+        {
+            $messages["error"] = 'El valor debe ser mayor a Cero';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+        $tarea = Tarea::where('id', $request['tarea_id'])->select('*')->first();
+        $clase = Clase::where('id', $request['clase_id'])->select('*')->first();
+        if ($tarea != null && $clase != null)
+        {
+            $messages["error"] = 'Indique un solo valor: Clase o Tarea';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+        if ($tarea == null && $clase == null)
+        {
+            $messages["error"] = 'Debe indicar un valor: Clase o Tarea';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+        if ($tarea != null && $tarea->user_id != $request['user_id'] 
+                            && $tarea->user_id_pro != $request['user_id'])
+        {
+            $messages["error"] = 'Persona no relacionada con la Tarea';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
+        if ($clase != null && $clase->user_id != $request['user_id'] 
+                            && $clase->user_id_pro != $request['user_id'])
+        {
+            $messages["error"] = 'Persona no relacionada con la Clase';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
         $data = $this->insertUpdateData($request, $slug, $dataType->addRows, new $dataType->model_name());
 
         event(new BreadDataAdded($dataType, $data));
