@@ -540,7 +540,8 @@ class RegistroController extends Controller
                         'tipo_cuenta' => $tipo_cuenta,
                         'descripcion' => $descripcion,
                         'fecha_nacimiento' => $fecha_nacimiento,
-                        'genero' => $genero
+                        'genero' => $genero,
+                        'rechazado' => false
                     ]);
                     if($profesor)
                     {
@@ -679,7 +680,7 @@ class RegistroController extends Controller
                 ->select('user_id', 'celular', 'correo', 'nombres', 'apellidos', 'cedula', 'correo', 
                     'apodo', 'ubicacion', 'profesores.ciudad', 'clases', 'tareas', 'disponible', 'hoja_vida', 
                     'titulo', 'activo', 'cuenta', 'banco', 'tipo_cuenta', 'valor_clase', 'valor_tarea',
-                    'pais', 'codigo', 'descripcion', 'fecha_nacimiento', 'genero')->first();
+                    'pais', 'codigo', 'descripcion', 'fecha_nacimiento', 'genero', 'rechazado')->first();
                 $user['tipo'] = 'Profesor';
                 $user['avatar'] = $userPro->avatar;
                 $user['token'] = $userPro->token; 
