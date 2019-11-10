@@ -44,7 +44,7 @@ class ChatController extends Controller
                             return response()->json(['error' => 'Usuario no relacionado a la Clase'], 401);
                     }
                     $chats = Chat::where('clase_id', $claseID)->where('tarea_id', $tareaID)
-                                    ->orderBy('id', 'desc')->get();
+                                    ->orderBy('id')->get();
 
                     $data['leidoA'] = true;
                     foreach($chats->where('leidoA', false)->where('user_id', $user) as $item)
