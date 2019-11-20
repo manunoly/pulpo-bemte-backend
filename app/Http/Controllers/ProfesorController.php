@@ -602,4 +602,59 @@ class ProfesorController extends Controller
         else
             return response()->json(['error' => 'Profesor Incorrecto'], 401);
     }
+
+    public function verificaHorarioCoincide()
+    {
+        $respuesta = true;
+        $userID = \Request::get('user_id');
+        $searchClase = \Request::get('clase_id');
+        $clase = Clase::where('id', $searchClase)->first();
+        
+        if ($clase != null)
+        {
+            $horaInicio = $clase->hora_prof;
+            //$horaInicio = date("Y-m-d H:i:s", strtotime($clase->hora_prof. '-20 minutes'));
+            $horaFin = date("H:i:s", strtotime($clase->hora_prof.$clase->duracion.' hours'));
+            //$horaFin = date("H:i:s", strtotime($clase->hora_prof. '20 minutes'));
+
+            $coincide = Clase::where('id', '!=', $clase->id)->where('user_id_pro', $userID)
+                            ->where('fecha', $clase->fecha)
+                            ->whereIn('estado', ['Confirmado','Aceptado', 'Confirmando_Pago', 'Pago_Aprobado'])
+                            ->get();
+            foreach($coincide as $item)
+            {
+                $hora = date("H:i:s", strtotime($item->hora_prof.$item->duracion.' hours'));
+                if ($item->hora_prof >= $horaInicio && $item->hora_prof <= $horaFin
+                    || $hora >= $horaInicio && $hora <= $horaFin)
+                {
+                    $respuesta = false;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            $searchTarea = \Request::get('tarea_id');
+            $tarea = Tarea::where('id', $searchTarea)->first();
+            if ($tarea != null)
+            {
+                $horaFin = date("H:i:s", strtotime($tarea->hora_prof.$tarea->duracion.' hours'));
+                $coincide = Tarea::where('id', '!=', $tarea->id)->where('user_id_pro', $userID)
+                                ->where('fecha_entrega', $tarea->fecha_entrega)
+                                ->whereIn('estado', ['Confirmado','Aceptado', 'Confirmando_Pago', 'Pago_Aprobado'])
+                                ->get();
+                foreach($coincide as $item)
+                {
+                    if ($item->hora_inicio >= $tarea->hora_inicio && $item->hora_inicio <= $tarea->hora_fin
+                        || $item->hora_fin >= $tarea->hora_inicio && $item->hora_fin <= $tarea->hora_fin)
+                    {
+                        $respuesta = false;
+                        break;
+                    }  
+                }
+            }
+        }
+        
+        return response()->json($respuesta, 200);
+    }
 }
