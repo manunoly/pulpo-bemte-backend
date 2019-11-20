@@ -580,9 +580,21 @@ class RegistroController extends Controller
                                 'materia' => $materia5->nombre,
                                 'activa' => true
                             ]);
-
+                        
+                        $correo = 'OK';
+                        try 
+                        {
+                                Mail::to($user->email)->send(new Notificacion($user->name, 
+                                        'Gracias por inscribirte estamos evaluando tu perfil', '',
+                                        'En un plazo maximo de 48 horas nos contacteremos contigo', env('EMPRESA')));
+                        }
+                        catch (Exception $e) 
+                        { 
+                            $correo = 'ERROR';
+                        }
                         $userDev = $this->datosUser($user->id);
-                        return response()->json(['success' => 'Cuenta Creada!', 'profile' => $userDev], 200);
+                        return response()->json(['success' => 'Cuenta Creada!', 
+                                                'profile' => $userDev, 'correo' => $correo], 200);
                     }
                 }
             }
@@ -590,12 +602,6 @@ class RegistroController extends Controller
             {
                 return response()->json(['error' => 'Ocurrió un error al registrar!'], 401);
             }
-
-            // send email
-            /*
-            Mail::queue('emails.verify', $data, function($message) use ($data) {
-                $message->to($data['email'])->subject('Verify your email address');
-            });*/
         } 
         else 
         {
