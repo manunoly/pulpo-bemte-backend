@@ -74,7 +74,7 @@ class NotificarProfesorClase extends Command
             $notificacion['texto'] = 'Ha sido solicitada una Clase de '.$item->materia.', '.$item->tema
                     .', para el '.$item->fecha.' a las '.$item->hora1
                     .', en '.$item->ubicacion.' para '.$item->personas.' estudiantes con una duracion de '
-                    .$item->duracion.', por '.$user->name;
+                    .$item->duracion.' horas, por '.$user->name;
             foreach($profesores as $solicitar)
                 $pushClass->enviarNotificacion($notificacion, $solicitar);
         }

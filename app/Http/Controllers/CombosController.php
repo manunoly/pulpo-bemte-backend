@@ -146,7 +146,7 @@ class CombosController extends Controller
                         $notificacion['texto'] = 'Ha sido solicitada una Clase de '.$clase->materia.', '.$clase->tema
                                     .', para el '.$clase->fecha.' a las '.$clase->hora1
                                     .', en '.$clase->ubicacion.' para '.$clase->personas.' estudiantes con una duracion de '
-                                    .$clase->duracion.', por '.$usuario->nombres.' '.$usuario->apellidos;
+                                    .$clase->duracion.' horas, por '.$usuario->nombres.' '.$usuario->apellidos;
                         $notificacion['estado'] = 'NO';
                         $pushClass = new NotificacionesPushFcm();
                         foreach($profesores as $solicitar)
