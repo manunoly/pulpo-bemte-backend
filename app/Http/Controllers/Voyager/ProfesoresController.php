@@ -293,6 +293,8 @@ class ProfesoresController extends Controller
         // Check permission
         $this->authorize('edit', $data);
 
+        $activo = $request['activo'] == 'on' ? 1 : 0;
+        $rechazado = $request['rechazado'] == 'on' ? 1 : 0;
         if (Auth::user()->tipo == 'Profesor')
         {
             if ($request['valor_clase'] != $data['valor_clase'])
@@ -305,6 +307,21 @@ class ProfesoresController extends Controller
                 $messages["error"] = 'No puede modificar el Valor de la Tarea';
                 return redirect()->back()->withErrors($messages)->withInput();
             }
+            if ($activo != $data['activo'])
+            {
+                $messages["error"] = 'No puede modificar el estado Activo';
+                return redirect()->back()->withErrors($messages)->withInput();
+            }
+            if ($rechazado != $data['rechazado'])
+            {
+                $messages["error"] = 'No puede modificar el estado Rechazado';
+                return redirect()->back()->withErrors($messages)->withInput();
+            }
+        }
+        if ($rechazado && $activo)
+        {
+            $messages["error"] = 'No puede estar Activo y Rechazado al mismo tiempo';
+            return redirect()->back()->withErrors($messages)->withInput();
         }
 
         // Validate fields with ajax
@@ -315,7 +332,20 @@ class ProfesoresController extends Controller
             try 
             {
                 Mail::to($data['correo'])->send(new Notificacion($data['nombres'], 
-                        'Su registro como Profesor ha sido ', 'Aprobado', 'Bienvenido!', env('EMPRESA')));
+                        'Felicitaciones! Tu perfil ha sido ', 'Aprobado', 'Bienvenido!', env('EMPRESA')));
+            }
+            catch (Exception $e) 
+            {
+                $messages["error"] = 'Actualización realizada pero No se ha podido enviar el correo';
+                return redirect()->back()->withErrors($messages)->withInput();
+            }
+        }
+        if ($request['rechazado'] && !$data['rechazado'])
+        {
+            try 
+            {
+                Mail::to($data['correo'])->send(new Notificacion($data['nombres'], 
+                        'Lo sentimos tu perfil no ha sido ', 'Aprobado', 'Contáctanos para mayor información', env('EMPRESA')));
             }
             catch (Exception $e) 
             {
