@@ -612,10 +612,10 @@ class ProfesorController extends Controller
         
         if ($clase != null)
         {
-            $horaInicio = $clase->hora_prof;
-            //$horaInicio = date("Y-m-d H:i:s", strtotime($clase->hora_prof. '-20 minutes'));
-            $horaFin = date("H:i:s", strtotime($clase->hora_prof.$clase->duracion.' hours'));
-            //$horaFin = date("H:i:s", strtotime($clase->hora_prof. '20 minutes'));
+            $horaInicio = $clase->hora_hora1;
+            //$horaInicio = date("Y-m-d H:i:s", strtotime($clase->hora1. '-20 minutes'));
+            $horaFin = date("H:i:s", strtotime($clase->hora1.$clase->duracion.' hours'));
+            //$horaFin = date("H:i:s", strtotime($clase->hora1. '20 minutes'));
 
             $coincide = Clase::where('id', '!=', $clase->id)->where('user_id_pro', $userID)
                             ->where('fecha', $clase->fecha)
@@ -638,7 +638,6 @@ class ProfesorController extends Controller
             $tarea = Tarea::where('id', $searchTarea)->first();
             if ($tarea != null)
             {
-                $horaFin = date("H:i:s", strtotime($tarea->hora_prof.$tarea->duracion.' hours'));
                 $coincide = Tarea::where('id', '!=', $tarea->id)->where('user_id_pro', $userID)
                                 ->where('fecha_entrega', $tarea->fecha_entrega)
                                 ->whereIn('estado', ['Confirmado','Aceptado', 'Confirmando_Pago', 'Pago_Aprobado'])
