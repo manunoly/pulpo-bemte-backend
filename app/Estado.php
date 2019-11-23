@@ -12,6 +12,6 @@ class Estado extends Model
     public $incrementing = false;
     
     protected $fillable = [
-        'estado', 'nombre',
+        'estado', 'alumnoClase', 'profesorClase', 'alumnoTarea', 'profesorTarea',
     ];
 }
