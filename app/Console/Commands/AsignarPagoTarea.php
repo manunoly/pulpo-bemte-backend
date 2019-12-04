@@ -9,6 +9,7 @@ use App\AlumnoPago;
 use App\AlumnoCompra;
 use App\Mail\Notificacion;
 use App\NotificacionesPushFcm;
+use Carbon\Carbon;
 
 class AsignarPagoTarea extends Command
 {
@@ -43,9 +44,9 @@ class AsignarPagoTarea extends Command
      */
     public function handle()
     {
-        $newDate = date("Y-m-d H:i:s", strtotime(date("d/m/y H:i:s"). '-20 minutes'));
+        $timestamp = Carbon::now()->addMinutes(-20);
         $tareas = Tarea::whereIn('estado', ['Confirmado','Confirmando_Pago'])
-                        ->where('activa', true)->where('updated_at','<=', $newDate)->get();
+                        ->where('activa', true)->where('updated_at','<=', $timestamp)->get();
         $pushClass = new NotificacionesPushFcm();
         foreach($tareas as $item)
         {
@@ -72,8 +73,8 @@ class AsignarPagoTarea extends Command
                                 'Su Pago para la Tarea de '.$item->materia.', '.$item->tema.', no ha sido Aprobado.', '',
                                 'Por favor, contactar con el administrador.', env('EMPRESA')));
                         Mail::to($profesor->email)->send(new Notificacion($profesor->name, 
-                                'El Pago del Alumno para la Clase de '.$item->materia.', '.$item->tema.', no ha sido Aprobado.', '',
-                                'Su clase ha sido Cancelada.', env('EMPRESA')));
+                                'El Pago del Alumno para la Tarea de '.$item->materia.', '.$item->tema.', no ha sido Aprobado.', '',
+                                'Su Tarea ha sido Cancelada.', env('EMPRESA')));
                     }
                     catch (Exception $e) 
                     {

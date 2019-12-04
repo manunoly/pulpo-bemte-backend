@@ -13,6 +13,7 @@ use App\Profesore;
 use App\TareaProfesor;
 use App\Mail\NotificacionTareas;
 use App\NotificacionesPushFcm;
+use Carbon\Carbon;
 
 class AsignarProfesorTarea extends Command
 {
@@ -47,9 +48,9 @@ class AsignarProfesorTarea extends Command
      */
     public function handle()
     {
-        $newDate = date("Y-m-d H:i:s", strtotime(date("d/m/y H:i:s"). '-60 minutes'));
+        $timestamp = Carbon::now()->addMinutes(-60);
         $tareas = Tarea::where('estado','Solicitado')->where('activa', true)
-                        ->where('updated_at','<=', $newDate)->get();
+                        ->where('updated_at','<=', $timestamp)->get();
         foreach($tareas as $item)
         {
             $profesores = TareaProfesor::where('tarea_id', $item->id)->where('estado', 'Solicitado')->get();
@@ -150,38 +151,6 @@ class AsignarProfesorTarea extends Command
                 $estadoProf = 'El Alumno, debe realizar el Pago de la Tarea de '.$item->materia.', '.$item->tema.'.';
                 $userAlumno = User::where('id', $item->user_id)->first();
                 $userProfesor = User::where('id', $propuestaSeleccionada->user_id)->first();
-                if ($alumno->billtera >= $propuestaSeleccionada->tiempo)
-                {
-                    //quitar las horas al alumno
-                    $dataAlumno['billetera'] = $alumno->billetera - $propuestaSeleccionada->tiempo;
-                    $actualizado = Alumno::where('user_id', $item->user_id )->update( $dataAlumno );
-                    if ($actualizado)
-                    {
-                        $dataTarea['estado'] = 'Aceptado';
-                        $estado = 'La Tarea de '.$item->materia.', '.$item->tema.', ha sido asignada.';
-                        $estadoProf = 'El Alumno ha realizado el Pago Exitosamente de la Tarea de '.$item->materia.', '.$item->tema.'.';
-                        //pagar al profesor
-                        $profe = Profesore::where('user_id', $propuestaSeleccionada->user_id)->first();
-                        $pagoProf = Pago::create([
-                                    'user_id' => $propuestaSeleccionada->user_id,
-                                    'tarea_id' => $item->id,
-                                    'clase_id' => 0,
-                                    'valor' => $propuestaSeleccionada->tiempo * $profe->valor_tarea,
-                                    'horas' => $propuestaSeleccionada->tiempo,
-                                    'estado' => 'Solicitado'
-                                    ]);  
-                        try 
-                        {
-                            Mail::to($alumno->email)->send(new NotificacionTareas($item, $userAlumno->name, 
-                                                        $userProfesor->name, env('EMPRESA'), true));
-                            Mail::to($profesor->email)->send(new NotificacionTareas($item, $userAlumno->name, 
-                                                        $userProfesor->name, env('EMPRESA'), false));
-                        }
-                        catch (Exception $e) 
-                        {
-                        }      
-                    }                    
-                }
                 Tarea::where('id', $item->id )->update( $dataTarea );
 
                 //enviar notificacion al profesor y al alumno
