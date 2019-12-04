@@ -53,31 +53,32 @@ class Kernel extends ConsoleKernel
             {
                 $newDate = date("Y-m-d");
                 $newTime = date("H:i:s");
-                $listado = Tarea::where('estado','Aceptado')->where('fecha_entrega','<=', $newDate)
+                $listado = Clase::where('estado','Aceptado')->where('fecha','<=', $newDate)
                                 ->where('activa', true)->get();
-                $tareas = [];
+                $clases = [];
                 foreach($listado as $item)
                 {
-                    if (($item->fecha_entrega != $newDate) || (($item->fecha_entrega == $newDate)
-                            && ($item->hora_fin <= $newTime)))
+                    if (($item->fecha != $newDate) || (($item->fecha == $newDate)
+                            && ($item->hora_prof <= $newTime)))
                     {
-                        $tareas[] = $item;
+                        $clases[] = $item;
                     }
                 }
-                if (count($tareas) == 0)
+                if (count($clases) == 0)
                 {
-                    $listado = Clase::where('estado','Aceptado')->where('fecha','<=', $newDate)
-                                    ->where('activa', true)->get();
-                    $clases = [];
+                    $timestamp = Carbon::now()->addHours(-24);
+                    $listado = Tarea::where('estado','Aceptado')->where('fecha_entrega','<=', $timestamp->toDateString())
+                                ->where('activa', true)->get();
+                    $tareas = [];
                     foreach($listado as $item)
                     {
-                        if (($item->fecha != $newDate) || (($item->fecha == $newDate)
-                                && ($item->hora_prof <= $newTime)))
+                        if (($item->fecha_entrega != $newDate) || (($item->fecha_entrega == $newDate)
+                                && ($item->hora_fin <= $newTime)))
                         {
-                            $clases[] = $item;
+                            $tareas[] = $item;
                         }
                     }
-                    return count($clases) > 0;
+                    return count($tareas) > 0;
                 }
                 else
                 {

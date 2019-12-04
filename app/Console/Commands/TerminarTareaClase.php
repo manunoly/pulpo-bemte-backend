@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Tarea;
 use App\Clase;
+use Carbon\Carbon;
 
 class TerminarTareaClase extends Command
 {
@@ -41,23 +42,6 @@ class TerminarTareaClase extends Command
     { 
         $newDate = date("Y-m-d");
         $newTime = date("H:i:s");
-        $listado = Tarea::where('estado','Aceptado')->where('fecha_entrega','<=', $newDate)
-                        ->where('activa', true)->get();
-        $tareas = [];
-        foreach($listado as $item)
-        {
-            if (($item->fecha_entrega != $newDate) || (($item->fecha_entrega == $newDate)
-                    && ($item->hora_fin <= $newTime)))
-            {
-                $tareas[] = $item;
-            }
-        }
-        foreach($tareas as $item)
-        {
-            $dataTarea['estado'] = 'Terminado';
-            $dataTarea['activa'] = false;
-            Tarea::where('id', $item->id )->update( $dataTarea );
-        }
         $listado = Clase::where('estado','Aceptado')->where('fecha','<=', $newDate)
                             ->where('activa', true)->get();
         $clases = [];
@@ -74,6 +58,25 @@ class TerminarTareaClase extends Command
             $dataClase['estado'] = 'Terminado';
             $dataClase['activa'] = false;
             Clase::where('id', $item->id )->update( $dataClase );
+        }
+
+        $timestamp = Carbon::now()->addHours(-24);
+        $listado = Tarea::where('estado','Aceptado')->where('fecha_entrega','<=', $timestamp->toDateString())
+                        ->where('activa', true)->get();
+        $tareas = [];
+        foreach($listado as $item)
+        {
+            if (($item->fecha_entrega != $newDate) || (($item->fecha_entrega == $newDate)
+                    && ($item->hora_fin <= $newTime)))
+            {
+                $tareas[] = $item;
+            }
+        }
+        foreach($tareas as $item)
+        {
+            $dataTarea['estado'] = 'Terminado';
+            $dataTarea['activa'] = false;
+            Tarea::where('id', $item->id )->update( $dataTarea );
         }
     }
 }
