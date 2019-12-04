@@ -278,7 +278,8 @@ class FicherosController extends Controller
                 {
                     $dataClase['estado'] = 'Confirmando_Pago';
                     $actualizado = Clase::where('id', $clase->id )->update( $dataClase );
-                    $detalle = 'Para la Clase '.$clase->id;
+                    $detalle = 'Para la Clase de '.$clase->materia.', '.$clase->tema
+                                .', para el '.$clase->fecha.' a las '.$clase->hora1;
                     if(!$actualizado )
                     {
                         return response()->json(['error' => 'Error al actualizar solicitud'], 401);
@@ -288,7 +289,8 @@ class FicherosController extends Controller
                 {
                     $dataTarea['estado'] = 'Confirmando_Pago';
                     $actualizado = Tarea::where('id', $tarea->id )->update( $dataTarea );
-                    $detalle = 'Para la Tarea de '.$tarea->materia.', '.$tarea->tema;
+                    $detalle = 'Para la Tarea de '.$tarea->materia.', '.$tarea->tema
+                                .', para el '.$tarea->fecha_entrega;
                     if(!$actualizado )
                     {
                         return response()->json(['error' => 'Error al actualizar solicitud'], 401);

@@ -97,7 +97,7 @@ class ChatController extends Controller
         {
             if ($tarea->user_id != $request['user_id'] && $tarea->user_id_pro != $request['user_id'])
                 return response()->json(['error' => 'Usuario no relacionado a la Tarea'], 401);
-            if ($tarea->user_id_pro == null || $tarea->estado != 'Aceptado')
+            if ($tarea->user_id_pro == null)
                 return response()->json(['error' => 'Chat inactivo para la Tarea'], 401);
             $alumno = $tarea->user_id;
             $profesor = $tarea->user_id_pro;
@@ -106,7 +106,7 @@ class ChatController extends Controller
         {
             if ($clase->user_id != $request['user_id'] && $clase->user_id_pro != $request['user_id'])
                 return response()->json(['error' => 'Usuario no relacionado a la Clase'], 401);
-            if ($clase->user_id_pro == null || $clase->estado != 'Aceptado')
+            if ($clase->user_id_pro == null)
                 return response()->json(['error' => 'Chat inactivo para la Clase'], 401);
             $alumno = $clase->user_id;
             $profesor = $clase->user_id_pro;

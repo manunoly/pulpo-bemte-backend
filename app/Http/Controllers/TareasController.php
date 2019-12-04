@@ -196,9 +196,9 @@ class TareasController extends Controller
                 $tarea->estado == 'Sin_Pago' || $tarea->estado == 'Terminado' || $tarea->estado == 'Calificado')
                 return response()->json(['error' => 'Tarea no permite modificación'], 401);
             
+            $data['activa'] = false;
             if ($request['cancelar'] == 1)
             {
-                $data['activa'] = false;
                 $data['estado'] = 'Cancelado';
                 $data['fecha_canc'] = date("Y-m-d H:i:s");
                 $data['user_canc'] = $request['user_id'];
@@ -313,6 +313,15 @@ class TareasController extends Controller
                     return response()->json(['success' => 'Tarea Cancelada!'], 200);
                 }  
             }
+            else
+            {            
+                $data['estado'] = 'Terminado';
+                $actualizado = Tarea::where('id', $request['tarea_id'] )->update( $data );
+                if(!$actualizado )
+                    return response()->json(['error' => 'Error al Finalizar la Tarea'], 401);
+                else
+                    return response()->json(['success' => 'Tarea Finalizada'], 200);
+            }  
         }
         else
         {
@@ -482,6 +491,10 @@ class TareasController extends Controller
                     ->first();
         if ($tarea != null)
         {
+            $tarea['profAplicados'] = [];
+            if ($tarea->estado == 'Solicitado')
+                $tarea['profAplicados'] = TareaProfesor::where('tarea_id', $tarea->id)->where('estado', 'Solicitado')->select('user_id')->get();
+            
             $tarea['profClases'] = 0;
             $tarea['profTareas'] = 0;
             if ($tarea->user_id_pro > 0)
