@@ -493,9 +493,17 @@ class TareasController extends Controller
         if ($tarea != null)
         {
             $tarea['profAplicados'] = [];
+            $respProfAp = [];
             if ($tarea->estado == 'Solicitado')
-                $tarea['profAplicados'] = TareaProfesor::where('tarea_id', $tarea->id)
-                                        ->where('estado', 'Solicitado')->select('user_id')->get();
+            {
+                $profesoresAplicados = TareaProfesor::where('tarea_id', $tarea->id)
+                                        ->where('estado', 'Solicitada')->get();
+
+                foreach($profesoresAplicados as $aplico)
+                    $respProfAp[] = $aplico->user_id;
+                
+                $tarea['profAplicados'] = $respProfAp;
+            }
             
             $tarea['profClases'] = 0;
             $tarea['profTareas'] = 0;
