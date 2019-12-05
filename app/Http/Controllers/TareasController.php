@@ -51,6 +51,15 @@ class TareasController extends Controller
                 return response()->json(['error' => $validator->errors()], 406);
             }
             
+            $limit = date("Y-m-d H:i:s", strtotime($request['fecha_entrega'].' '.$request['hora_inicio']. '-2 hours'));
+            $limitDate = date_format(date_create($limit), "Y-m-d");
+            $limitTime = date_format(date_create($limit), "H:i:s");
+            $nowDate = date("Y-m-d");
+            $nowTime = date("H:i:s");
+            if (($nowDate > $limitDate) || (($nowDate == $limitDate) && ($nowTime > $limitTime)))
+            {
+                return response()->json([ 'error' => 'Tiempo insuficiente para solicitar Tarea'], 401);
+            }
             $user = User::where('id', '=', $request['user_id'] )->first();
             if ($user == null) 
             {
@@ -212,17 +221,12 @@ class TareasController extends Controller
                 {
                     if ($tarea->estado == 'Aceptado')
                     {
-                        $penHoras = 0;
-                        if ($request['user_id'] == $tarea->user_id_pro)
+                        //devolver las horas al alumno 
+                        $penHoras = $tarea->tiempo_estimado;
+                        if ($request['user_id'] == $tarea->user_id)
                         {
-                            //devolver las horas al alumno 
-                            $penHoras = $tarea->tiempo_estimado;
-                        }
-                        else
-                        {
-                            //devolver las horas al alumno 
-                            $penHoras = $$tarea->tiempo_estimado;
-                            //quitar pago al profesor
+                            //penalizar 1 hora al alumno
+                            $penHoras -= 1;
                         }
                         if ($penHoras != 0)
                         {
@@ -237,6 +241,7 @@ class TareasController extends Controller
                                 $dataCombo['billetera'] = 0;
                                 //ver q hacer con horas negativas
                             }
+                            $dataCombo['billetera'] = $bill->billetera + $penHoras;
                             $actCombo = Alumno::where('user_id', $bill->user_id )->update( $dataCombo );
                             if(!$actCombo)
                                 return response()->json(['error' => 'Error al Actualizar Billetera del Alumno'], 401);

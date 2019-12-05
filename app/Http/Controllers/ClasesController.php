@@ -292,6 +292,11 @@ class ClasesController extends Controller
                     $duracion = $clase->duracion + ($clase->personas - 1);
                     if ($duracion < 2)
                         $duracion = 2;
+                    if ($clase->estado == 'Aceptado' || $clase->estado == 'Pago_Aprobado')
+                    {
+                        //devolver las horas al alumno 
+                        $penHoras = $duracion;
+                    }
                     if ($request['user_id'] == $clase->user_id_pro)
                     {
                         //penalizar 2 hora al profesor
@@ -307,11 +312,6 @@ class ClasesController extends Controller
                         if (!$multaProf->id)
                         {
                             return response()->json(['error' => 'Error al crear Multa al Profesor'], 401);
-                        }
-                        if ($clase->estado == 'Aceptado' || $clase->estado == 'Pago_Aprobado')
-                        {
-                            //devolver las horas al alumno 
-                            $penHoras = $duracion;
                         }
                         //verificar tercera cancelacion para avisar al ADMIN
                         $mes = date("Y-m-1");
@@ -332,7 +332,7 @@ class ClasesController extends Controller
                     else if ($request['user_id'] == $clase->user_id)
                     {
                         //penalizar 1 hora al alumno
-                        $penHoras = -1;
+                        $penHoras -= 1;
                     }
                     if ($clase->estado == 'Aceptado' || $clase->estado == 'Pago_Aprobado')
                     {
@@ -372,6 +372,7 @@ class ClasesController extends Controller
                             $dataCombo['billetera'] = 0;
                             //ver q hacer con horas negativas
                         }
+                        $dataCombo['billetera'] = $bill->billetera + $penHoras;
                         $actCombo = Alumno::where('user_id', $bill->user_id )->update( $dataCombo );
                         if(!$actCombo)
                             return response()->json(['error' => 'Error al Actualizar Billetera del Alumno'], 401);
