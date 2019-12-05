@@ -10,6 +10,7 @@ use App\Alumno;
 use App\Pago;
 use App\Profesore;
 use App\TareaEjercicio;
+use App\TareaProfesor;
 use App\NotificacionesPushFcm;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -493,7 +494,8 @@ class TareasController extends Controller
         {
             $tarea['profAplicados'] = [];
             if ($tarea->estado == 'Solicitado')
-                $tarea['profAplicados'] = TareaProfesor::where('tarea_id', $tarea->id)->where('estado', 'Solicitado')->select('user_id')->get();
+                $tarea['profAplicados'] = TareaProfesor::where('tarea_id', $tarea->id)
+                                        ->where('estado', 'Solicitado')->select('user_id')->get();
             
             $tarea['profClases'] = 0;
             $tarea['profTareas'] = 0;
