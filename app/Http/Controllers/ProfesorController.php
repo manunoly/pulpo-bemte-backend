@@ -226,8 +226,7 @@ class ProfesorController extends Controller
         $validator = Validator::make($request->all(), [
             'user_id' => 'required',
             'tarea_id' => 'required',
-            'tiempo' => 'required',
-            'inversion' => 'required'
+            'tiempo' => 'required'
         ]);
         if ($validator->fails()) 
         {
@@ -237,10 +236,6 @@ class ProfesorController extends Controller
         if (!is_numeric($request['tiempo']) || $request['tiempo'] <= 0)
         {
             return response()->json(['error' => 'Especifique Tiempo de la Tarea'], 401);
-        }
-        if (!is_numeric($request['inversion']) || $request['inversion'] <= 0)
-        {
-            return response()->json(['error' => 'Especifique Inversión de la Tarea'], 401);
         }
 
         $tarea = Tarea::where('id', $request['tarea_id'])->first();
@@ -261,7 +256,7 @@ class ProfesorController extends Controller
                                 $aplica = TareaProfesor::create([
                                     'user_id' => $request['user_id'],
                                     'tarea_id' => $request['tarea_id'],
-                                    'inversion' => $request['inversion'],
+                                    'inversion' => $request['tiempo'] * $profe->valor_tarea,
                                     'tiempo' => $request['tiempo'],
                                     'estado' => 'Solicitada'
                                 ]);
@@ -281,7 +276,7 @@ class ProfesorController extends Controller
                         }
                         else
                         {
-                            $data['inversion'] = $request['inversion'];
+                            $data['inversion'] = $request['tiempo'] * $profe->valor_tarea;
                             $data['tiempo'] = $request['tiempo'];
                             $data['estado'] = 'Solicitada';
                             $actualizado = TareaProfesor::where('id', $solicitud->id )->update( $data );
