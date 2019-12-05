@@ -357,7 +357,7 @@ class ProfesorController extends Controller
                                         'user_id' => $profe->user_id,
                                         'tarea_id' => 0,
                                         'clase_id' => $clase->id,
-                                        'valor' => ($clase->duracion * $profe->valor_clase) + ($clase->personas - 1),
+                                        'valor' => ($clase->duracion + ($clase->personas - 1)) * $profe->valor_clase,
                                         'horas' => $clase->duracion,
                                         'estado' => 'Solicitado'
                                         ]);

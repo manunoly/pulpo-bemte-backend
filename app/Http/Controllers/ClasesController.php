@@ -217,7 +217,7 @@ class ClasesController extends Controller
             foreach ($clases as $item)
             {
                 $respuesta[] = $item;
-                $respuesta[count($respuesta) - 1]['valor'] = ($item->duracion * $item->valor_clase) + ($item->personas - 1);
+                $respuesta[count($respuesta) - 1]['valor'] = ($item->duracion + ($item->personas - 1)) * $item->valor_clase;
             }
             return response()->json($respuesta, 200);
         }
