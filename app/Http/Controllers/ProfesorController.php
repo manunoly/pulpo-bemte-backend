@@ -251,14 +251,14 @@ class ProfesorController extends Controller
                         $solicitud = TareaProfesor::where('tarea_id', $request['tarea_id'])->where('user_id', $request['user_id'])->first();
                         if ($solicitud == null)
                         {
-                            if ( 10 > TareaProfesor::where('tarea_id', $request['tarea_id'])->where('estado', 'Solicitada')->count())
+                            if ( 10 > TareaProfesor::where('tarea_id', $request['tarea_id'])->where('estado', 'Solicitado')->count())
                             {
                                 $aplica = TareaProfesor::create([
                                     'user_id' => $request['user_id'],
                                     'tarea_id' => $request['tarea_id'],
                                     'inversion' => $request['tiempo'] * $profe->valor_tarea,
                                     'tiempo' => $request['tiempo'],
-                                    'estado' => 'Solicitada'
+                                    'estado' => 'Solicitado'
                                 ]);
                                 if ($aplica->id)
                                 {
@@ -278,7 +278,7 @@ class ProfesorController extends Controller
                         {
                             $data['inversion'] = $request['tiempo'] * $profe->valor_tarea;
                             $data['tiempo'] = $request['tiempo'];
-                            $data['estado'] = 'Solicitada';
+                            $data['estado'] = 'Solicitado';
                             $actualizado = TareaProfesor::where('id', $solicitud->id )->update( $data );
                             if($actualizado)
                             {
