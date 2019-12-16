@@ -16,7 +16,14 @@ class CiudadController extends Controller
 
     public function listaSedes()
     {
-        $sedes = Sede::where('activa', '1' )->select('nombre', 'ciudad')->get();
+        $sedes = Sede::where('activa', true)->select('nombre', 'ciudad')->get();
+        return response()->json($sedes, 200);
+    }
+
+    public function listaSedesCiudad()
+    {
+        $search = \Request::get('ciudad');
+        $sedes = Sede::where('activa', true)->where('ciudad', $search)->select('nombre')->get();
         return response()->json($sedes, 200);
     }
 
