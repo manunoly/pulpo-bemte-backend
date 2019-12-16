@@ -123,6 +123,7 @@ class RegistroController extends Controller
                 $dataUser['celular'] = $request['celular'];
                 if ($request['tipo'] == 'Alumno')
                 {
+                    $dataUser['sede'] = $request['sede'];
                     $actualizado = Alumno::where('user_id', $id_usuario )->update( $dataUser );               
                     if ($actualizado)
                     {
@@ -455,6 +456,13 @@ class RegistroController extends Controller
                     return response()->json(['error' => 'Opción Tareas incorrecta'], 401);
                 }   
             }
+            if ($request['tipo'] == 'Alumno')
+            {
+                if (!isset($request['sede']))
+                {
+                    return response()->json(['error' => 'Indique opción Sede'], 401);
+                }   
+            }
             $ciudad = Ciudad::where('ciudad', '=', $request['ciudad'] )->first();
             if (!$ciudad)
             {
@@ -498,6 +506,7 @@ class RegistroController extends Controller
                         'ciudad' => $request['ciudad'],
                         'ser_profesor' => false,
                         'activo' => true,
+                        'sede' => $request['sede'],
                         'created_at' => $request['created_at'],
                         'updated_at' => $request['created_at']
                     ]);
@@ -672,7 +681,7 @@ class RegistroController extends Controller
                 $user = Alumno::join('ciudad', 'ciudad.ciudad', '=', 'alumnos.ciudad')
                     ->where('user_id', $userPro['id'])
                     ->select('user_id', 'celular', 'correo', 'nombres', 'apellidos', 'correo', 'apodo', 
-                        'ubicacion', 'alumnos.ciudad', 'ser_profesor', 'activo', 'billetera',
+                        'ubicacion', 'alumnos.ciudad', 'ser_profesor', 'activo', 'billetera', 'sede',
                         'pais', 'codigo')->first();
                     $user['tipo'] = 'Alumno';
                     $user['avatar'] = $userPro->avatar;

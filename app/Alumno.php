@@ -13,6 +13,6 @@ class Alumno extends Model
 
     protected $fillable = [
         'user_id', 'celular', 'correo', 'nombres', 'apellidos', 'correo', 'apodo', 'ubicacion', 'ciudad', 
-        'ser_profesor', 'activo', 'billetera',
+        'ser_profesor', 'activo', 'billetera', 'sede',
     ];
 }
