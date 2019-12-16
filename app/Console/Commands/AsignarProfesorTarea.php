@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
+use App\Clase;
 use App\Tarea;
 use App\Pago;
 use App\Multa;
@@ -51,84 +52,81 @@ class AsignarProfesorTarea extends Command
         $timestamp = Carbon::now()->addMinutes(-60);
         $tareas = Tarea::where('estado','Solicitado')->where('activa', true)
                         ->where('updated_at','<=', $timestamp)->get();
+        $pesoExp = 30;
+        $pesoAct = 25;
+        $pesoCal = 20;
+        $pesoMul = 25;
         foreach($tareas as $item)
         {
             $profesores = TareaProfesor::where('tarea_id', $item->id)->where('estado', 'Solicitado')->get();
-            $profeSeleccionado = NULL;
-            $propuestaSeleccionada = NULL;
-            $experienciaSeleccionada = 0;
+            $propuestaSeleccionada = null;
+
+            $maxExp = 0;
+            $maxAct = 0;
+            $maxMul = 0;
+            $datosProfesores = [];
+            
             foreach($profesores as $aplica)
             {
-                $multas = Multa::where('user_id', $aplica->user_id)->where('estado', '!=', 'Cancelado')->count();
-                $experiencia = Pago::where('user_id', $aplica->user_id)->where('estado', '!=', 'Cancelado')
-                                ->where('tarea_id', '>', 0)->count() - $multas;
-                $valoracion = 0;
                 $profe = Profesore::where('user_id', $aplica->user_id)->first();
                 if ($profe != null && $profe->activo && $profe->disponible && $profe->tareas)
                 {
-                    if ($profeSeleccionado == null)
+                    $multas = 0;
+                    $datosMultas = Multa::where('user_id', $aplica->user_id)->where('estado', '!=', 'Cancelado')->get();
+                    foreach ($datosMultas as $itemM)
                     {
-                        $profeSeleccionado = $profe;
-                        $propuestaSeleccionada = $aplica;
-                        $propuestaSeleccionada->tarea_id = $valoracion;
-                        $experienciaSeleccionada = $experiencia;
-                    }
-                    else 
-                    {
-                        if ($experiencia == 0 && $multas == 0)
+                        if ($itemM->clase_id > 0)
                         {
-                            $valoracion += 3;
+                            $claseMulta = Clase::where('id', $itemM->clase_id)->first();
+                            if ($claseMulta != null)
+                                $multas += $claseMulta->duracion;
                         }
-                        else if ($experiencia < 0)
+                        if ($itemM->tarea_id > 0)
                         {
-                            $valoracion -= 2;
-                        }
-                        else if ($experiencia == 0)
-                        {
-                            $valoracion -= 1;
-                        }
-                        if ($experiencia >= $experienciaSeleccionada)
-                        {
-                            $valoracion += 2;
-                        }
-                        else
-                        {
-                            $valoracion -= 2;
-                        }
-                        if ($aplica->tiempo < $propuestaSeleccionada->tiempo)
-                        {
-                            $valoracion += 2;
-                        }
-                        else
-                        {
-                            $valoracion -= 2;
-                        }
-                        if ($aplica->inversion < $propuestaSeleccionada->inversion)
-                        {
-                            $valoracion += 1;
-                        }
-                        else
-                        {
-                            $valoracion -= 1;
-                        }
-                        if ($profeSeleccionado->calificacion < $profe->calificacion)
-                        {
-                            $valoracion += 2;
-                        }
-                        else
-                        {
-                            $valoracion -= 2;
-                        }
-                        $valoracion = $valoracion / 5;
-                        if ($propuestaSeleccionada->tarea_id < $valoracion)
-                        {
-                            $profeSeleccionado = $profe;
-                            $propuestaSeleccionada = $aplica;
-                            $propuestaSeleccionada->tarea_id = $valoracion;
-                            $experienciaSeleccionada = $experiencia;
+                            $tareaMulta = Tarea::where('id', $itemM->tarea_id)->first();
+                            if ($tareaMulta != null)
+                                $multas += $tareaMulta->tiempo_estimado;
                         }
                     }
+                
+                    $experiencia = Pago::where('user_id', $aplica->user_id)
+                                        ->where('estado', '!=', 'Cancelado')->sum('horas');
+                    $novato = 0;
+                    if ($experiencia < 10)
+                        $novato = 1;
+                    
+                    $calificacion = 5;
+                    if ($profe->calificacion != null)
+                        $calificacion = $profe->calificacion;
+
+                    $actividad = 0;
+
+                    $datosProfesores[] = array("novato" => $novato, "experiencia" => $experiencia,
+                                            "multas" => $multas, "calificacion" => $calificacion,
+                                            "actividad" => $actividad, "formula" => 0,
+                                            "id" => $aplica->id, "user_id" => $aplica->user_id,
+                                            "tiempo" => $aplica->tiempo, "inversion" => $aplica->inversion);
+                    if ($maxExp < $experiencia)
+                        $maxExp = $experiencia;
+                    if ($maxMul < $multas)
+                        $maxMul = $multas;
+                    if ($maxAct < $actividad)
+                        $maxAct = $actividad;
                 }
+            }
+            foreach($datosProfesores as $itemPro)
+            {
+                $itemPro->formula = 
+                    ($pesoExp * 
+                        (((1 - $itemPro->novato) * $itemPro->experiencia / $maxExp) + $itemPro->novato))
+                    + ($pesoAct * (($maxAct - $itemPro->actividad) / $maxAct))
+                    + ($pesoCal * $itemPro->calificacion / 5)
+                    + ($pesoMul * (($maxMul + 1 - $itemPro->multas) / ($maxMul + 1)));
+                if ($propuestaSeleccionada == null || 
+                    ($propuestaSeleccionada != null && $propuestaSeleccionada->formula < $itemPro->formula))
+                    {
+                        $propuestaSeleccionada = $itemPro;
+                    }
             }
             if ($propuestaSeleccionada != NULL)
             {
