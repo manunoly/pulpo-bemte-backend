@@ -407,6 +407,11 @@ class MultasController extends Controller
             $messages["error"] = 'Persona no relacionada con la Clase';
             return redirect()->back()->withErrors($messages)->withInput();
         }
+        if ($request['user_id'] == null)
+        {
+            $messages["error"] = 'Seleccione una Persona';
+            return redirect()->back()->withErrors($messages)->withInput();
+        }
         $data = $this->insertUpdateData($request, $slug, $dataType->addRows, new $dataType->model_name());
 
         event(new BreadDataAdded($dataType, $data));
