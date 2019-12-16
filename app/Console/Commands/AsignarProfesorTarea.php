@@ -99,19 +99,17 @@ class AsignarProfesorTarea extends Command
                     if ($profe->calificacion != null)
                         $calificacion = $profe->calificacion;
 
-                    $actividad = 0;
-
                     $datosProfesores[] = array("novato" => $novato, "experiencia" => $experiencia,
                                             "multas" => $multas, "calificacion" => $calificacion,
-                                            "actividad" => $actividad, "formula" => 0,
+                                            "formula" => 0,
                                             "id" => $aplica->id, "user_id" => $aplica->user_id,
                                             "tiempo" => $aplica->tiempo, "inversion" => $aplica->inversion);
                     if ($maxExp < $experiencia)
                         $maxExp = $experiencia;
                     if ($maxMul < $multas)
                         $maxMul = $multas;
-                    if ($maxAct < $actividad)
-                        $maxAct = $actividad;
+                    if ($maxAct < $aplica->tiempo)
+                        $maxAct = $aplica->tiempo;
                 }
             }
             foreach($datosProfesores as $itemPro)
@@ -119,7 +117,7 @@ class AsignarProfesorTarea extends Command
                 $itemPro->formula = 
                     ($pesoExp * 
                         (((1 - $itemPro->novato) * $itemPro->experiencia / $maxExp) + $itemPro->novato))
-                    + ($pesoAct * (($maxAct - $itemPro->actividad) / $maxAct))
+                    + ($pesoAct * (($maxAct - $itemPro->tiempo) / $maxAct))
                     + ($pesoCal * $itemPro->calificacion / 5)
                     + ($pesoMul * (($maxMul + 1 - $itemPro->multas) / ($maxMul + 1)));
                 if ($propuestaSeleccionada == null || 
