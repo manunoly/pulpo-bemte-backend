@@ -8,6 +8,7 @@ use App\Profesore;
 use App\Tarea;
 use App\Clase;
 use App\Chat;
+use App\NotificacionesPushFcm;
 use Illuminate\Http\Request;
 use Validator;
 use Hash;
@@ -126,6 +127,23 @@ class ChatController extends Controller
         {
             return response()->json(['error' => 'Error al subir el chat!'], 401);
         }
+
+        //enviar notificacion de chat
+        $notificacion['titulo'] = 'Nuevo Chat';
+        $notificacion['texto'] = $texto;
+        $notificacion['estado'] = 'NO';
+        $notificacion['clase_id'] = 0;
+        $notificacion['tarea_id'] = 0;
+        $notificacion['chat_id'] = $chat->id;
+        $notificacion['compra_id'] = 0;
+        if ($request['user_id'] != $alumno)
+            $userNotif = User::where('id', $alumno)->first();
+        else
+            $userNotif = User::where('id', $profesor)->first();
+        
+        $pushClass = new NotificacionesPushFcm();
+        $pushClass->enviarNotificacion($notificacion, $userNotif);
+
         return response()->json(['success'=> 'Chat Enviado'], 200);
     }
 }
