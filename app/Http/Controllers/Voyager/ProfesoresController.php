@@ -19,6 +19,7 @@ use Auth;
 use App\User;
 use App\Ciudad;
 use App\Profesore;
+use App\Pago;
 use Validator;
 use App\Mail\Notificacion;
 
@@ -881,5 +882,24 @@ class ProfesoresController extends Controller
 
         // No result found, return empty array
         return response()->json([], 404);
+    }
+
+    public function pagar()
+    {
+        try
+        {
+            $userID = \Request::get('user_id');
+            $pagos = Pago::where('user_id', $userID)->where('estado', 'Solicitado')->get(); 
+            foreach ($pagos as $item)
+            {
+                Pago::where('id', $item->id)->update(['estado' => 'Aprobado']);
+            }
+            \Request::session()->flash('success', 'Pagos realizados por un valor de $ '.$pagos->sum('valor'));
+        }
+        catch (Exception $e) 
+        {
+            \Request::session()->flash('error', 'No se pudieron realizar los pagos.');
+        }
+        return redirect()->back();
     }
 }

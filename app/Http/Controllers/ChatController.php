@@ -127,7 +127,7 @@ class ChatController extends Controller
         {
             return response()->json(['error' => 'Error al subir el chat!'], 401);
         }
-
+/*
         //enviar notificacion de chat
         $notificacion['titulo'] = 'Nuevo Chat';
         $notificacion['texto'] = $texto;
@@ -143,7 +143,7 @@ class ChatController extends Controller
         
         $pushClass = new NotificacionesPushFcm();
         $pushClass->enviarNotificacion($notificacion, $userNotif);
-
+*/
         return response()->json(['success'=> 'Chat Enviado'], 200);
     }
 }
