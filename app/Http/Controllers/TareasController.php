@@ -77,6 +77,9 @@ class TareasController extends Controller
             }
 
             $archivo = isset($request['archivo']) ? $request['archivo'] : NULL;
+            if ($archivo != null && $archivo != '')
+                $archivo = 'uploads'.'/'.$request['user_id'].'/'.$archivo;
+                
             $tarea = Tarea::create([
                 'user_id' => $request['user_id'],
                 'materia' => $request['materia'],

@@ -79,7 +79,10 @@ class ChatController extends Controller
             return response()->json(['error' => $validator->errors()], 406);
         }
         $texto = isset($request['texto']) ? trim($request['texto']) : NULL;
-        $imagen = isset($request['imagen']) ? 'uploads'.'/'.$request['user_id'].'/'.trim($request['imagen']) : NULL;
+        $imagen = isset($request['imagen']) ? trim($request['imagen']) : NULL;
+        if ($imagen != null && $imagen != '')
+            $imagen = 'uploads'.'/'.$request['user_id'].'/'.$imagen;
+
         if (($texto == NULL) && ($imagen == NULL))
         {
             return response()->json(['error' => 'Chat sin especificar'], 401);
