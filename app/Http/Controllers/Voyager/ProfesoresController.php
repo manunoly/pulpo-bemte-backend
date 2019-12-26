@@ -912,7 +912,7 @@ class ProfesoresController extends Controller
             $multas = Multa::where('user_id', $userID)->where('estado', 'Solicitado')->get(); 
             foreach ($multas as $item)
             {
-                Pago::where('id', $item->id)->update(['estado' => 'Aprobado']);
+                Multa::where('id', $item->id)->update(['estado' => 'Aprobado']);
             }
             \Request::session()->flash('success', 'Multas realizados por un valor de $ '.$multas->sum('valor'));
         }
