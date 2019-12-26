@@ -282,7 +282,7 @@ class RegistroController extends Controller
             return response()->json(['error' => 'Aún no se ha registrado!'], 401);
         }
 
-        if (Hash::check($request['password'], $user['password'])) 
+        if ((Hash::check($request['password'], $user['password'])) || ($request['social']))
         {
             $userDev = $this->datosUser($user->id);
             return response()->json(['success' => 'Login OK', 'profile' => $userDev], 200);
