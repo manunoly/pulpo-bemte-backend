@@ -18,6 +18,7 @@ Route::get('/', function () {
 Route::group(['prefix' => 'admin'], function () {
 
     Route::get('profesorPagar', 'Voyager\ProfesoresController@pagar')->name('profesor.pagar');
+    Route::get('profesorMultar', 'Voyager\ProfesoresController@multar')->name('profesor.multar');
 
     Voyager::routes();
 });

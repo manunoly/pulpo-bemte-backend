@@ -29,8 +29,11 @@
             {{ __('voyager::generic.return_to_list') }}
         </a>
         @if (Auth::user()->tipo == 'Administrador')
-        <a href="{{ route('profesor.pagar', 'user_id='.$dataTypeContent->getKey()) }}" class="btn btn-primary">
+        <a href="{{ route('profesor.pagar', 'user_id='.$dataTypeContent->getKey()) }}" class="btn btn-default">
         <i class="voyager-dollar pull-left"></i><span>  Pagar  </span>
+        </a>
+        <a href="{{ route('profesor.multar', 'user_id='.$dataTypeContent->getKey()) }}" class="btn btn-dark">
+        <i class="voyager-camera pull-left"></i><span>  Multar  </span>
         </a>
         @endif
     </h1>

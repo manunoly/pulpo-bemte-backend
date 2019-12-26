@@ -561,10 +561,10 @@ class ProfesorController extends Controller
         $profesor = Profesore::where('user_id', $search)->first();
         if ($profesor != null)
         {
-            $clases = Clase::where('user_id_pro', $search)
+            $clases = Clase::where('user_id_pro', $search)->where('user_canc', null)
                         ->select('clases.id', 'clases.materia', 'clases.personas', 
                         'clases.duracion', 'clases.fecha')->get();
-            $tareas = Tarea::where('user_id_pro', $search)
+            $tareas = Tarea::where('user_id_pro', $search)->where('user_canc', null)
                         ->select('tareas.id', 'tareas.materia', 'tareas.tiempo_estimado', 'tareas.fecha_entrega')->get();
             $respuesta['clases'] = $clases->count();
             $respuesta['tareas'] = $tareas->count();

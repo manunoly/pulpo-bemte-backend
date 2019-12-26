@@ -20,6 +20,7 @@ use App\User;
 use App\Ciudad;
 use App\Profesore;
 use App\Pago;
+use App\Multa;
 use Validator;
 use App\Mail\Notificacion;
 
@@ -898,7 +899,26 @@ class ProfesoresController extends Controller
         }
         catch (Exception $e) 
         {
-            \Request::session()->flash('error', 'No se pudieron realizar los pagos.');
+            \Request::session()->flash('error', 'No se pudieron realizar los Pagos.');
+        }
+        return redirect()->back();
+    }
+
+    public function multar()
+    {
+        try
+        {
+            $userID = \Request::get('user_id');
+            $multas = Multa::where('user_id', $userID)->where('estado', 'Solicitado')->get(); 
+            foreach ($multas as $item)
+            {
+                Pago::where('id', $item->id)->update(['estado' => 'Aprobado']);
+            }
+            \Request::session()->flash('success', 'Multas realizados por un valor de $ '.$multas->sum('valor'));
+        }
+        catch (Exception $e) 
+        {
+            \Request::session()->flash('error', 'No se pudieron realizar las Multas.');
         }
         return redirect()->back();
     }
