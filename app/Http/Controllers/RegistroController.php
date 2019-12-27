@@ -261,12 +261,15 @@ class RegistroController extends Controller
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required'
+            'email' => 'required|email'
         ]);
         if ($validator->fails()) 
         {
             return response()->json(['error' => $validator->errors()], 406);
+        }
+        if ($request['password'] == null && !$request['social']) 
+        {
+            return response()->json(['error' => 'Credenciales Incorrectas'], 401);
         }
 
         $user = User::where('email', $request['email'])->select('*')->first();
