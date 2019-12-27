@@ -262,7 +262,7 @@ class RegistroController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
-            'password' => 'required|min:6|max:20'
+            'password' => 'required'
         ]);
         if ($validator->fails()) 
         {
