@@ -521,10 +521,13 @@ class ProfesorController extends Controller
         $search = \Request::get('user_id');
         $clase = Clase::join('users', 'users.id', '=', 'clases.user_id')
                 ->join('materias', 'clases.materia', '=', 'materias.nombre')
-                ->where('user_id_pro', $search)->where('estado', 'Terminado')
+                ->join('profesores', 'profesores.user_id', '=', 'clases.user_id_pro')
+                ->join('alumnos', 'alumnos.user_id', '=', 'clases.user_id')
+                ->where('clases.user_id_pro', $search)->where('clases.estado', 'Terminado')
                 ->where('califacion_alumno', null)->where('comentario_alumno', null)
                 ->select('clases.id', 'clases.fecha', 'clases.hora_prof', 'clases.materia', 'clases.tema',
-                        'clases.estado', 'clases.user_id', 'users.name', 'users.avatar', 'materias.icono')->first();
+                        'clases.estado', 'clases.user_id', 'users.name', 'users.avatar', 'materias.icono',
+                        'alumnos.apodo AS apodoAlumno', 'profesores.apodo AS apodoProfesor')->first();
         if ($clase != null)
         {
             $respuesta['clase_id'] = $clase->id;
@@ -534,10 +537,13 @@ class ProfesorController extends Controller
         {
             $tarea = Tarea::join('users', 'users.id', '=', 'tareas.user_id')
                     ->join('materias', 'tareas.materia', '=', 'materias.nombre')
-                    ->where('user_id_pro', $search)->where('estado', 'Terminado')
+                    ->join('profesores', 'profesores.user_id', '=', 'tareas.user_id_pro')
+                    ->join('alumnos', 'alumnos.user_id', '=', 'tareas.user_id')
+                    ->where('tareas.user_id_pro', $search)->where('tareas.estado', 'Terminado')
                     ->where('califacion_alumno', null)->where('comentario_alumno', null)
                     ->select('tareas.id', 'tareas.fecha_entrega', 'tareas.materia', 'tareas.tema',
-                            'tareas.estado', 'tareas.user_id', 'users.name', 'users.avatar', 'materias.icono')->first();
+                            'tareas.estado', 'tareas.user_id', 'users.name', 'users.avatar', 'materias.icono',
+                            'alumnos.apodo AS apodoAlumno', 'profesores.apodo AS apodoProfesor')->first();
             if ($tarea != null)
             {
                 $respuesta['tarea_id'] = $tarea->id;

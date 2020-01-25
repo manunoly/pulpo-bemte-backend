@@ -359,24 +359,28 @@ class TareasController extends Controller
                         $tareas = Tarea::leftJoin('users', 'users.id', '=', 'tareas.user_id_pro')
                                     ->leftJoin('profesores', 'profesores.user_id', '=', 'tareas.user_id_pro')
                                     ->join('materias', 'tareas.materia', '=', 'materias.nombre')
+                                    ->join('alumnos', 'alumnos.user_id', '=', 'tareas.user_id')
                                     ->where('tareas.user_id', $search)
                                     ->whereIn('estado', ['Solicitado', 'Sin_Horas', 'Confirmado', 'Aceptado', 'Pago_Aprobado', 'Confirmando_Pago'])
                                     ->select('tareas.id','users.name', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
                                     'tareas.descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 'archivo',
                                     'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor', 'fecha_canc',
-                                    'users.avatar', 'profesores.calificacion', 'icono', 'tareas.activa')
+                                    'users.avatar', 'profesores.calificacion', 'icono', 'tareas.activa',
+                                    'alumnos.apodo AS apodoAlumno', 'profesores.apodo as apodoProfesor')
                                     ->orderBy('tareas.id', 'desc')->get();
                     else
                         $tareas = Tarea::leftJoin('users', 'users.id', '=', 'tareas.user_id_pro')
                                     ->leftJoin('profesores', 'profesores.user_id', '=', 'tareas.user_id_pro')
                                     ->join('materias', 'tareas.materia', '=', 'materias.nombre')
+                                    ->join('alumnos', 'alumnos.user_id', '=', 'tareas.user_id')
                                     ->where('tareas.user_id', $search)
                                     ->whereIn('estado', ['Terminado', 'Calificado', 
                                                         'Cancelado', 'Sin_Profesor', 'Sin_Pago', 'Pago_Rechazado'])
                                     ->select('tareas.id','users.name', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
                                     'tareas.descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 'archivo',
                                     'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor', 'fecha_canc',
-                                    'users.avatar', 'profesores.calificacion', 'icono', 'tareas.activa')
+                                    'users.avatar', 'profesores.calificacion', 'icono', 'tareas.activa',
+                                    'alumnos.apodo AS apodoAlumno', 'profesores.apodo as apodoProfesor')
                                     ->orderBy('tareas.id', 'desc')->get();
                 }
                 else
@@ -385,24 +389,28 @@ class TareasController extends Controller
                         $tareas = Tarea::join('users', 'users.id', '=', 'tareas.user_id')
                                 ->join('alumnos', 'alumnos.user_id', '=', 'tareas.user_id')
                                 ->join('materias', 'tareas.materia', '=', 'materias.nombre')
+                                ->join('profesores', 'profesores.user_id', '=', 'tareas.user_id_pro')
                                 ->where('tareas.user_id_pro', $search)
                                 ->whereIn('estado', ['Solicitado', 'Sin_Horas', 'Confirmado', 'Aceptado', 'Pago_Aprobado', 'Confirmando_Pago'])
                                 ->select('tareas.id','users.name', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
                                 'tareas.descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 'archivo',
                                 'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor', 'fecha_canc',
-                                'users.avatar', 'alumnos.calificacion', 'icono', 'tareas.activa')
+                                'users.avatar', 'alumnos.calificacion', 'icono', 'tareas.activa',
+                                'alumnos.apodo AS apodoAlumno', 'profesores.apodo as apodoProfesor')
                                 ->orderBy('tareas.id', 'desc')->get();
                     else
                         $tareas = Tarea::join('users', 'users.id', '=', 'tareas.user_id')
                                 ->join('alumnos', 'alumnos.user_id', '=', 'tareas.user_id')
                                 ->join('materias', 'tareas.materia', '=', 'materias.nombre')
+                                ->join('profesores', 'profesores.user_id', '=', 'tareas.user_id_pro')
                                 ->where('tareas.user_id_pro', $search)
                                 ->whereIn('estado', ['Terminado', 'Calificado', 
                                                     'Cancelado', 'Sin_Profesor', 'Sin_Pago', 'Pago_Rechazado'])
                                 ->select('tareas.id','users.name', 'materia', 'tema', 'fecha_entrega', 'hora_inicio', 'hora_fin', 
                                 'tareas.descripcion', 'formato_entrega', 'estado', 'user_id_pro', 'tiempo_estimado', 'inversion', 'archivo',
                                 'califacion_alumno', 'comentario_alumno', 'calificacion_profesor', 'comentario_profesor', 'fecha_canc',
-                                'users.avatar', 'alumnos.calificacion', 'icono', 'tareas.activa')
+                                'users.avatar', 'alumnos.calificacion', 'icono', 'tareas.activa',
+                                'alumnos.apodo AS apodoAlumno', 'profesores.apodo as apodoProfesor')
                                 ->orderBy('tareas.id', 'desc')->get();
                 }
                 return response()->json($tareas->take(100), 200);
@@ -496,7 +504,8 @@ class TareasController extends Controller
                     ->where('tareas.id', $search)
                     ->select( 'tareas.*', 'profesores.descripcion as profDescripcion', 'icono',
                     'users.name as alumno', 'alumnos.calificacion as alumnoCalif', 'users.avatar as alumnoAvatar',
-                    'p.name as profesor', 'profesores.calificacion as profCalif', 'p.avatar as profAvatar')
+                    'p.name as profesor', 'profesores.calificacion as profCalif', 'p.avatar as profAvatar',
+                    'alumnos.apodo AS apodoAlumno', 'profesores.apodo as apodoProfesor')
                     ->first();
         if ($tarea != null)
         {
