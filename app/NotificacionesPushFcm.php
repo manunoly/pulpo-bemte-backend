@@ -66,7 +66,16 @@ class NotificacionesPushFcm
             {
                 $notificacionEnviar['to'] = $user->token;
                 $notificacionEnviar['title'] = $notificacion['titulo'];
-                $notificacionEnviar['body'] = $notificacion['texto'];
+                $notificacion['color'] = "cancelar";
+                $color = "";
+                switch ($notificacion['color'])
+                {
+                    case "cancelar": $color = "fondoRojo"; break;
+                    case "alumno": $color = "fondoVerde"; break;
+                    case "profesor": $color = "fondoAzul"; break;
+                }
+                $item = array("texto" => $notificacion['texto'], "color" => $color, "chat" => $notificacion['chat_id'] > 0);
+                $notificacionEnviar['body'] = json_encode($item);
                 $notificacionEnviar['priority'] = 'normal';
                 $this->enviar($notificacionEnviar);
             }

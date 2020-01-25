@@ -92,11 +92,12 @@ class AsignarPagoTarea extends Command
             }
             if (!$rechazado)
             {
-                //lanzar notificacion al profesores
+                //lanzar notificacion al profesor
                 $notificacion['tarea_id'] = $item->id;
                 $notificacion['clase_id'] = 0;
                 $notificacion['chat_id'] = 0;
                 $notificacion['compra_id'] = 0;
+                $notificacion['color'] = "cancelar";
                 $notificacion['estado'] = 'NO';
                 $notificacion['texto'] = 'Lo sentimos la Tarea de '.$item->materia.', '.$item->tema.', no ha sido confirmada.';
                 $pushClass->enviarNotificacion($notificacion, $profesor);

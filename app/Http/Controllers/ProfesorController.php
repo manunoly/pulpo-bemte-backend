@@ -384,6 +384,7 @@ class ProfesorController extends Controller
                             $notificacion['tarea_id'] = 0;
                             $notificacion['chat_id'] = 0;
                             $notificacion['compra_id'] = 0;
+                            $notificacion['color'] = "alumno";
                             $notificacion['titulo'] = 'Clase Confirmada';
                             $notificacion['texto'] = 'La Clase de '.$clase->materia.', '.$clase->tema.', ha sido confirmada por el profesor '
                                     .$profe->nombres.' '.$profe->apellidos;

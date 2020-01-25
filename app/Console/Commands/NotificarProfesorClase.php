@@ -71,6 +71,7 @@ class NotificarProfesorClase extends Command
             $notificacion['tarea_id'] = 0;
             $notificacion['chat_id'] = 0;
             $notificacion['compra_id'] = 0;
+            $notificacion['color'] = "profesor";
             $notificacion['texto'] = 'Ha sido solicitada una Clase de '.$item->materia.', '.$item->tema
                     .', para el '.$item->fecha.' a las '.$item->hora1
                     .', en '.$item->ubicacion.' para '.$item->personas.' estudiantes con una duracion de '

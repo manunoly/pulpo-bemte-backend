@@ -148,6 +148,7 @@ class CombosController extends Controller
                                     .', en '.$clase->ubicacion.' para '.$clase->personas.' estudiantes con una duracion de '
                                     .$clase->duracion.' horas, por '.$usuario->nombres.' '.$usuario->apellidos;
                         $notificacion['estado'] = 'NO';
+                        $notificacion['color'] = "profesor";
                         $pushClass = new NotificacionesPushFcm();
                         foreach($profesores as $solicitar)
                             $pushClass->enviarNotificacion($notificacion, $solicitar);

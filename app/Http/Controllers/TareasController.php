@@ -118,6 +118,7 @@ class TareasController extends Controller
                 $notificacion['clase_id'] = 0;
                 $notificacion['chat_id'] = 0;
                 $notificacion['compra_id'] = 0;
+                $notificacion['color'] = "profesor";
                 $pushClass = new NotificacionesPushFcm();
                 foreach($profesores as $solicitar)
                     $pushClass->enviarNotificacion($notificacion, $solicitar);
@@ -287,6 +288,7 @@ class TareasController extends Controller
                         $notificacion['clase_id'] = 0;
                         $notificacion['chat_id'] = 0;
                         $notificacion['compra_id'] = 0;
+                        $notificacion['color'] = "cancelar";
                         if ($request['user_id'] == $tarea->user_id_pro)
                         {
                             $userNotif = User::where('id', $tarea->user_id)->first();

@@ -148,6 +148,7 @@ class ClasesController extends Controller
                             .', en '.$clase->ubicacion.' para '.$clase->personas.' estudiantes con una duracion de '
                             .$clase->duracion.' horas, por '.$user->name;
                     $notificacion['estado'] = 'NO';
+                    $notificacion['color'] = "profesor";
                     $pushClass = new NotificacionesPushFcm();
                     foreach($profesores as $solicitar)
                         $pushClass->enviarNotificacion($notificacion, $solicitar);
@@ -274,6 +275,7 @@ class ClasesController extends Controller
                         $notificacion['tarea_id'] = 0;
                         $notificacion['chat_id'] = 0;
                         $notificacion['compra_id'] = 0;
+                        $notificacion['color'] = "cancelar";
                         if ($request['user_id'] == $clase->user_id_pro)
                         {
                             $userNotif = User::where('id', $clase->user_id)->first();
@@ -588,6 +590,7 @@ class ClasesController extends Controller
                     $notificacion['tarea_id'] = 0;
                     $notificacion['chat_id'] = 0;
                     $notificacion['compra_id'] = 0;
+                    $notificacion['color'] = "profesor";
                     $userNotif = User::where('id', $clase->user_id_pro)->first();
                     $pushClass = new NotificacionesPushFcm();
                     $pushClass->enviarNotificacion($notificacion, $userNotif);

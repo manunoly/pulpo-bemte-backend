@@ -139,9 +139,15 @@ class ChatController extends Controller
         $notificacion['chat_id'] = $chat->id;
         $notificacion['compra_id'] = 0;
         if ($request['user_id'] != $alumno)
+        {
             $userNotif = User::where('id', $alumno)->first();
+            $notificacion['color'] = "alumno";
+        }
         else
+        {
             $userNotif = User::where('id', $profesor)->first();
+            $notificacion['color'] = "profesor";
+        }
         
         $pushClass = new NotificacionesPushFcm();
         $pushClass->enviarNotificacion($notificacion, $userNotif);

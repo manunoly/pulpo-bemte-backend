@@ -155,6 +155,7 @@ class AsignarProfesorTarea extends Command
                 $notificacion['clase_id'] = 0;
                 $notificacion['chat_id'] = 0;
                 $notificacion['compra_id'] = 0;
+                $notificacion['color'] = "alumno";
                 $notificacion['estado'] = $estado;
                 $notificacion['texto'] = 'La Tarea de '.$item->materia.', '.$item->tema
                                             .', ha sido confirmada por el profesor '
@@ -165,6 +166,7 @@ class AsignarProfesorTarea extends Command
                 $notificacion['texto'] = 'La Tarea de '.$item->materia.', '.$item->tema
                                             .' le ha sido Asignada';
                 $notificacion['estado'] = $estadoProf;
+                $notificacion['color'] = "profesor";
                 $pushClass->enviarNotificacion($notificacion, $userProfesor);
             }
             else

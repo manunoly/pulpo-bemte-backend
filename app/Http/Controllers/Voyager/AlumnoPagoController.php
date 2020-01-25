@@ -456,11 +456,15 @@ class AlumnoPagoController extends Controller
             }
             //enviar notificacion al profesor y al alumno
             $notificacion['titulo'] = 'Tarea '.$request['estado'];
+            $notificacion['color'] = "alumno";
             $notificacion['texto'] = 'El pago de la Tarea de '.$tarea->materia.', '.$tarea->tema.', ha sido '.$request['estado'];
             if ($request['estado'] == 'Aprobado')
                 $notificacion['texto'] = $notificacion['texto'].'. La Tarea ha sido Asignada';
             else
+            {
                 $notificacion['texto'] = $notificacion['texto'].'. Imagen borrosa o incorrecta. Si cree que ha sido un error, escriba al correo '.env('CORREO');
+                $notificacion['color'] = "cancelar";
+            }
             $notificacion['estado'] = 'NO';
             $notificacion['tarea_id'] = $tarea->id;
             $notificacion['clase_id'] = 0;
@@ -468,10 +472,14 @@ class AlumnoPagoController extends Controller
             $notificacion['compra_id'] = 0;
             $pushClass = new NotificacionesPushFcm();
             $pushClass->enviarNotificacion($notificacion, $userAlumno);
+            $notificacion['color'] = "profesor";
             if ($request['estado'] == 'Aprobado')
                 $notificacion['texto'] = 'La Tarea de '.$tarea->materia.', '.$tarea->tema.', ha sido Confirmada.';
             else
+            {
                 $notificacion['texto'] = 'Lo sentimos la Tarea de '.$tarea->materia.', '.$tarea->tema.', no ha sido Confirmada.';
+                $notificacion['color'] = "cancelar";
+            }
             $pushClass->enviarNotificacion($notificacion, $userProf);
         }
         if ($clase != null)
@@ -539,11 +547,15 @@ class AlumnoPagoController extends Controller
             }
             //enviar notificacion al profesor y al alumno
             $notificacion['titulo'] = 'Clase '.$request['estado'];
+            $notificacion['color'] = "alumno";
             $notificacion['texto'] = 'El pago de la Clase de '.$clase->materia.', '.$clase->tema.', ha sido '.$request['estado'];
             if ($request['estado'] == 'Aprobado')
                 $notificacion['texto'] = $notificacion['texto'].'. La Clase ha sido Asignada';
             else
+            {
+                $notificacion['color'] = "cancelar";
                 $notificacion['texto'] = $notificacion['texto'].'. Imagen borrosa o incorrecta. Si cree que ha sido un error, escriba al correo '.env('CORREO');
+            }
             $notificacion['estado'] = 'NO';
             $notificacion['clase_id'] = $clase->id;
             $notificacion['tarea_id'] = 0;
@@ -551,10 +563,14 @@ class AlumnoPagoController extends Controller
             $notificacion['compra_id'] = 0;
             $pushClass = new NotificacionesPushFcm();
             $pushClass->enviarNotificacion($notificacion, $userAlumno);
+            $notificacion['color'] = "profesor";
             if ($request['estado'] == 'Aprobado')
                 $notificacion['texto'] = 'La Clase de '.$clase->materia.', '.$clase->tema.', ha sido Confirmada.';
             else
+            {
+                $notificacion['color'] = "cancelar";
                 $notificacion['texto'] = 'Lo sentimos la Clase de '.$clase->materia.', '.$clase->tema.', no ha sido Confirmada.';
+            }
             $pushClass->enviarNotificacion($notificacion, $userProf);
         }
         if ($compra != null)
@@ -583,10 +599,14 @@ class AlumnoPagoController extends Controller
             $userAlumno = User::where('id', $compra->user_id)->first();
             $notificacion['titulo'] = 'Pago Horas '.$request['estado'];
             $notificacion['texto'] = 'El pago de '.$compra->horas.' Horas ha sido '.$request['estado'].'. Por favor,';
+            $notificacion['color'] = "alumno";
             if ($request['estado'] == 'Aprobado')
                 $notificacion['texto'] = $notificacion['texto'].' revise su Billetera';
             else
+            {
+                $notificacion['color'] = "cancelar";
                 $notificacion['texto'] = $notificacion['texto'].' contactar con el administrador';
+            }
             $notificacion['estado'] = 'NO';
             $notificacion['clase_id'] = 0;
             $notificacion['tarea_id'] = 0;

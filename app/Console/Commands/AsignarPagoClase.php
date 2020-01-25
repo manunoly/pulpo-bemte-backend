@@ -92,11 +92,12 @@ class AsignarPagoClase extends Command
             }
             if (!$rechazado)
             {
-                //lanzar notificacion al profesores
+                //lanzar notificacion al profesor
                 $notificacion['clase_id'] = $item->id;
                 $notificacion['tarea_id'] = 0;
                 $notificacion['chat_id'] = 0;
                 $notificacion['compra_id'] = 0;
+                $notificacion['color'] = "cancelar";
                 $notificacion['estado'] = 'NO';
                 $notificacion['titulo'] = 'Clase No Confirmada';
                 $notificacion['texto'] = 'Lo sentimos la Clase de '.$item->materia.', '.$item->tema.', no ha sido confirmada.';
