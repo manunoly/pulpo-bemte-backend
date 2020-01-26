@@ -117,7 +117,7 @@ class Algoritmo
             $notificacion['chat_id'] = 0;
             $notificacion['compra_id'] = 0;
             $notificacion['color'] = "alumno";
-            $notificacion['estado'] = $texto;
+            $notificacion['estado'] = "";
             $notificacion['texto'] = $texto;
             $pushClass = new NotificacionesPushFcm();
             $pushClass->enviarNotificacion($notificacion, $userAlumno);

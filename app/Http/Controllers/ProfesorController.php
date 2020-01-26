@@ -345,7 +345,7 @@ class ProfesorController extends Controller
                         $data['estado'] = 'Confirmado';
                         $data['aplica_prof'] = date("Y-m-d H:i:s");
                         $duracion = $clase->duracion + ($clase->personas - 1);
-                        $estado  = 'Por favor, realizar el pago de la Clase de '.$clase->materia.', '.$clase->tema.'.';
+                        $estado  = 'Por favor, realizar el pago de la Clase.';
                         if ($clase->compra_id == 0)
                         {
                             //quitar las horas al alumno
@@ -355,7 +355,7 @@ class ProfesorController extends Controller
                             if (!$actualizado)
                                 return response()->json(['error' => 'Error al actualizar Billetera del Alumno'], 401);
                             $data['estado'] = 'Aceptado';
-                            $estado = 'La Clase de '.$clase->materia.', '.$clase->tema.',  ha sido asignada.';
+                            $estado = 'La Clase ha sido asignada.';
                             //pagar al profesor
                             $pagoProf = Pago::create([
                                         'user_id' => $profe->user_id,
