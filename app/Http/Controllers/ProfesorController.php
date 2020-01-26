@@ -345,8 +345,6 @@ class ProfesorController extends Controller
                         $data['estado'] = 'Confirmado';
                         $data['aplica_prof'] = date("Y-m-d H:i:s");
                         $duracion = $clase->duracion + ($clase->personas - 1);
-                        if ($duracion < 2)
-                            $duracion = 2;
                         $estado  = 'Por favor, realizar el pago de la Clase de '.$clase->materia.', '.$clase->tema.'.';
                         if ($clase->compra_id == 0)
                         {

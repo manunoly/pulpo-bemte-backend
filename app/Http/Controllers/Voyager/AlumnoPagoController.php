@@ -353,8 +353,6 @@ class AlumnoPagoController extends Controller
         else if ($clase != null)
         {
             $duracion = $clase->duracion + ($clase->personas - 1);
-            if ($duracion < 2)
-                $duracion = 2;
             if ($clase->compra_id > 0)
                 $compra = AlumnoCompra::where('id', $clase->compra_id )->first();
         }

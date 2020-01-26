@@ -81,8 +81,6 @@ class ClasesController extends Controller
                     return response()->json(['error' => 'Sin Clase Anterior para seleccionar Profesor'], 401);
             }
             $duracion = $request['duracion'] + ($request['personas'] - 1);
-            if ($duracion < 2)
-                $duracion = 2;
 
             $coordenadas = isset($request['coordenadas']) ? $request['coordenadas'] : NULL;
             $hora1 = isset($request['hora1']) ? $request['hora1'] : NULL;
@@ -145,7 +143,7 @@ class ClasesController extends Controller
                     $notificacion['compra_id'] = 0;
                     $notificacion['texto'] = 'Ha sido solicitada una Clase de '.$clase->materia.', '.$clase->tema
                             .', para el '.$clase->fecha.' a las '.$clase->hora1
-                            .', en '.$clase->ubicacion.' para '.$clase->personas.' estudiantes con una duracion de '
+                            .', en '.$clase->ubicacion.' para '.$clase->personas.' estudiantes con una duración de '
                             .$clase->duracion.' horas, por '.$user->name;
                     $notificacion['estado'] = 'NO';
                     $notificacion['color'] = "profesor";
@@ -292,8 +290,6 @@ class ClasesController extends Controller
 
                     $penHoras = 0;
                     $duracion = $clase->duracion + ($clase->personas - 1);
-                    if ($duracion < 2)
-                        $duracion = 2;
                     if ($clase->estado == 'Aceptado' || $clase->estado == 'Pago_Aprobado')
                     {
                         //devolver las horas al alumno 
@@ -633,8 +629,6 @@ class ClasesController extends Controller
                         return response()->json(['error' => 'Clase no permite modificación'], 401);
 
                     $duracion = $clase->duracion - ($clase->personas - 1);
-                    if ($duracion < 2)
-                        $duracion = 2;
                     
                     //Solicitado, Confirmado, Aceptado, Confirmando_Pago, Pago_Aprobado
                     $datos['dateClass'] = $clase->fecha.' '.$clase->hora_prof;

@@ -94,8 +94,6 @@ class CombosController extends Controller
                 if ($clase != null)
                 {
                     $duracion = $clase->duracion + ($clase->personas - 1);
-                    if ($duracion < 2)
-                        $duracion = 2;
                     if ($usuario->billetera + $request['horas'] < $duracion)
                         return response()->json(['error' => 'Horas insuficientes. Mínimo: '.($duracion-$usuario->billetera )], 401);
                 }
@@ -145,7 +143,7 @@ class CombosController extends Controller
                         $notificacion['compra_id'] = 0;
                         $notificacion['texto'] = 'Ha sido solicitada una Clase de '.$clase->materia.', '.$clase->tema
                                     .', para el '.$clase->fecha.' a las '.$clase->hora1
-                                    .', en '.$clase->ubicacion.' para '.$clase->personas.' estudiantes con una duracion de '
+                                    .', en '.$clase->ubicacion.' para '.$clase->personas.' estudiantes con una duración de '
                                     .$clase->duracion.' horas, por '.$usuario->nombres.' '.$usuario->apellidos;
                         $notificacion['estado'] = 'NO';
                         $notificacion['color'] = "profesor";

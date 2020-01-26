@@ -185,11 +185,9 @@ class AlumnosController extends Controller
         if ($clase != null)
         {
             $duracion = $clase->duracion + ($clase->personas - 1);
-            if ($duracion < 2)
-                $duracion = 2;
         }
         if ($user->billetera < $duracion)
-            return response()->json(['error' => 'Combos sin horas para pagar'], 401);
+            return response()->json(['error' => 'No tienes horas suficientes'], 401);
 
         $data['estado'] = 'Aceptado';
         if ($tarea != null)
