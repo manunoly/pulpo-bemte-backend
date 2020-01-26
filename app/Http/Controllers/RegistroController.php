@@ -79,8 +79,17 @@ class RegistroController extends Controller
         {
             return response()->json(['error' => 'Cédula inválida'], 401);
         }
-
         $id_usuario = $request['user_id'];
+        $apodoVerified = Alumno::where('user_id', '!=', $id_usuario)->where('apodo', $request['apodo'])->first();
+        if ($apodoVerified !== null) 
+        {
+            return response()->json([ 'exist' => 'Apodo pertenece a un Alumno!'], 401);
+        }
+        $apodoVerified = Profesore::where('user_id', '!=', $id_usuario)->where('apodo', $request['apodo'])->first();
+        if ($apodoVerified !== null) 
+        {
+            return response()->json([ 'exist' => 'Apodo pertenece a un Profesor!'], 401);
+        }
         $user = User::where('id', $id_usuario)->select('*')->first();
         if ($user)
         {
@@ -260,20 +269,25 @@ class RegistroController extends Controller
 
     public function login(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email'
-        ]);
-        if ($validator->fails()) 
-        {
-            return response()->json(['error' => $validator->errors()], 406);
-        }
         if ($request['password'] == null && !$request['social']) 
         {
             return response()->json(['error' => 'Credenciales Incorrectas'], 401);
         }
 
-        $user = User::where('email', $request['email'])->select('*')->first();
-        if($user)
+        $user = User::where('email', $request['email'])->first();
+        if ($user == null)
+        {
+            $alumno = Alumno::where('apodo', $request['email'])->first();
+            if ($alumno == null)
+            {
+                $profesor = Profesore::where('apodo', $request['email'])->first();
+                if ($profesor != null)
+                    $user = User::where('id', $profesor->user_id)->first();
+            }
+            else
+                $user = User::where('id', $alumno->user_id)->first();
+        }
+        if($user != null)
         {
             if($user['activo'] == false)
             {
@@ -440,6 +454,16 @@ class RegistroController extends Controller
             {
                 return response()->json(['error' => 'Tipo de usuario inválido'], 401);
             }
+            $apodoVerified = Alumno::where('apodo', $request['apodo'])->first();
+            if ($apodoVerified !== null) 
+            {
+                return response()->json([ 'exist' => 'Apodo pertenece a un Alumno!'], 401);
+            }
+            $apodoVerified = Profesore::where('apodo', $request['apodo'])->first();
+            if ($apodoVerified !== null) 
+            {
+                return response()->json([ 'exist' => 'Apodo pertenece a un Profesor!'], 401);
+            }
             if ($request['tipo'] == 'Profesor')
             {
                 if (!isset($request['clases']))
@@ -494,9 +518,9 @@ class RegistroController extends Controller
                 'sistema' => $sistema
             ]);
 
-            if( $user->id)
+            if ($user->id)
             {
-                if($request['tipo'] == 'Alumno' )
+                if ($request['tipo'] == 'Alumno')
                 {
                     $alumno = Alumno::create([
                         'user_id' => $user->id,
@@ -513,11 +537,6 @@ class RegistroController extends Controller
                         'created_at' => $request['created_at'],
                         'updated_at' => $request['created_at']
                     ]);
-                    if($alumno)
-                    {
-                        $userDev = $this->datosUser($user->id);
-                        return response()->json(['success' => 'Cuenta Creada!', 'profile' => $userDev], 200);
-                    }
                 }
                 else
                 {
@@ -592,21 +611,6 @@ class RegistroController extends Controller
                                 'materia' => $materia5->nombre,
                                 'activa' => true
                             ]);
-                        
-                        $correo = 'OK';
-                        try 
-                        {
-                                Mail::to($user->email)->send(new Notificacion($user->name, 
-                                        'Gracias por inscribirte estamos evaluando tu perfil', '',
-                                        'En un plazo maximo de 48 horas nos contacteremos contigo', env('EMPRESA')));
-                        }
-                        catch (Exception $e) 
-                        { 
-                            $correo = 'ERROR';
-                        }
-                        $userDev = $this->datosUser($user->id);
-                        return response()->json(['success' => 'Cuenta Creada!', 
-                                                'profile' => $userDev, 'correo' => $correo], 200);
                     }
                 }
             }
@@ -619,6 +623,36 @@ class RegistroController extends Controller
         {
             return response()->json(['error' => 'Formulario vacío!'], 401);
         }
+
+        $correo = 'OK';
+        try 
+        {
+            Mail::to($user->email)->send(new Bienvenida($user->name, 
+                                'https://www.youtube.com/', env('EMPRESA')));
+        }
+        catch (Exception $e) 
+        { 
+            $correo = 'ERROR';
+        }
+        try
+        {
+            $notificacion['titulo'] = 'Registro Exitoso';
+            $notificacion['tarea_id'] = 0;
+            $notificacion['clase_id'] = 0;
+            $notificacion['chat_id'] = 0;
+            $notificacion['compra_id'] = 0;
+            $notificacion['color'] = ($request['tipo'] == 'Alumno') ? "alumno" : "profesor";
+            $notificacion['estado'] = "NO";
+            $notificacion['texto'] = 'Bienvenid@ '.$user->name.', te has registrado con éxito. Queremos contarte un poco más sobre Bemte, la mejor plataforma virtual de ayuda en tareas y clases. https://www.youtube.com/';
+            $pushClass = new NotificacionesPushFcm();
+            $pushClass->enviarNotificacion($notificacion, $user);
+        }
+        catch (Exception $e) 
+        { }
+
+        $userDev = $this->datosUser($user->id);
+        return response()->json(['success' => 'Cuenta Creada!', 
+                                'profile' => $userDev, 'correo' => $correo], 200);
     }
 
     public function actualizarToken(Request $request)
