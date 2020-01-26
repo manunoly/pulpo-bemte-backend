@@ -153,4 +153,27 @@ class ChatController extends Controller
         $pushClass->enviarNotificacion($notificacion, $userNotif);
         return response()->json(['success'=> 'Chat Enviado'], 200);
     }
+
+
+    public function eliminarChat(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required'
+        ]);
+        if ($validator->fails()) 
+        {
+            return response()->json(['error' => $validator->errors()], 406);
+        }
+        $chat = Chat::where('id', $request['id'])->first();
+        if ($chat == null)
+        {
+            return response()->json(['error' => 'No existe Chat'], 401);
+        }
+        if ($request['user_id'] != null && $chat->user_escribe != $request['user_id'])
+        {
+            return response()->json(['error' => 'No puede eliminar Chat'], 401);
+        }
+        $chat->delete();
+        return response()->json(['success'=> 'Chat Eliminado'], 200);
+    }
 }

@@ -106,3 +106,4 @@ Route::post('subir-transferencia', 'FicherosController@subirTransferencia');
 
 Route::get('obtener-chat', 'ChatController@obtenerChat');
 Route::post('enviar-chat', 'ChatController@enviarChat');
+Route::post('eliminarChat', 'ChatController@eliminarChat');
