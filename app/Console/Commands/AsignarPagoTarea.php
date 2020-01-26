@@ -53,6 +53,7 @@ class AsignarPagoTarea extends Command
             $rechazado = true;
             $transfer = AlumnoPago::where('user_id', $item->user_id)->where('tarea_id', $item->id)->first();
             $profesor = User::where('id', $item->user_id_pro)->first();
+            $alumno = User::where('id', $item->user_id)->first();
             if ($transfer != null)
             {
                 if ($transfer->estado != 'Aprobado')
@@ -66,7 +67,6 @@ class AsignarPagoTarea extends Command
                         AlumnoPago::where('id', $transfer->id)->update( $dataTransfer );
                     if ($transfer->combo_id > 0)
                         AlumnoCompra::where('id', $transfer->combo_id)->update( $dataTransfer );
-                    $alumno = User::where('id', $item->user_id)->first();
                     try 
                     {
                         Mail::to($alumno->email)->send(new Notificacion($alumno->name, 
@@ -101,6 +101,8 @@ class AsignarPagoTarea extends Command
                 $notificacion['estado'] = 'NO';
                 $notificacion['texto'] = 'Lo sentimos la Tarea de '.$item->materia.', '.$item->tema.', no ha sido confirmada.';
                 $pushClass->enviarNotificacion($notificacion, $profesor);
+                $notificacion['texto'] = 'Su Pago para la Tarea de '.$item->materia.', '.$item->tema.', no ha sido Aprobado.';
+                $pushClass->enviarNotificacion($notificacion, $alumno);
             }
         }
     }
