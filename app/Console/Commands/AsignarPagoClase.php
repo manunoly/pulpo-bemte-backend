@@ -44,7 +44,7 @@ class AsignarPagoClase extends Command
      */
     public function handle()
     {
-        $timestamp = Carbon::now()->addMinutes(-20);
+        $timestamp = Carbon::now()->addMinutes(-60);
         $clases = Clase::whereIn('estado', ['Confirmado','Confirmando_Pago'])
                         ->where('activa', true)->where('updated_at','<=', $timestamp)->get();
         $pushClass = new NotificacionesPushFcm();

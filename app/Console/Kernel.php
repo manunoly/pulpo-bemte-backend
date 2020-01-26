@@ -41,7 +41,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('asignar:pago:tarea')->everyMinute()
             ->when(function () 
             {
-                $timestamp = Carbon::now()->addMinutes(-20);
+                $timestamp = Carbon::now()->addMinutes(-60);
                 $tareas = Tarea::whereIn('estado', ['Confirmado','Confirmando_Pago'])
                             ->where('activa', true)->where('updated_at','<=', $timestamp)->get();
                 return $tareas->count() > 0;
@@ -111,7 +111,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('asignar:pago:clase')->everyMinute()
         ->when(function () 
         {
-            $timestamp = Carbon::now()->addMinutes(-20);
+            $timestamp = Carbon::now()->addMinutes(-60);
             $clases = Clase::whereIn('estado', ['Confirmado','Confirmando_Pago'])
                             ->where('activa', true)->where('updated_at','<=', $timestamp)->get();
             return $clases->count() > 0;
