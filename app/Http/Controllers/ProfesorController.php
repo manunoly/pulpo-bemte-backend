@@ -251,7 +251,8 @@ class ProfesorController extends Controller
                         $solicitud = TareaProfesor::where('tarea_id', $request['tarea_id'])->where('user_id', $request['user_id'])->first();
                         if ($solicitud == null)
                         {
-                            if ( 10 > TareaProfesor::where('tarea_id', $request['tarea_id'])->where('estado', 'Solicitado')->count())
+                            $aplicados = TareaProfesor::where('tarea_id', $request['tarea_id'])->where('estado', 'Solicitado')->count();
+                            if ( 5 > $aplicados)
                             {
                                 $aplica = TareaProfesor::create([
                                     'user_id' => $request['user_id'],
@@ -262,6 +263,11 @@ class ProfesorController extends Controller
                                 ]);
                                 if ($aplica->id)
                                 {
+                                    if ($aplicados == 4)
+                                    {
+                                        $algoritmo = new Algoritmo();
+                                        $algoritmo->AsignarProfesorTarea($tarea);
+                                    }
                                     return response()->json(['success' => 'Tarea Solicitada'], 200);
                                 }
                                 else
