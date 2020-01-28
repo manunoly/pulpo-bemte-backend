@@ -18,14 +18,12 @@ class NotificacionesPushFcm
 
         $notificacionEnviar = [];
         $notificacionEnviar["notification"]['title'] = isset($notification['title']) ? $notification['title'] : 'Bemte';
-        $notificacionEnviar["notification"]['body'] = isset($notification['body']) ? $notification['body'] : 'Nueva notificación de Bemte';
+        $notificacionEnviar["notification"]['body'] = isset($notification['body']) ? $notification['body'] : 'Nueva notificación Bemte';
         $notificacionEnviar["notification"]['sound'] = isset($notification['sound']) ? $notification['sound'] : 'default';
         $notificacionEnviar["notification"]['click_action'] = isset($notification['click_action']) ? $notification['click_action'] : 'FCM_PLUGIN_ACTIVITY';
         $notificacionEnviar["notification"]['icon'] = isset($notification['icon']) ? $notification['icon'] : 'fcm_push_icon';
-
-        if (isset($notification['data']))
-            $notificacionEnviar['data'] = $notification['data'];
-
+        $notificacionEnviar["content_available"] = true;
+        $notificacionEnviar['data'] = $notification['data'];
         if (isset($notification['to']))
             $notificacionEnviar['to'] = $notification['to'];
         else 
@@ -66,7 +64,6 @@ class NotificacionesPushFcm
             {
                 $notificacionEnviar['to'] = $user->token;
                 $notificacionEnviar['title'] = $notificacion['titulo'];
-                $notificacion['color'] = "cancelar";
                 $color = "";
                 switch ($notificacion['color'])
                 {
@@ -74,8 +71,9 @@ class NotificacionesPushFcm
                     case "alumno": $color = "fondoVerde"; break;
                     case "profesor": $color = "fondoAzul"; break;
                 }
-                $item = array("texto" => $notificacion['texto'], "color" => $color, "chat" => $notificacion['chat_id'] > 0);
-                $notificacionEnviar['body'] = json_encode($item);
+                $item = array("color" => $color, "chat" => $notificacion['chat_id'] > 0);
+                $notificacionEnviar['body'] = $notificacion['texto'];
+                $notificacionEnviar['data'] = $item;
                 $notificacionEnviar['priority'] = 'normal';
                 $this->enviar($notificacionEnviar);
             }
