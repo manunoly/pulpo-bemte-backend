@@ -335,78 +335,84 @@ class ProfesorController extends Controller
         {
             if ($clase->estado == 'Solicitado' && $clase->user_id_pro == null)
             {
-                $profe = Profesore::where('user_id', $request['user_id'])->first();
-                if ($profe != null)
+                if (($clase->seleccion_profesor && $clase->user_pro_sel == $request['user_id'])
+                    || (!$clase->seleccion_profesor))
                 {
-                    if ($profe->activo && $profe->disponible && $profe->clases)
+                    $profe = Profesore::where('user_id', $request['user_id'])->first();
+                    if ($profe != null)
                     {
-                        $userAlumno = User::where('id', $clase->user_id)->first();
-                        $data['user_id_pro'] = $profe->user_id;
-                        $data['hora_prof'] = $request['hora'];
-                        $data['estado'] = 'Confirmado';
-                        $data['aplica_prof'] = date("Y-m-d H:i:s");
-                        $duracion = $clase->duracion + ($clase->personas - 1);
-                        $estado  = 'Por favor, realizar el pago de la Clase.';
-                        if ($clase->compra_id == 0)
+                        if ($profe->activo && $profe->disponible && $profe->clases)
                         {
-                            //quitar las horas al alumno
-                            $alumno = Alumno::where('user_id', $clase->user_id)->first();
-                            $dataAlumno['billetera'] = $alumno->billetera - $duracion;
-                            $actualizado = Alumno::where('user_id', $clase->user_id )->update( $dataAlumno );
-                            if (!$actualizado)
-                                return response()->json(['error' => 'Error al actualizar Billetera del Alumno'], 401);
-                            $data['estado'] = 'Aceptado';
-                            $estado = 'La Clase ha sido asignada.';
-                            //pagar al profesor
-                            $pagoProf = Pago::create([
-                                        'user_id' => $profe->user_id,
-                                        'tarea_id' => 0,
-                                        'clase_id' => $clase->id,
-                                        'valor' => ($clase->duracion + ($clase->personas - 1)) * $profe->valor_clase,
-                                        'horas' => $clase->duracion,
-                                        'estado' => 'Solicitado'
-                                        ]);
-                            if (!$pagoProf->id)
-                                return response()->json(['error' => 'No se pudo crear pago al Profesor'], 401);                            
-                            $userProf = User::where('id', $profe->user_id)->first();
-                            try 
+                            $userAlumno = User::where('id', $clase->user_id)->first();
+                            $data['user_id_pro'] = $profe->user_id;
+                            $data['hora_prof'] = $request['hora'];
+                            $data['estado'] = 'Confirmado';
+                            $data['aplica_prof'] = date("Y-m-d H:i:s");
+                            $duracion = $clase->duracion + ($clase->personas - 1);
+                            $estado  = 'Por favor, realizar el pago de la Clase.';
+                            if ($clase->compra_id == 0)
                             {
-                                Mail::to($userAlumno->email)->send(new NotificacionClases($clase, $userAlumno->name, $userProf->name, 
-                                                                env('EMPRESA'), true));
-                                Mail::to($userProf->email)->send(new NotificacionClases($clase, $userAlumno->name, $userProf->name, 
-                                                                env('EMPRESA'), false));
+                                //quitar las horas al alumno
+                                $alumno = Alumno::where('user_id', $clase->user_id)->first();
+                                $dataAlumno['billetera'] = $alumno->billetera - $duracion;
+                                $actualizado = Alumno::where('user_id', $clase->user_id )->update( $dataAlumno );
+                                if (!$actualizado)
+                                    return response()->json(['error' => 'Error al actualizar Billetera del Alumno'], 401);
+                                $data['estado'] = 'Aceptado';
+                                $estado = 'La Clase ha sido asignada.';
+                                //pagar al profesor
+                                $pagoProf = Pago::create([
+                                            'user_id' => $profe->user_id,
+                                            'tarea_id' => 0,
+                                            'clase_id' => $clase->id,
+                                            'valor' => ($clase->duracion + ($clase->personas - 1)) * $profe->valor_clase,
+                                            'horas' => $clase->duracion,
+                                            'estado' => 'Solicitado'
+                                            ]);
+                                if (!$pagoProf->id)
+                                    return response()->json(['error' => 'No se pudo crear pago al Profesor'], 401);                            
+                                $userProf = User::where('id', $profe->user_id)->first();
+                                try 
+                                {
+                                    Mail::to($userAlumno->email)->send(new NotificacionClases($clase, $userAlumno->name, $userProf->name, 
+                                                                    env('EMPRESA'), true));
+                                    Mail::to($userProf->email)->send(new NotificacionClases($clase, $userAlumno->name, $userProf->name, 
+                                                                    env('EMPRESA'), false));
+                                }
+                                catch (Exception $e) 
+                                {
+                                } 
                             }
-                            catch (Exception $e) 
+    
+                            $actualizado = Clase::where('id', $clase->id )->update( $data );
+                            if ($actualizado)
                             {
-                            } 
-                        }
-
-                        $actualizado = Clase::where('id', $clase->id )->update( $data );
-                        if ($actualizado)
-                        {
-                            //enviar notificacion al profesor o alumno
-                            $notificacion['clase_id'] = $clase->id;
-                            $notificacion['tarea_id'] = 0;
-                            $notificacion['chat_id'] = 0;
-                            $notificacion['compra_id'] = 0;
-                            $notificacion['color'] = "alumno";
-                            $notificacion['titulo'] = 'Clase Confirmada';
-                            $notificacion['texto'] = 'La Clase de '.$clase->materia.', '.$clase->tema.', ha sido confirmada por el profesor '
-                                    .$profe->nombres.' '.$profe->apellidos;
-                            $notificacion['estado'] = $estado;
-                            $pushClass = new NotificacionesPushFcm();
-                            $pushClass->enviarNotificacion($notificacion, $userAlumno);
-
-                            return response()->json(['success' => 'Clase Solicitada'], 200);
+                                //enviar notificacion al profesor o alumno
+                                $notificacion['clase_id'] = $clase->id;
+                                $notificacion['tarea_id'] = 0;
+                                $notificacion['chat_id'] = 0;
+                                $notificacion['compra_id'] = 0;
+                                $notificacion['color'] = "alumno";
+                                $notificacion['titulo'] = 'Clase Confirmada';
+                                $notificacion['texto'] = 'La Clase de '.$clase->materia.', '.$clase->tema.', ha sido confirmada por el profesor '
+                                        .$profe->nombres.' '.$profe->apellidos;
+                                $notificacion['estado'] = $estado;
+                                $pushClass = new NotificacionesPushFcm();
+                                $pushClass->enviarNotificacion($notificacion, $userAlumno);
+    
+                                return response()->json(['success' => 'Clase Solicitada'], 200);
+                            }
+                            else
+                                return response()->json(['error' => 'La Solicitud no se pudo actualizar'], 401);
                         }
                         else
-                            return response()->json(['error' => 'La Solicitud no se pudo actualizar'], 401);
+                            return response()->json(['error' => 'Profesor no disponible para la clase'], 401);
                     }
                     else
-                        return response()->json(['error' => 'Profesor no disponible para la clase'], 401);
+                        return response()->json(['error' => 'No se encontró Profesor para aplicar'], 401);
                 }
                 else
-                    return response()->json(['error' => 'No se encontró Profesor para aplicar'], 401);
+                    return response()->json(['error' => 'Clase con Selección de Profesor, intente en unos minutos'], 401);
             }
             else if  ($clase->user_id_pro == null)
                 return response()->json(['error' => 'Ya no puede aplicar a la Clase'], 401);

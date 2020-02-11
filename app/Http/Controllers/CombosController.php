@@ -113,16 +113,7 @@ class CombosController extends Controller
                     if ($clase != null)
                     {
                         $actualizado = Clase::where('id', $clase->id)->update( $data );
-                        $profesores = Profesore::join('profesor_materia', 'profesor_materia.user_id', '=', 'profesores.user_id')
-                                                ->join('users', 'users.id', '=', 'profesores.user_id')
-                                                ->where('profesores.activo', true)
-                                                ->where('profesores.clases', true)
-                                                ->where('profesores.disponible', true)
-                                                ->where('profesores.ciudad', $usuario->ciudad)
-                                                ->where('profesor_materia.activa', true)
-                                                ->where('profesor_materia.materia', $clase->materia)
-                                                ->select('users.email', 'users.token', 'users.sistema', 'users.id', 'users.name')
-                                                ->get();
+                        $profesores = [];
                         if ($clase->seleccion_profesor)
                         {
                             $claseAnterior = Clase::where('user_id', $clase->user_id)
@@ -130,10 +121,34 @@ class CombosController extends Controller
                                             ->orderBy('id', 'desc')->first();
                             if ($claseAnterior != null)
                             {
-                                $profSelccionado = $profesores->where('id', $claseAnterior->user_id_pro)->firts();
-                                if ($profSelccionado != null)
-                                    $profesores = $profSelccionado;
+                                $profesores = User::where('users.id', $claseAnterior->user_id_pro)
+                                            ->select('users.email', 'users.token', 'users.sistema', 'users.id', 'users.name')
+                                            ->get();
+                                if ($profesores->count() != 0)
+                                {
+                                    $actClase['user_pro_sel'] = $claseAnterior->user_id_pro;
+                                    $actualizado = Clase::where('id', $clase->id )->update( $actClase );
+                                }
                             }
+                        }
+                        if ($profesores->count() == 0)
+                        {
+                            if ($clase->seleccion_profesor)
+                            {
+                                $actClase['seleccion_profesor'] = false;
+                                $actClase['user_pro_sel'] = null;
+                                $actualizado = Clase::where('id', $clase->id )->update( $actClase );
+                            }
+                            $profesores = Profesore::join('profesor_materia', 'profesor_materia.user_id', '=', 'profesores.user_id')
+                                                    ->join('users', 'users.id', '=', 'profesores.user_id')
+                                                    ->where('profesores.activo', true)
+                                                    ->where('profesores.clases', true)
+                                                    ->where('profesores.disponible', true)
+                                                    ->where('profesores.ciudad', $usuario->ciudad)
+                                                    ->where('profesor_materia.activa', true)
+                                                    ->where('profesor_materia.materia', $clase->materia)
+                                                    ->select('users.email', 'users.token', 'users.sistema', 'users.id', 'users.name')
+                                                    ->get();
                         }
                         //lanzar notificaciones a los profesores
                         $notificacion['titulo'] = 'Solicitud de Clase';

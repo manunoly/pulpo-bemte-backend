@@ -53,6 +53,7 @@ class NotificarProfesorClase extends Command
         foreach($clases as $item)
         {
             $actClase['seleccion_profesor'] = false;
+            $actClase['user_pro_sel'] = null;
             Clase::where('id', $item->id )->update( $actClase );
             $profesores = Profesore::join('profesor_materia', 'profesor_materia.user_id', '=', 'profesores.user_id')
                     ->join('users', 'users.id', '=', 'profesores.user_id')

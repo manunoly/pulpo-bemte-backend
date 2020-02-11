@@ -49,7 +49,7 @@ class ClasesController extends Controller
                 'personas' => 'required',
                 'duracion' => 'required',
                 'ubicacion' => 'required',
-                'selProfesor' => 'required'
+                'seleccion_profesor' => 'required'
             ]);
             if ($validator->fails()) 
             {
@@ -72,12 +72,12 @@ class ClasesController extends Controller
                 return response()->json(['error' => 'Materia enviada inválida'], 401);
             }
             $claseAnterior = null;
-            if ($request['selProfesor']==1)
+            if ($request['seleccion_profesor']=="1")
             {
                 $claseAnterior = Clase::where('user_id', $request['user_id'])
                                 ->whereIn('estado', ['Aceptado', 'Terminado', 'Calificado'])
                                 ->orderBy('id', 'desc')->first();
-                if ($claseAnterior == nul)
+                if ($claseAnterior == null)
                     return response()->json(['error' => 'Sin Clase Anterior para seleccionar Profesor'], 401);
             }
             $duracion = $request['duracion'] + ($request['personas'] - 1);
@@ -102,7 +102,7 @@ class ClasesController extends Controller
                 'ubicacion' => $request['ubicacion'],
                 'coordenadas' => $coordenadas,
                 'estado' => $alumno->billetera < $duracion ? 'Sin_Horas' : 'Solicitado',
-                'seleccion_profesor' => $request['selProfesor'] == 1,
+                'seleccion_profesor' => $request['seleccion_profesor'] == "1" ? true : false,
                 'activa' => true,
                 'horasCombo' => $horasCombo,
                 'precioCombo' => $precioCombo
@@ -112,28 +112,36 @@ class ClasesController extends Controller
             {
                 if ($clase->estado == 'Solicitado')
                 {
-                    $profesores = Profesore::join('profesor_materia', 'profesor_materia.user_id', '=', 'profesores.user_id')
-                                            ->join('users', 'users.id', '=', 'profesores.user_id')
-                                            ->where('profesores.activo', true)
-                                            ->where('profesores.clases', true)
-                                            ->where('profesores.disponible', true)
-                                            ->where('profesores.ciudad', $alumno->ciudad)
-                                            ->where('profesor_materia.activa', true)
-                                            ->where('profesor_materia.materia', $clase->materia)
-                                            ->select('users.email', 'users.token', 'users.sistema', 'users.id', 'users.name')
-                                            ->get();
+                    $profesores = [];
                     if ($claseAnterior != null)
                     {
-                        $profSelccionado = $profesores->where('id', $claseAnterior->user_id_pro)->firts();
-                        if ($profSelccionado != null)
+                        $profesores = User::where('users.id', $claseAnterior->user_id_pro)
+                                    ->select('users.email', 'users.token', 'users.sistema', 'users.id', 'users.name')
+                                    ->get();
+                        if ($profesores->count() != 0)
                         {
-                            $profesores = $profSelccionado;
-                        }
-                        else
-                        {
-                            $actClase['seleccion_profesor'] = false;
+                            $actClase['user_pro_sel'] = $claseAnterior->user_id_pro;
                             $actualizado = Clase::where('id', $clase->id )->update( $actClase );
                         }
+                    }
+                    if ($profesores->count() == 0)
+                    {
+                        if ($clase->seleccion_profesor)
+                        {
+                            $actClase['seleccion_profesor'] = false;
+                            $actClase['user_pro_sel'] = null;
+                            $actualizado = Clase::where('id', $clase->id )->update( $actClase );
+                        }
+                        $profesores = Profesore::join('profesor_materia', 'profesor_materia.user_id', '=', 'profesores.user_id')
+                                                ->join('users', 'users.id', '=', 'profesores.user_id')
+                                                ->where('profesores.activo', true)
+                                                ->where('profesores.clases', true)
+                                                ->where('profesores.disponible', true)
+                                                ->where('profesores.ciudad', $alumno->ciudad)
+                                                ->where('profesor_materia.activa', true)
+                                                ->where('profesor_materia.materia', $clase->materia)
+                                                ->select('users.email', 'users.token', 'users.sistema', 'users.id', 'users.name')
+                                                ->get();
                     }
                     //lanzar notificaciones a los profesores
                     $notificacion['titulo'] = 'Solicitud de Clase';
