@@ -9,6 +9,7 @@ use App\Profesore;
 use App\Materia;
 use App\ProfesorMaterium;
 use App\Mail\Notificacion;
+use App\Mail\Bienvenida;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Validator;
