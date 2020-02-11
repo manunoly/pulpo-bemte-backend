@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Validator;
 use Hash;
+use App\NotificacionesPushFcm;
 
 class RegistroController extends Controller
 {
