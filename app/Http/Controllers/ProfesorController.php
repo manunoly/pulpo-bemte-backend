@@ -17,6 +17,7 @@ use Validator;
 use App\Mail\Notificacion;
 use App\Mail\NotificacionClases;
 use App\NotificacionesPushFcm;
+use App\Algoritmo;
 
 class ProfesorController extends Controller
 {
