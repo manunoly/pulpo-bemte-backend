@@ -13,6 +13,7 @@ use App\TareaEjercicio;
 use App\TareaProfesor;
 use App\NotificacionesPushFcm;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\Notificacion;
 use Validator;
@@ -535,6 +536,7 @@ class TareasController extends Controller
                 $tarea['profClases'] = $clases->count();
                 $tarea['profTareas'] = $tareas->count();
             }
+            $tarea['archivos'] = DB::table('tarea_ejercicio')->where('tarea_id', $tarea->id)->get();
             return response()->json($tarea, 200);
         }
         else
