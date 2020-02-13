@@ -17,8 +17,6 @@ class MarketingController extends Controller
 {
     public function enviar(Request $request)
     {
-        $ciudades = Ciudad::where('activa', '1' )->select('ciudad','pais', 'codigo')->get();
-        $paises = Ciudad::where('activa', '1' )->select('pais', 'codigo')->distinct()->get();
         try
         {
             $pushClass = new NotificacionesPushFcm();
@@ -55,16 +53,14 @@ class MarketingController extends Controller
         {
             \Request::session()->flash('error', 'No se pudieron realizar las Multas.');
         }
-
-        return view('vendor.voyager.marketing.notificacion', 
-                ['paises'=>$paises, 'ciudades'=>$ciudades]);
+        return redirect()->back();
     }
 
     public function load()
     {
-        $ciudades = Ciudad::where('activa', '1' )->select('ciudad','pais', 'codigo')->get();
-        $paises = Ciudad::where('activa', '1' )->select('pais', 'codigo')->distinct()->get();
+        $ciudades = Ciudad::where('activa', '1' )->select('ciudad','pais', 'codigo')
+                    ->orderBy('pais', 'asc')->orderBy('ciudad', 'asc')->get();
         return view('vendor.voyager.marketing.notificacion', 
-                ['paises'=>$paises, 'ciudades'=>$ciudades]);
+                ['ciudades'=>$ciudades]);
     }
 }

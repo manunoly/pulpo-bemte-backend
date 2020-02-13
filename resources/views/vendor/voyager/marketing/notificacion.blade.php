@@ -29,24 +29,18 @@
                             method="GET" enctype="multipart/form-data">
                 <div class="panel panel-bordered">
                         <div class="panel-body">
-                            <div class="form-group col-md-4">
-                                <label class="control-label" for="name">Países</label>
-                                <select class="form-control select2" name="pais">
-                                @foreach($paises as $pais)
-                                    <option value="{{$pais->codigo}}">{{$pais->pais}}</option>
-                                @endforeach
-                                </select>
-                            </div>
-                            <div class="form-group col-md-4">
+                            <div class="form-group col-md-6">
                                 <label class="control-label" for="name">Ciudad</label>
                                 <select class="form-control select2" name="ciudad">
                                 @foreach($ciudades as $ciudad)
-                                    <option value="{{$ciudad->ciudad}}">{{$ciudad->ciudad}}</option>
+                                    <option value="{{$ciudad->ciudad}}">{{$ciudad->ciudad }}
+                                    ({{ $ciudad->pais }})</option>
                                 @endforeach
                                 </select>
                             </div>
                             <div class="form-group col-md-12">
-                                <textarea name="mensaje" cols="80" rows="4" placeholder="Mensaje a Enviar"></textarea>
+                                <textarea name="mensaje" cols="80" rows="4" 
+                                    placeholder="Mensaje a Enviar" maxlength="250"></textarea>
                             </div>
                         </div>
                         <div class="panel-footer">
