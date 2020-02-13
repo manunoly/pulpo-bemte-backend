@@ -15,10 +15,19 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/admin/reportes', function () {
+    return view('vendor.voyager.reportes.report');
+});
+
+Route::get('/admin/marketing', 'Voyager\MarketingController@load');
+
 Route::group(['prefix' => 'admin'], function () {
 
     Route::get('profesorPagar', 'Voyager\ProfesoresController@pagar')->name('profesor.pagar');
     Route::get('profesorMultar', 'Voyager\ProfesoresController@multar')->name('profesor.multar');
+    
+    Route::get('buscar', 'Voyager\ReportesController@multar')->name('reportes.buscar');
+    Route::get('masivo', 'Voyager\MarketingController@enviar')->name('marketing.enviar');
 
     Voyager::routes();
 });

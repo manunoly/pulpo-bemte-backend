@@ -260,7 +260,7 @@ class ProfesorController extends Controller
                                 $aplica = TareaProfesor::create([
                                     'user_id' => $request['user_id'],
                                     'tarea_id' => $request['tarea_id'],
-                                    'inversion' => $request['tiempo'] * $valor_tarea,
+                                    'inversion' => $request['tiempo'] * $valor_tarea->valorTarea,
                                     'tiempo' => $request['tiempo'],
                                     'estado' => 'Solicitado'
                                 ]);

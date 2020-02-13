@@ -12,6 +12,7 @@ use App\ClaseEjercicio;
 use App\AlumnoPago;
 use App\AlumnoCompra;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\Notificacion;
 use Validator;
@@ -112,13 +113,14 @@ class FicherosController extends Controller
             {
                 if ($tarea != null)
                 {
-                    $aplica = TareaEjercicio::create([
-                        'user_id' => $request['user_id'],
+                    $aplica = DB::table('tarea_ejercicio')->insert(
+                        ['user_id' => $request['user_id'],
                         'tarea_id' => $tarea->id,
-                        'archivo' => $nombre,
-                        'drive' => $drive
-                    ]);
-                    if (!$aplica->id)
+                        'archivo' => $archivo,
+                        'drive' => $drive]
+                    );
+
+                    if (!$aplica)
                     {
                         return response()->json(['error' => 'Error al subir el ejercicio!'], 401);
                     }
@@ -128,7 +130,7 @@ class FicherosController extends Controller
                     $aplica = ClaseEjercicio::create([
                         'user_id' => $request['user_id'],
                         'clase_id' => $clase->id,
-                        'archivo' => $nombre,
+                        'archivo' => $archivo,
                         'drive' => $drive
                     ]);
                     if (!$aplica->id)
