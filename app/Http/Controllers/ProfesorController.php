@@ -9,6 +9,7 @@ use App\Multa;
 use App\Profesore;
 use App\Alumno;
 use App\User;
+use App\Bemte;
 use App\TareaProfesor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -250,6 +251,7 @@ class ProfesorController extends Controller
                     if ($profe->activo && $profe->disponible && $profe->tareas)
                     {
                         $solicitud = TareaProfesor::where('tarea_id', $request['tarea_id'])->where('user_id', $request['user_id'])->first();
+                        $valor_tarea = Bemte::select('valorTarea')->first();
                         if ($solicitud == null)
                         {
                             $aplicados = TareaProfesor::where('tarea_id', $request['tarea_id'])->where('estado', 'Solicitado')->count();
@@ -258,7 +260,7 @@ class ProfesorController extends Controller
                                 $aplica = TareaProfesor::create([
                                     'user_id' => $request['user_id'],
                                     'tarea_id' => $request['tarea_id'],
-                                    'inversion' => $request['tiempo'] * $profe->valor_tarea,
+                                    'inversion' => $request['tiempo'] * $valor_tarea,
                                     'tiempo' => $request['tiempo'],
                                     'estado' => 'Solicitado'
                                 ]);
@@ -283,7 +285,7 @@ class ProfesorController extends Controller
                         }
                         else
                         {
-                            $data['inversion'] = $request['tiempo'] * $profe->valor_tarea;
+                            $data['inversion'] = $request['tiempo'] * $valor_tarea;
                             $data['tiempo'] = $request['tiempo'];
                             $data['estado'] = 'Solicitado';
                             $actualizado = TareaProfesor::where('id', $solicitud->id )->update( $data );

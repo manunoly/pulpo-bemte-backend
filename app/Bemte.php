@@ -11,6 +11,6 @@ class Bemte extends Model
     protected $fillable = [
         'terminosNombre', 'reglamentoNombre', 'videoNombre', 
         'terminosDescripcion', 'reglamentoDescripcion', 'videoDescripcion', 
-        'terminosUrl', 'reglamentoUrl', 'videoUrl'
+        'terminosUrl', 'reglamentoUrl', 'videoUrl', 'valorTarea',
     ];
 }
