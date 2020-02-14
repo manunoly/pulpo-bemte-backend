@@ -131,7 +131,7 @@ class CombosController extends Controller
                                 }
                             }
                         }
-                        if ($profesores->count() == 0)
+                        if (count($profesores) == 0)
                         {
                             if ($clase->seleccion_profesor)
                             {

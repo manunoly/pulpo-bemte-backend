@@ -124,7 +124,7 @@ class ClasesController extends Controller
                             $actualizado = Clase::where('id', $clase->id )->update( $actClase );
                         }
                     }
-                    if ($profesores->count() == 0)
+                    if (count($profesores) == 0)
                     {
                         if ($clase->seleccion_profesor)
                         {
