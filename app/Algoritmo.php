@@ -91,12 +91,32 @@ class Algoritmo
         }
         if ($propuestaSeleccionada != NULL)
         {
+            $pushClass = new NotificacionesPushFcm();
             foreach($profesores as $aplica)
             {
                 $dataAplica['estado'] = 'Rechazado';
                 if ($aplica->id == $propuestaSeleccionada["id"])
                 {
                     $dataAplica['estado'] = 'Aprobado';
+                }
+                else
+                {
+                    try
+                    {
+                        //notificacion de rechazado
+                        $userProfesor = User::where('id', $aplica->id)->first();
+                        $texto = 'Lo sentimos, no ha sido confirmada la Tarea de '.$tarea->materia.', '.$tarea->tema;
+                        $notificacion['titulo'] = 'Tarea No Confirmada';
+                        $notificacion['tarea_id'] = $tarea->id;
+                        $notificacion['clase_id'] = 0;
+                        $notificacion['chat_id'] = 0;
+                        $notificacion['compra_id'] = 0;
+                        $notificacion['color'] = "cancelar";
+                        $notificacion['estado'] = "";
+                        $notificacion['texto'] = $texto;
+                        $pushClass->enviarNotificacion($notificacion, $userProfesor);
+                    }
+                    catch (Exception $e) { }
                 }
                 TareaProfesor::where('id', $aplica->id )->update( $dataAplica );
             }
@@ -119,7 +139,6 @@ class Algoritmo
             $notificacion['color'] = "alumno";
             $notificacion['estado'] = "";
             $notificacion['texto'] = $texto;
-            $pushClass = new NotificacionesPushFcm();
             $pushClass->enviarNotificacion($notificacion, $userAlumno);
         }
         else

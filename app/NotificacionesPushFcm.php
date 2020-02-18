@@ -70,6 +70,7 @@ class NotificacionesPushFcm
                     case "cancelar": $color = "fondoRojo"; break;
                     case "alumno": $color = "fondoVerde"; break;
                     case "profesor": $color = "fondoAzul"; break;
+                    case "ultimo": $color = "fondoAmarillo"; break;
                 }
                 $item = array("color" => $color, "chat" => $notificacion['chat_id'] > 0);
                 $notificacionEnviar['body'] = $notificacion['texto'];

@@ -124,10 +124,12 @@ class ClasesController extends Controller
                             $actualizado = Clase::where('id', $clase->id )->update( $actClase );
                         }
                     }
+                    $ultimoProfesor = $clase->seleccion_profesor;
                     if (count($profesores) == 0)
                     {
                         if ($clase->seleccion_profesor)
                         {
+                            $ultimoProfesor = false;
                             $actClase['seleccion_profesor'] = false;
                             $actClase['user_pro_sel'] = null;
                             $actualizado = Clase::where('id', $clase->id )->update( $actClase );
@@ -154,7 +156,10 @@ class ClasesController extends Controller
                             .', en '.$clase->ubicacion.' para '.$clase->personas.' estudiantes con una duración de '
                             .$clase->duracion.' horas, por '.$user->name;
                     $notificacion['estado'] = 'NO';
-                    $notificacion['color'] = "profesor";
+                    if ($ultimoProfesor)
+                        $notificacion['color'] = "ultimo";
+                    else
+                        $notificacion['color'] = "profesor";
                     $pushClass = new NotificacionesPushFcm();
                     foreach($profesores as $solicitar)
                         $pushClass->enviarNotificacion($notificacion, $solicitar);
