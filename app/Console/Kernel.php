@@ -47,7 +47,7 @@ class Kernel extends ConsoleKernel
                 return $tareas->count() > 0;
             })
             ->sendOutputTo('/var/www/etg/bemte-backend/cron.txt');
-        
+            
         $schedule->command('terminar:tarea:clase')->everyMinute()
             ->when(function () 
             {
@@ -72,7 +72,8 @@ class Kernel extends ConsoleKernel
                     $tareas = [];
                     foreach($listado as $item)
                     {
-                        if (($item->fecha_entrega != $newDate) || (($item->fecha_entrega == $newDate)
+                        if (($item->fecha_entrega != $timestamp->toDateString()) || 
+                            (($item->fecha_entrega == $timestamp->toDateString())
                                 && ($item->hora_fin <= $newTime)))
                         {
                             $tareas[] = $item;
