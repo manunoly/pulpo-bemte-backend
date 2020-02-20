@@ -77,12 +77,20 @@ class Algoritmo
         }
         foreach($datosProfesores as $tareaPro)
         {
+            $division1 = 0;
+            if ($maxExp != 0)
+                $division1 = (1 - $tareaPro["novato"]) * $tareaPro["experiencia"] / $maxExp;
+            $division2 = 0;
+            if ($maxAct != 0)
+                $division2 = ($maxAct - $tareaPro["tiempo"]) / $maxAct;
+            $division3 = 0;
+            if ($maxMul + 1 != 0)
+                $division3 = ($maxMul + 1 - $tareaPro["multas"]) / ($maxMul + 1);
             $tareaPro["formula"] = 
-                ($pesoExp * 
-                    (((1 - $tareaPro["novato"]) * $tareaPro["experiencia"] / $maxExp) + $tareaPro["novato"]))
-                + ($pesoAct * (($maxAct - $tareaPro["tiempo"]) / $maxAct))
+                ($pesoExp * ($division1 + $tareaPro["novato"]))
+                + ($pesoAct * $division2)
                 + ($pesoCal * $tareaPro["calificacion"] / 5)
-                + ($pesoMul * (($maxMul + 1 - $tareaPro["multas"]) / ($maxMul + 1)));
+                + ($pesoMul * $division3);
             if ($propuestaSeleccionada == null || 
                 ($propuestaSeleccionada != null && $propuestaSeleccionada["formula"] < $tareaPro["formula"]))
                 {
