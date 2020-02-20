@@ -29,6 +29,16 @@
                             method="GET" enctype="multipart/form-data">
                 <div class="panel panel-bordered">
                         <div class="panel-body">
+                            <div class="form-group col-md-3">
+                                <label class="control-label" for="name">Profesores</label>
+                                <input type="checkbox" name="profesor">
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label class="control-label" for="name">Alumnos</label>
+                                <input type="checkbox" name="alumno">
+                            </div>
+                            <div class="form-group col-md-8">
+                            </div>
                             <div class="form-group col-md-6">
                                 <label class="control-label" for="name">Ciudad</label>
                                 <select class="form-control select2" name="ciudad">
