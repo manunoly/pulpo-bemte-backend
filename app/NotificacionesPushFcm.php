@@ -72,7 +72,9 @@ class NotificacionesPushFcm
                     case "profesor": $color = "fondoAzul"; break;
                     case "ultimo": $color = "fondoAmarillo"; break;
                 }
-                $item = array("color" => $color, "chat" => $notificacion['chat_id'] > 0);
+                $item = array("color" => $color, "chat" => $notificacion['chat_id'] > 0,
+                                "clase_id" => $notificacion['clase_id'],
+                                "tarea_id" => $notificacion['tarea_id']);
                 $notificacionEnviar['body'] = $notificacion['texto'];
                 $notificacionEnviar['data'] = $item;
                 $notificacionEnviar['priority'] = 'normal';

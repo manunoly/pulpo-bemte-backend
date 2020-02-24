@@ -134,8 +134,8 @@ class ChatController extends Controller
         $notificacion['titulo'] = 'Nuevo Chat';
         $notificacion['texto'] = $texto;
         $notificacion['estado'] = 'NO';
-        $notificacion['clase_id'] = 0;
-        $notificacion['tarea_id'] = 0;
+        $notificacion['clase_id'] = $chat->clase_id;
+        $notificacion['tarea_id'] = $chat->tarea_id;
         $notificacion['chat_id'] = $chat->id;
         $notificacion['compra_id'] = 0;
         if ($request['user_id'] != $alumno)
