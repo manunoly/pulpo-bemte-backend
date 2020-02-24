@@ -170,6 +170,12 @@ class TareasController extends Controller
                         ->join('alumnos', 'alumnos.user_id', '=', 'tareas.user_id')
                         ->join('users', 'users.id', '=', 'tareas.user_id')
                         ->join('materias', 'tareas.materia', '=', 'materias.nombre')
+                        ->leftjoin('tarea_profesor', function($join)
+                        {
+                          $join->on('tareas.id', '=', 'tarea_profesor.tarea_id');
+                          $join->on('tarea_profesor.user_id', '=', 'profesores.user_id')
+                          ->where('tarea_profesor.estado', '=', 'Solicitado');
+                        })
                         ->where('tareas.estado', 'Solicitado')
                         ->where('profesores.user_id', $search)
                         ->where('profesores.activo', true)
@@ -179,7 +185,9 @@ class TareasController extends Controller
                         'tareas.fecha_entrega', 'tareas.hora_inicio', 'tareas.hora_fin', 
                         'tareas.descripcion', 'tareas.formato_entrega', 'tareas.archivo',
                         'profesores.valor_tarea',
-                        'users.name', 'alumnos.calificacion', 'users.avatar', 'icono')
+                        'users.name', 'alumnos.calificacion', 'users.avatar', 'icono',
+                        DB::raw('(CASE WHEN tarea_profesor.id is null THEN 0 ELSE 1 END) AS aplico')
+                        )
                         ->orderBy('tareas.id', 'desc')->take(100)->get();
             return response()->json($tarea, 200);
         }
