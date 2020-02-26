@@ -112,7 +112,7 @@ class Algoritmo
                     try
                     {
                         //notificacion de rechazado
-                        $userProfesor = User::where('id', $aplica->id)->first();
+                        $userProfesor = User::where('id', $aplica->user_id)->first();
                         $texto = 'Lo sentimos, no ha sido confirmada la Tarea de '.$tarea->materia.', '.$tarea->tema;
                         $notificacion['titulo'] = 'Tarea No Confirmada';
                         $notificacion['tarea_id'] = $tarea->id;
@@ -148,6 +148,8 @@ class Algoritmo
             $notificacion['estado'] = "";
             $notificacion['texto'] = $texto;
             $pushClass->enviarNotificacion($notificacion, $userAlumno);
+            $notificacion['color'] = "profesor";
+            $pushClass->enviarNotificacion($notificacion, $userProfesor);
         }
         else
         {
