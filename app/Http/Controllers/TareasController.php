@@ -108,12 +108,11 @@ class TareasController extends Controller
                                     ->where('profesor_materia.materia', $tarea->materia)
                                     ->select('users.email', 'users.token', 'users.sistema', 'users.id', 'users.name')
                                     ->get();
-                
                 $notificacion['titulo'] = 'Solicitud de Tarea';
                 $notificacion['texto'] = 'Ha sido solicitada una Tarea de '.$tarea->materia.', '.$tarea->tema
-                                        .', para el '.$tarea->fecha_entrega.' de '
+                                        .', para el '.date('m-d-Y', strtotime($tarea->fecha_entrega)).' de '
                                         .$tarea->hora_inicio.' a '.$tarea->hora_fin
-                                        .', en '.$tarea->formato_entrega.', por '.$user->name;
+                                        .', en '.$tarea->formato_entrega.', por '.$alumno->apodo;
                 $notificacion['estado'] = 'NO';
                 $notificacion['tarea_id'] = $tarea->id;
                 $notificacion['clase_id'] = 0;
@@ -289,7 +288,7 @@ class TareasController extends Controller
                     if ($tarea->user_id_pro != null && $tarea->user_id != null)
                     {
                         //enviar notificacion al profesor o alumno
-                        $dateTime = date("Y-m-d H:i:s");
+                        $dateTime = date("m-d-Y H:i:s");
                         $notificacion['titulo'] = 'Tarea Cancelada';
                         $notificacion['texto'] = 'Lamentamos informarte que el Alumno ha cancelado la Tarea de '.$tarea->materia.', '.$tarea->tema.', mantente pendiente a más solicitudes.';
                         $notificacion['estado'] = 'NO';
@@ -340,7 +339,30 @@ class TareasController extends Controller
                 if(!$actualizado )
                     return response()->json(['error' => 'Error al Finalizar la Tarea'], 401);
                 else
+                {
+                    //enviar notificacion al profesor o alumno
+                    $notificacion['titulo'] = 'Tarea Terminada';
+                    $notificacion['texto'] = 'La Tarea de '.$item->materia.', '.$item->tema.', ha sido Terminada.';
+                    $notificacion['estado'] = 'NO';
+                    $notificacion['tarea_id'] = $tarea->id;
+                    $notificacion['clase_id'] = 0;
+                    $notificacion['chat_id'] = 0;
+                    $notificacion['compra_id'] = 0;
+                    if ($request['user_id'] == $tarea->user_id_pro)
+                    {
+                        $notificacion['color'] = "alumno";
+                        $userNotif = User::where('id', $tarea->user_id)->first();
+                    }
+                    else
+                    {
+                        $notificacion['color'] = "profesor";
+                        $userNotif = User::where('id', $tarea->user_id_pro)->first();
+                    }
+                    $pushClass = new NotificacionesPushFcm();
+                    $pushClass->enviarNotificacion($notificacion, $userNotif);
+
                     return response()->json(['success' => 'Tarea Finalizada'], 200);
+                }
             }  
         }
         else
