@@ -134,9 +134,10 @@ class Algoritmo
             $dataTarea['user_id_pro'] = $propuestaSeleccionada["user_id"];
             Tarea::where('id', $tarea->id )->update( $dataTarea );
 
+            $profe = Profesore::where('user_id', $propuestaSeleccionada["user_id"])->first();
             $userProfesor = User::where('id', $propuestaSeleccionada["user_id"])->first();
             $texto = 'La Tarea de '.$tarea->materia.', '.$tarea->tema.', ha sido confirmada por el profesor '
-                        .$userProfesor->name.'. Por favor, realizar el pago.';
+                        .$profe->apodo.'. Por favor, realizar el pago.';
 
             //enviar notificacion al profesor y al alumno
             $notificacion['titulo'] = 'Tarea Confirmada';
