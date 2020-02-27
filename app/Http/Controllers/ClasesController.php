@@ -152,7 +152,7 @@ class ClasesController extends Controller
                     $notificacion['chat_id'] = 0;
                     $notificacion['compra_id'] = 0;
                     $notificacion['texto'] = 'Ha sido solicitada una Clase de '.$clase->materia.', '.$clase->tema
-                            .', para el '.date('m-d-Y', strtotime($clase->fecha)).' a las '.$clase->hora1
+                            .', para el '.date('d-m-Y', strtotime($clase->fecha)).' a las '.$clase->hora1
                             .', en '.$clase->ubicacion.' para '.$clase->personas.' estudiantes con una duración de '
                             .$clase->duracion.' horas, por '.$user->name;
                     $notificacion['estado'] = 'NO';

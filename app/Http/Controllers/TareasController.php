@@ -110,7 +110,7 @@ class TareasController extends Controller
                                     ->get();
                 $notificacion['titulo'] = 'Solicitud de Tarea';
                 $notificacion['texto'] = 'Ha sido solicitada una Tarea de '.$tarea->materia.', '.$tarea->tema
-                                        .', para el '.date('m-d-Y', strtotime($tarea->fecha_entrega)).' de '
+                                        .', para el '.date('d-m-Y', strtotime($tarea->fecha_entrega)).' de '
                                         .$tarea->hora_inicio.' a '.$tarea->hora_fin
                                         .', en '.$tarea->formato_entrega.', por '.$alumno->apodo;
                 $notificacion['estado'] = 'NO';
