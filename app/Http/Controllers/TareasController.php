@@ -342,7 +342,7 @@ class TareasController extends Controller
                 {
                     //enviar notificacion al profesor o alumno
                     $notificacion['titulo'] = 'Tarea Terminada';
-                    $notificacion['texto'] = 'La Tarea de '.$item->materia.', '.$item->tema.', ha sido Terminada.';
+                    $notificacion['texto'] = 'La Tarea de '.$tarea->materia.', '.$tarea->tema.', ha sido Terminada.';
                     $notificacion['estado'] = 'NO';
                     $notificacion['tarea_id'] = $tarea->id;
                     $notificacion['clase_id'] = 0;
