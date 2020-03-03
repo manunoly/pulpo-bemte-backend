@@ -132,7 +132,7 @@ class ChatController extends Controller
         }
         //enviar notificacion de chat
         $notificacion['titulo'] = 'Nuevo Chat';
-        $notificacion['texto'] = $texto;
+        $notificacion['texto'] = trim($texto) == '' ? 'Adjunto enviado' : $texto;
         $notificacion['estado'] = 'NO';
         $notificacion['clase_id'] = $chat->clase_id;
         $notificacion['tarea_id'] = $chat->tarea_id;
