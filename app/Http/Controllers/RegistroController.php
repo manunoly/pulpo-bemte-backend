@@ -630,7 +630,7 @@ class RegistroController extends Controller
         try 
         {
             Mail::to($user->email)->send(new Bienvenida($user->name, 
-                                'https://www.youtube.com/', env('EMPRESA')));
+                                'https://www.bemte.ec/', env('EMPRESA')));
         }
         catch (Exception $e) 
         { 
@@ -645,7 +645,7 @@ class RegistroController extends Controller
             $notificacion['compra_id'] = 0;
             $notificacion['color'] = ($request['tipo'] == 'Alumno') ? "alumno" : "profesor";
             $notificacion['estado'] = "NO";
-            $notificacion['texto'] = 'Bienvenid@ '.$user->name.', te has registrado con éxito. Queremos contarte un poco más sobre Bemte, la mejor plataforma virtual de ayuda en tareas y clases. https://www.youtube.com/';
+            $notificacion['texto'] = 'Bienvenid@ '.$user->name.', te has registrado con éxito. Queremos contarte un poco más sobre Bemte, la mejor plataforma virtual de ayuda en tareas y clases. https://youtu.be/0jFTPtzi488';
             $pushClass = new NotificacionesPushFcm();
             $pushClass->enviarNotificacion($notificacion, $user);
         }
