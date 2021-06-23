@@ -28,13 +28,18 @@
             <span class="glyphicon glyphicon-list"></span>&nbsp;
             {{ __('voyager::generic.return_to_list') }}
         </a>
+        
         @if (Auth::user()->tipo == 'Administrador')
-        <a href="{{ route('profesor.pagar', 'user_id='.$dataTypeContent->getKey()) }}" class="btn btn-default">
-        <i class="voyager-dollar pull-left"></i><span>  Pagar  </span>
-        </a>
-        <a href="{{ route('profesor.multar', 'user_id='.$dataTypeContent->getKey()) }}" class="btn btn-dark">
-        <i class="voyager-camera pull-left"></i><span>  Multar  </span>
-        </a>
+            <!-- <a href="javascript:;"  class="btn btn-default" data-id="{{ 'user_id='.$dataTypeContent->getKey() }}" id="pagar-{{ 'user_id='.$dataTypeContent->getKey() }}">
+            <i class="voyager-dollar pull-left"></i><span>  Pagar  </span>
+            </a> -->
+            <a href="javascript:;" class="btn btn-default" data-toggle="modal" id="pagarButton" data-target="#pagar_modal"> <i class="fas fa-plus-circle"></i>
+            <i class="voyager-dollar pull-left"></i><span>  Pagar  </span>
+            </a>
+    
+            <a href="{{ route('profesor.multar', 'user_id='.$dataTypeContent->getKey()) }}" class="btn btn-dark">
+            <i class="voyager-camera pull-left"></i><span>  Multar  </span>
+            </a>
         @endif
     </h1>
     @include('voyager::multilingual.language-selector')
@@ -172,6 +177,28 @@
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
     </div><!-- /.modal -->
+
+    {{-- Single pagar modal --}}
+    <div class="modal modal-success fade" id="pagar_modal" tabindex="-1" role="dialog" aria-labelledby="mediumModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title"><i class="voyager-dollar"></i> Estás seguro de realizar el pago?</h4>
+                </div>
+                <div class="modal-footer">
+                    <a href="{{ route('profesor.pagar', 'user_id='.$dataTypeContent->getKey()) }}"  class="btn btn-warning pull-right">
+                        <span>  Pagar  </span>
+                    </a>
+                                
+                    <button type="button" class="btn btn-default pull-right" data-dismiss="modal">{{ __('voyager::generic.cancel') }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @stop
 
 @section('javascript')
@@ -186,6 +213,7 @@
     <script>
         var deleteFormAction;
         $('.delete').on('click', function (e) {
+            console.log('BORRAR')
             var form = $('#delete_form')[0];
 
             if (!deleteFormAction) {
@@ -198,6 +226,26 @@
                 : deleteFormAction + '/' + $(this).data('id');
 
             $('#delete_modal').modal('show');
+        });
+
+    </script>
+
+    <script>
+        var pagarFormAction;
+        $('.pagar').on('click','pagar', function (e) {
+            console.log('PAGAR')
+            var form = $('#pagar_form')[0];
+
+            if (!pagarFormAction) {
+                // Save form action initial value
+                pagarFormAction = form.action;
+            }
+
+            form.action = pagarFormAction.match(/\/[0-9]+$/)
+                ? pagarFormAction.replace(/([0-9]+$)/, $(this).data('id'))
+                : pagarFormAction + '/' + $(this).data('id');
+
+            $('#pagar_modal').modal('show');
         });
 
     </script>
