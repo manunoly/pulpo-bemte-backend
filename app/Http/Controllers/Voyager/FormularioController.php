@@ -332,6 +332,21 @@ class FormularioController extends Controller
                         $messages["error"] = 'No se pudo crear como Profesor';
                         return redirect()->back()->withErrors($messages)->withInput();
                     }
+
+                    Formulario::where('id', $solicitud->id )->delete();
+
+                    try 
+                    {
+                        $texto = $request['estado'] == 'Aprobada' ? 'Bienvenido!' : 'Por favor, comunicarse con el Administrador para más información';
+                        Mail::to($profesor->correo)->send(new Notificacion($profesor->nombres, 
+                                'Su solicitud para ser Profesor ha sido ',
+                                $request['estado'], $texto, env('EMPRESA')));
+                    }
+                    catch (Exception $e) 
+                    {
+                        $messages["error"] = 'Actualización realizada pero No se ha podido enviar el correo';
+                        return redirect()->back()->withErrors($messages)->withInput();
+                    }
                 }
                 else
                 {
@@ -357,6 +372,20 @@ class FormularioController extends Controller
                         $messages["error"] = 'No se pudo crear como Profesor';
                         return redirect()->back()->withErrors($messages)->withInput();
                     }
+
+                    Alumno::where('user_id', $solicitud->user_id)->update($dataAlumno);
+                    try 
+                    {
+                        $texto = $request['estado'] == 'Aprobada' ? 'Bienvenido!' : 'Por favor, comunicarse con el Administrador para más información';
+                        Mail::to($alumno->correo)->send(new Notificacion($alumno->nombres, 
+                                'Su solicitud para ser Profesor ha sido ',
+                                $request['estado'], $texto, env('EMPRESA')));
+                    }
+                    catch (Exception $e) 
+                    {
+                        $messages["error"] = 'Actualización realizada pero No se ha podido enviar el correo';
+                        return redirect()->back()->withErrors($messages)->withInput();
+                    } 
                 }
                 $dataAlumno['activo'] = false;
             }
@@ -364,19 +393,7 @@ class FormularioController extends Controller
             {
                 $dataAlumno['ser_profesor'] = false;
             }
-            Alumno::where('user_id', $solicitud->user_id)->update($dataAlumno);
-            try 
-            {
-                $texto = $request['estado'] == 'Aprobada' ? 'Bienvenido!' : 'Por favor, comunicarse con el Administrador para más información';
-                Mail::to($alumno->correo)->send(new Notificacion($alumno->nombres, 
-                        'Su solicitud para ser Profesor ha sido ',
-                        $request['estado'], $texto, env('EMPRESA')));
-            }
-            catch (Exception $e) 
-            {
-                $messages["error"] = 'Actualización realizada pero No se ha podido enviar el correo';
-                return redirect()->back()->withErrors($messages)->withInput();
-            } 
+            
         }
         
         $this->insertUpdateData($request, $slug, $dataType->editRows, $data);

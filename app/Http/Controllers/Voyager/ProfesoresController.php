@@ -21,6 +21,7 @@ use App\Ciudad;
 use App\Profesore;
 use App\Pago;
 use App\Multa;
+use App\Calendar;
 use Validator;
 use App\Mail\Notificacion;
 
@@ -213,7 +214,15 @@ class ProfesoresController extends Controller
             $view = "voyager::$slug.read";
         }
 
-        return Voyager::view($view, compact('dataType', 'dataTypeContent', 'isModelTranslatable', 'isSoftDeleted'));
+        $userID = $id;
+        $pagos = Calendar::where('user_id', $userID)->get();
+        if ($pagos == null) {
+            $pagos = Pago::where('user_id', $userID)->where('estado', 'Solicitado')->get();
+        }  
+
+        $valorTotal = $pagos->sum('valor');
+
+        return Voyager::view($view, compact('dataType', 'dataTypeContent', 'isModelTranslatable', 'isSoftDeleted', 'valorTotal'));
     }
 
     //***************************************
@@ -890,16 +899,32 @@ class ProfesoresController extends Controller
         try
         {
             $userID = \Request::get('user_id');
-            $pagos = Pago::where('user_id', $userID)->where('estado', 'Solicitado')->get(); 
-            foreach ($pagos as $item)
-            {
-                Pago::where('id', $item->id)->update(['estado' => 'Aprobado']);
+            $pagos = Calendar::where('user_id', $userID)->get(); 
+            if ($pagos == null) {
+                $pagos = Pago::where('user_id', $userID)->where('estado', 'Solicitado')->get();
+                foreach ($pagos as $item)
+                {
+                    Pago::where('id', $item->id)->update(['estado' => 'Aprobado']);
+                }
             }
-            \Request::session()->flash('success', 'Pagos realizados por un valor de $ '.$pagos->sum('valor'));
+            // $pagos = Pago::where('user_id', $userID)->where('estado', 'Solicitado')->get(); 
+            // foreach ($pagos as $item)
+            // {
+            //     Pago::where('id', $item->id)->update(['estado' => 'Aprobado']);
+            // }
+            // \Request::session()->flash('success', 'Pagos realizados por un valor de $ '.$pagos->sum('valor'));
+            return redirect()->back()->with([
+                'message'    => 'Pagos realizados por un valor de $ '.$pagos->sum('valor'),
+                'alert-type' => 'success',
+            ]);
         }
         catch (Exception $e) 
         {
-            \Request::session()->flash('error', 'No se pudieron realizar los Pagos.');
+            // \Request::session()->flash('error', 'No se pudieron realizar los Pagos.');
+            return redirect()->back()->with([
+                'message'    => 'No se pudieron realizar los Pagos.',
+                'alert-type' => 'error',
+            ]);
         }
         return redirect()->back();
     }
@@ -914,12 +939,60 @@ class ProfesoresController extends Controller
             {
                 Multa::where('id', $item->id)->update(['estado' => 'Aprobado']);
             }
-            \Request::session()->flash('success', 'Multas realizados por un valor de $ '.$multas->sum('valor'));
+            // \Request::session()->flash('success', 'Multas realizados por un valor de $ '.$multas->sum('valor'));
+            return redirect()->back()->with([
+                'message'    => 'Multas realizados por un valor de $ '.$multas->sum('valor'),
+                'alert-type' => 'success',
+            ]);
         }
         catch (Exception $e) 
         {
-            \Request::session()->flash('error', 'No se pudieron realizar las Multas.');
+            // \Request::session()->flash('error', 'No se pudieron realizar las Multas.');
+            return redirect()->back()->with([
+                'message'    => 'No se pudieron realizar las Multas.',
+                'alert-type' => 'error',
+            ]);
         }
+        // return redirect()->back();
+    }
+
+    public function updateOrCreate(Request $request)
+    {
+        $userID = $request['user_id'];
+        $startDate = $request['startDate'];
+        $endDate = $request['endDate'];
+        // Calendar::where('user_id', $userID)->delete();
+        Calendar::truncate();
+        if ($startDate != '' &&  $endDate != '') {
+            $startDate = date_format(date_create($startDate), "Y-m-d H:i:s");
+            $endDate = date_format(date_create($endDate), "Y-m-d H:i:s");
+            $pagos = Pago::where('user_id', $userID)->where('estado', 'Solicitado')
+            ->where('created_at', '>=', $startDate)
+            ->where('created_at', '<=', $endDate)->get();         
+
+            $valorTotal = $pagos->sum('valor');
+
+                Calendar::create([
+                    'user_id' => $userID,
+                    'start_date' => isset($startDate) ? $startDate : null,
+                    'end_date' => isset($endDate) ? $endDate : null,
+                    'valor' => $valorTotal,
+                ]);
+            
+            
+        } else {
+            $pagos = Pago::where('user_id', $userID)->where('estado', 'Solicitado')->get();         
+            $valorTotal = $pagos->sum('valor');
+
+            Calendar::create([
+                'user_id' => $userID,
+                'start_date' => null,
+                'end_date' => null,
+                'valor' => $valorTotal,
+            ]);
+        }
+
         return redirect()->back();
     }
+
 }

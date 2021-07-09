@@ -3,6 +3,7 @@
 @section('page_title', __('voyager::generic.view').' '.$dataType->display_name_singular)
 
 @section('page_header')
+
     <h1 class="page-title">
         <i class="{{ $dataType->icon }}"></i> {{ __('voyager::generic.viewing') }} {{ ucfirst($dataType->display_name_singular) }} &nbsp;
 
@@ -30,14 +31,11 @@
         </a>
         
         @if (Auth::user()->tipo == 'Administrador')
-            <!-- <a href="javascript:;"  class="btn btn-default" data-id="{{ 'user_id='.$dataTypeContent->getKey() }}" id="pagar-{{ 'user_id='.$dataTypeContent->getKey() }}">
-            <i class="voyager-dollar pull-left"></i><span>  Pagar  </span>
-            </a> -->
             <a href="javascript:;" class="btn btn-default" data-toggle="modal" id="pagarButton" data-target="#pagar_modal"> <i class="fas fa-plus-circle"></i>
             <i class="voyager-dollar pull-left"></i><span>  Pagar  </span>
             </a>
     
-            <a href="{{ route('profesor.multar', 'user_id='.$dataTypeContent->getKey()) }}" class="btn btn-dark">
+            <a href="javascript:;" data-toggle="modal" id="multarButton" data-target="#multar_modal" class="btn btn-dark">
             <i class="voyager-camera pull-left"></i><span>  Multar  </span>
             </a>
         @endif
@@ -151,7 +149,38 @@
                             <hr style="margin:0;">
                         @endif
                     @endforeach
+                    <form role="form"
+                            class="form-edit-add"
+                            action="{{ route('profesor.updateOrCreate', 'user_id='.$dataTypeContent->getKey()) }}"
+                            method="POST" enctype="multipart/form-data">
+                        {{ method_field('PUT') }}
+                        {{ csrf_field() }}
+                        <h3 class="panel-title">Desde: </h3> 
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class='col-sm-6'>
+                                    <input id="startDate" class="date form-control"type="text" name="input" placeholder="mm-dd-yyyy" onchange="myFunction();">
 
+                                </div>
+                            </div>
+                            <h3 class="panel-title">Hasta: </h3>
+                            <div class="row">
+                                <div class='col-sm-6'>
+                                    <input id="endDate" class="date form-control"type="text" name="input" placeholder="mm-dd-yyyy" onchange="mainInfo(this.value);">
+                                </div>
+                            </div>
+                            <a href="javascript:;" class="btn btn-default" id="valorTotalButton" data-target="#valorTotal_modal" >
+                                <i class="voyager-dollar pull-left"></i><span>  Calcular  </span>
+                            </a>
+                        </div>
+                    </form>
+                    <h3 class="panel-title">Valor total pagos: </h3> 
+                    <div class="panel-body" style="padding-top:0;">
+                        <p>${{ $valorTotal }}</p>
+                        <!-- @if(session('valorTotal'))
+                        <input type="number" name="valorTotal" value="{{session('valorTotal')}}" class="form-control">
+                        @endif -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -179,7 +208,7 @@
     </div><!-- /.modal -->
 
     {{-- Single pagar modal --}}
-    <div class="modal modal-success fade" id="pagar_modal" tabindex="-1" role="dialog" aria-labelledby="mediumModalLabel"
+    <div class="modal modal-success fade" id="pagar_modal" tabindex="1" role="dialog" aria-labelledby="mediumModalLabel"
         aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -187,14 +216,90 @@
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
-                    <h4 class="modal-title"><i class="voyager-dollar"></i> Estás seguro de realizar el pago?</h4>
+                    <h4 class="modal-title"><i class="voyager-dollar"></i> ¿Estás seguro que deseas realizarlo?</h4>
                 </div>
                 <div class="modal-footer">
                     <a href="{{ route('profesor.pagar', 'user_id='.$dataTypeContent->getKey()) }}"  class="btn btn-warning pull-right">
-                        <span>  Pagar  </span>
+                        <span> Si </span>
                     </a>
                                 
-                    <button type="button" class="btn btn-default pull-right" data-dismiss="modal">{{ __('voyager::generic.cancel') }}</button>
+                    <button type="button" class="btn btn-default pull-right" data-dismiss="modal"> No </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="valorTotal_modal" tabindex="-1" role="dialog" aria-labelledby="mediumModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form role="form"
+                            class="form-edit-add"
+                            action="{{ route('profesor.updateOrCreate', 'user_id='.$dataTypeContent->getKey()) }}"
+                            method="POST" enctype="multipart/form-data">
+                        {{ method_field('PUT') }}
+                        {{ csrf_field() }}
+                        <h3 class="panel-title">Desde: </h3> 
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class='col-sm-6'>
+                                    <input id="startDate" class="date form-control"type="text" name="input" placeholder="mm-dd-yyyy" onchange="myFunction();">
+
+                                </div>
+                            </div>
+                        </div>
+                        <h3 class="panel-title">Hasta: </h3>
+                        <div class="panel-body"> 
+                            <div class="row">
+                                <div class='col-sm-6'>
+                                    <input id="endDate" class="date form-control"type="text" name="input" placeholder="mm-dd-yyyy" onchange="mainInfo(this.value);">
+                                </div>
+                            </div>
+                            <!-- <input id="endtdate" class="date form-control"type="text" name="input" placeholder="dd-mm-yyyy" required pattern="(?:30))|(?:(?:0[13578]|1[02])-31))/(?:0[1-9]|1[0-9]|2[0-9])|(?:(?!02)(?:0[1-9]|1[0-2])/(?:19|20)[0-9]{2}-(?:(?:0[1-9]|1[0-2])"> -->
+                            <!-- <input class="date form-control"  type="text" id="enddate" name="enddate">  -->
+                        </div>
+                        <!-- <div class="panel-body" style="padding-top:0;">
+                            <a href="{{ route('profesor.updateOrCreate') }}" class="btn btn-default" id="valorTotalButton" data-target="#valorTotal_modal" >
+                                <i class="voyager-dollar pull-left"></i><span>  Calcular  </span>
+                            </a>
+                        </div> -->
+                    
+                <div class="modal-footer">
+                    <a href="{{ route('profesor.pagar', 'user_id='.$dataTypeContent->getKey()) }}"  class="btn btn-warning pull-right">
+                    <!-- <a href="{{ route('profesor.updateOrCreate', 'user_id='.$dataTypeContent->getKey() ) }}" class="btn btn-warning pull-right" data-toggle="modal" id="pagarButton" data-target="#pagar_modal" data-dismiss="modal"> <i class="fas fa-plus-circle"></i> -->
+                    <!-- <a href="{{ route('profesor.pagar', 'user_id='.$dataTypeContent->getKey()) }}"  class="btn btn-warning pull-right"> -->
+                        <span> Pagar </span>
+                    </a>
+                                
+                    <button type="button" class="btn btn-default pull-right" data-dismiss="modal"> Salir </button>
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {{-- Single multar modal --}}
+    <div class="modal modal-success fade" id="multar_modal" tabindex="-1" role="dialog" aria-labelledby="mediumModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title"><i class="voyager-dollar"></i> ¿Estás seguro que deseas realizarlo?</h4>
+                </div>
+                <div class="modal-footer">
+                    <a href="{{ route('profesor.multar', 'user_id='.$dataTypeContent->getKey()) }}"  class="btn btn-warning pull-right">
+                        <span> Si </span>
+                    </a>
+                                
+                    <button type="button" class="btn btn-default pull-right" data-dismiss="modal"> No </button>
                 </div>
             </div>
         </div>
@@ -213,7 +318,6 @@
     <script>
         var deleteFormAction;
         $('.delete').on('click', function (e) {
-            console.log('BORRAR')
             var form = $('#delete_form')[0];
 
             if (!deleteFormAction) {
@@ -233,7 +337,6 @@
     <script>
         var pagarFormAction;
         $('.pagar').on('click','pagar', function (e) {
-            console.log('PAGAR')
             var form = $('#pagar_form')[0];
 
             if (!pagarFormAction) {
@@ -249,4 +352,111 @@
         });
 
     </script>
+
+<script>
+        var pagarFormAction;
+        $('.valorTotal').on('click','pagar', function (e) {
+            var form = $('#pagar_form')[0];
+
+            if (!pagarFormAction) {
+                // Save form action initial value
+                pagarFormAction = form.action;
+            }
+
+            form.action = pagarFormAction.match(/\/[0-9]+$/)
+                ? pagarFormAction.replace(/([0-9]+$)/, $(this).data('id'))
+                : pagarFormAction + '/' + $(this).data('id');
+
+            $('#valorTotal_modal').modal('show');
+        });
+
+    </script>
+
+    <script>
+        var multarFormAction;
+        $('.multar').on('click','multar', function (e) {
+            var form = $('#multar_form')[0];
+
+            if (!multarFormAction) {
+                // Save form action initial value
+                multarFormAction = form.action;
+            }
+
+            // form.action = pagarFormAction.match(/\/[0-9]+$/)
+            //     ? pagarFormAction.replace(/([0-9]+$)/, $(this).data('id'))
+            //     : pagarFormAction + '/' + $(this).data('id');
+
+            $('#multar_modal').modal('show');
+        });
+
+    </script>
+
+    <script>
+        function myFunction() {
+        var x = document.getElementById("startDate").value;
+        console.log('x', x);
+        document.getElementById("demo").innerHTML = "You selected: " + x;
+        }
+    </script>
+
+    <script type="text/javascript">
+        $(function () {
+            $('#startDate').each(function (idx, elt) {
+                console.log('elt', elt.type);
+                console.log('elt', elt.value);
+                if (elt.type != 'date' || elt.hasAttribute('data-datepicker')) {
+                    elt.type = 'text';
+                    $(elt).datetimepicker($(elt).data('datepicker'));
+                    $startDate = $(elt).data('datepicker');
+                }
+
+                function mainInfo(date) {
+                // $.ajax({
+                //     method: 'GET',
+                //     data: "mainid =" + date,
+                //     success: function(result) {
+                //         $("#somewhere").html(result);
+                //     }
+                // });
+                $startDate = date;
+                };
+            });
+            $('#endDate').each(function (idx, elt) {
+                if (elt.type != 'date' || elt.hasAttribute('data-datepicker')) {
+                    elt.type = 'text';
+                    $(elt).datetimepicker($(elt).data('datepicker'));
+                    $endDate = $(elt).data('datepicker');
+                }
+                function mainInfo(date) {
+                $endDate = date;
+                    
+                };
+                
+            });
+
+            $('#valorTotalButton').on('click', function (e) {
+                $.ajax({
+                        url: "{{ route('profesor.updateOrCreate') }}",
+                        method: 'POST',
+                        data: {
+                            'user_id' : '{{ $dataTypeContent->getKey() }}',
+                            'startDate': document.getElementById("startDate").value,
+                            'endDate': document.getElementById("endDate").value,
+                        },
+                        success: function (data) {
+                            console.log('success');
+                            console.log('startDate', startDate);
+                            console.log('endDate', endDate);
+                            // console.log('data', data);
+                            // var href = window.location.href;
+                            // console.log(window.location.href)
+                            // console.log(href.split('#').length)
+                            // top.location.href = '/bopriceApi/public/admin/internetfijo/274/edit#extrasTab';
+                            location.reload();
+                        }
+                    });
+                });           
+        }); 
+    </script>
+    
 @stop

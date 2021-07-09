@@ -17,6 +17,7 @@ use TCG\Voyager\Http\Controllers\Traits\BreadRelationshipParser;
 use Auth;
 use App\Tarea;
 use App\Clase;
+use App\Multa;
 
 class MultasController extends Controller
 {
@@ -87,7 +88,6 @@ class MultasController extends Controller
                     $query = $query->withTrashed();
                 }
             }
-
             // If a column has a relationship associated with it, we do not want to show that field
             $this->removeRelationshipField($dataType, 'browse');
 
@@ -129,11 +129,25 @@ class MultasController extends Controller
         $defaultSearchKey = $dataType->default_search_key ?? null;
 
         $view = 'voyager::bread.browse';
-
+        // return $dataTypeContent;
         if (view()->exists("voyager::$slug.browse")) {
             $view = "voyager::$slug.browse";
         }
 
+        $userID = $dataTypeContent;
+        foreach ($userID as $item)
+        {
+            $multas = Multa::where('user_id', $item->user_id)->get(); 
+            $valorTotal = $multas->sum('valor');
+            foreach ($multas as $item)
+            {
+                Multa::where('id', $item->id)->update(['valorTotal' => $valorTotal]);
+
+            }
+        }
+        
+
+        // return $dataTypeContent;
         return Voyager::view($view, compact(
             'dataType',
             'dataTypeContent',
@@ -146,7 +160,7 @@ class MultasController extends Controller
             'isServerSide',
             'defaultSearchKey',
             'usesSoftDeletes',
-            'showSoftDeleted'
+            'showSoftDeleted',
         ));
     }
 
@@ -205,7 +219,7 @@ class MultasController extends Controller
 
         if (view()->exists("voyager::$slug.read")) {
             $view = "voyager::$slug.read";
-        }
+        }         
 
         return Voyager::view($view, compact('dataType', 'dataTypeContent', 'isModelTranslatable', 'isSoftDeleted'));
     }

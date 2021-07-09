@@ -56,12 +56,12 @@ class ClasesController extends Controller
                 return response()->json(['error' => $validator->errors()], 406);
             }
             
-            $user = User::where('id', '=', $request['user_id'] )->first();
+            $user = User::where('id', '=', $request['user_id'] )->where('activo', '=', 1 )->first();
             if ($user == null) 
             {
                 return response()->json([ 'error' => 'Usuario no existe!'], 401);
             }
-            $alumno = Alumno::where('user_id', '=', $request['user_id'] )->first();
+            $alumno = Alumno::where('user_id', '=', $request['user_id'] )->where('activo', '=', 1 )->first();
             if (($alumno == null) || ($alumno != null && !$alumno->activo) )
             {
                 return response()->json([ 'error' => 'Usuario no puede solicitar Clase'], 401);

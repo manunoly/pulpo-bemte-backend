@@ -14,6 +14,9 @@ use TCG\Voyager\Events\BreadImagesDeleted;
 use TCG\Voyager\Facades\Voyager;
 use TCG\Voyager\Http\Controllers\Traits\BreadRelationshipParser;
 
+
+use App\Pago;
+
 use Auth;
 
 class PagosController extends Controller
@@ -132,6 +135,16 @@ class PagosController extends Controller
             $view = "voyager::$slug.browse";
         }
 
+        $userID = $dataTypeContent;
+        foreach ($userID as $item)
+        {
+            $pagos = Pago::where('user_id', $item->user_id)->get(); 
+            $valorTotal = $pagos->sum('valor'); 
+            foreach ($pagos as $item)
+            {
+                Pago::where('id', $item->id)->update(['valorTotal' => $valorTotal]);
+            }
+        }
         return Voyager::view($view, compact(
             'dataType',
             'dataTypeContent',
@@ -144,7 +157,7 @@ class PagosController extends Controller
             'isServerSide',
             'defaultSearchKey',
             'usesSoftDeletes',
-            'showSoftDeleted'
+            'showSoftDeleted',
         ));
     }
 

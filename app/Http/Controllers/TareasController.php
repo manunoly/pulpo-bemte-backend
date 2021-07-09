@@ -61,12 +61,12 @@ class TareasController extends Controller
             {
                 return response()->json([ 'error' => 'Tiempo insuficiente para solicitar Tarea'], 401);
             }
-            $user = User::where('id', '=', $request['user_id'] )->first();
+            $user = User::where('id', '=', $request['user_id'] )->where('activo', '=', 1 )->first();
             if ($user == null) 
             {
                 return response()->json([ 'error' => 'Usuario no existe!'], 401);
             }
-            $alumno = Alumno::where('user_id', '=', $request['user_id'] )->first();
+            $alumno = Alumno::where('user_id', '=', $request['user_id'] )->where('activo', '=', 1 )->first();
             if ($alumno == null) 
             {
                 return response()->json([ 'error' => 'Usuario no puede solicitar Tarea'], 401);
