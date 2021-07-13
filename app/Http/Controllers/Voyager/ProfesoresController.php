@@ -216,7 +216,7 @@ class ProfesoresController extends Controller
 
         $userID = $id;
         $pagos = Calendar::where('user_id', $userID)->get();
-        if ($pagos == null) {
+        if (count($pagos) == 0) {
             $pagos = Pago::where('user_id', $userID)->where('estado', 'Solicitado')->get();
         }  
 
@@ -900,7 +900,7 @@ class ProfesoresController extends Controller
         {
             $userID = \Request::get('user_id');
             $pagos = Calendar::where('user_id', $userID)->get(); 
-            if ($pagos == null) {
+            if (count($pagos) == 0) {
                 $pagos = Pago::where('user_id', $userID)->where('estado', 'Solicitado')->get();
                 foreach ($pagos as $item)
                 {
