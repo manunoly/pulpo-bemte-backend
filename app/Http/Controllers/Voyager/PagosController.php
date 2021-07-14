@@ -157,7 +157,7 @@ class PagosController extends Controller
             'isServerSide',
             'defaultSearchKey',
             'usesSoftDeletes',
-            'showSoftDeleted',
+            'showSoftDeleted'
         ));
     }
 
