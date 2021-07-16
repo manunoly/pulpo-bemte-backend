@@ -160,7 +160,7 @@ class MultasController extends Controller
             'isServerSide',
             'defaultSearchKey',
             'usesSoftDeletes',
-            'showSoftDeleted',
+            'showSoftDeleted'
         ));
     }
 
