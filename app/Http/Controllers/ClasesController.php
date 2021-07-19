@@ -319,7 +319,7 @@ class ClasesController extends Controller
                             'valor' => 2 * $profeClase->valor_clase,
                             'comentario' => 'Clase Cancelada',
                             'estado' => 'Solicitado',
-                            'valorTotal' => 0,
+                            'valorTotal' => 0
                             ]);
                         if (!$multaProf->id)
                         {

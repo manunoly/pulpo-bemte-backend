@@ -326,6 +326,7 @@ class FormularioController extends Controller
                     $dataPro['cedula'] = $solicitud->cedula;
                     $dataPro['disponible'] = true;
                     $dataPro['activo'] = true;
+                    $dataPro['valorTotal'] = 0;
                     $profesor = Profesore::where('user_id', $solicitud->user_id )->update( $dataPro );
                     if(!$profesor)
                     {
@@ -365,7 +366,8 @@ class FormularioController extends Controller
                         'disponible' => true,
                         'hoja_vida' => $solicitud->hoja_vida,
                         'titulo' => $solicitud->titulo,
-                        'activo' => true
+                        'activo' => true,
+                        'valorTotal' => 0
                     ]);
                     if(!$profesor)
                     {
