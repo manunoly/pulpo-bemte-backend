@@ -338,6 +338,7 @@ class FormularioController extends Controller
 
                     try 
                     {
+                        $profesor = Profesore::where('user_id', $solicitud->user_id)->first();
                         $texto = $request['estado'] == 'Aprobada' ? 'Bienvenido!' : 'Por favor, comunicarse con el Administrador para más información';
                         Mail::to($profesor->correo)->send(new Notificacion('', 
                                 'Su solicitud para ser Profesor ha sido ',
