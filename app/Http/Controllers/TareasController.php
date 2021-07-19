@@ -270,7 +270,8 @@ class TareasController extends Controller
                                             'tarea_id' => $tarea->id,
                                             'valor' => $pagoTarea->valor,
                                             'comentario' => 'Tarea Cancelada por Profesor con Pago Aprobado',
-                                            'estado' => 'Solicitado'
+                                            'estado' => 'Solicitado',
+                                            'valorTotal' => 0,
                                             ]);
                                 if (!$multaProf->id)
                                     return response()->json(['error' => 'Error al crear Multa al Profesor'], 401);

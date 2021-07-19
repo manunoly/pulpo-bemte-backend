@@ -7,6 +7,7 @@ use App\Ciudad;
 use App\Alumno;
 use App\Profesore;
 use App\Materia;
+use App\Formulario;
 use App\ProfesorMaterium;
 use App\Mail\Notificacion;
 use App\Mail\Bienvenida;
@@ -435,7 +436,7 @@ class RegistroController extends Controller
                 'nombre' => 'required|min:3|max:50',
                 'apellido' => 'required|min:3|max:50',
                 'apodo' => 'required|min:3|max:20',
-                'email' => 'required|email',
+                'email' => 'required',
                 'password' => 'required|min:6|max:20',
                 'ubicacion' => 'required',
                 'ciudad' => 'required',
@@ -550,6 +551,17 @@ class RegistroController extends Controller
                     $descripcion = isset($request['descripcion']) ? $request['descripcion'] : NULL;
                     $fecha_nacimiento = isset($request['fecha_nacimiento']) ? $request['fecha_nacimiento'] : NULL;
                     $genero = isset($request['genero']) ? $request['genero'] : NULL;
+
+                    $new = Formulario::create([
+                        'user_id' => $user->id,
+                        'cedula' => $cedula,
+                        'clases' => $request['clases'] == 1 ? true : false,
+                        'tareas' => $request['tareas'] == 1 ? true : false,
+                        'hoja_vida' => $hojaVida ,
+                        'titulo' => $titulo,
+                        'estado' => 'Solicitada'
+                    ]);
+
                     $profesor = Profesore::create([
                         'user_id' => $user->id,
                         'celular' => $request['celular'],
@@ -562,7 +574,7 @@ class RegistroController extends Controller
                         'ciudad' => $request['ciudad'],
                         'clases' => $request['clases'] == "1" ? true : false,
                         'tareas' => $request['tareas'] == "1" ? true : false,
-                        'disponible' => true,
+                        'disponible' => false,
                         'hoja_vida ' => $hojaVida,
                         'titulo ' => $titulo,
                         'activo' => false,
@@ -574,7 +586,8 @@ class RegistroController extends Controller
                         'descripcion' => $descripcion,
                         'fecha_nacimiento' => $fecha_nacimiento,
                         'genero' => $genero,
-                        'rechazado' => false
+                        'rechazado' => false,
+                        'valorTotal' => 0,
                     ]);
                     if($profesor)
                     {

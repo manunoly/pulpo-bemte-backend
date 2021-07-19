@@ -318,7 +318,8 @@ class ClasesController extends Controller
                             'clase_id' => $clase->id,
                             'valor' => 2 * $profeClase->valor_clase,
                             'comentario' => 'Clase Cancelada',
-                            'estado' => 'Solicitado'
+                            'estado' => 'Solicitado',
+                            'valorTotal' => 0,
                             ]);
                         if (!$multaProf->id)
                         {
@@ -357,7 +358,8 @@ class ClasesController extends Controller
                                         'clase_id' => $clase->id,
                                         'valor' => $pagoClase->valor,
                                         'comentario' => 'Clase Cancelada por Profesor con Pago Aprobado',
-                                        'estado' => 'Solicitado'
+                                        'estado' => 'Solicitado',
+                                        'valorTotal' => 0,
                                         ]);
                             if (!$multaProf->id)
                                 return response()->json(['error' => 'Error al crear Multa al Profesor'], 401);

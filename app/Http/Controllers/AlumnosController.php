@@ -199,7 +199,8 @@ class AlumnosController extends Controller
                             'clase_id' => 0,
                             'valor' => $duracion * $profeTarea->valor_tarea,
                             'horas' => $duracion,
-                            'estado' => 'Solicitado'
+                            'estado' => 'Solicitado',
+                            'valorTotal' => 0,
                             ]);
             if (!$pagoProf->id)
                 return response()->json(['error' => 'Error al crear Pago al Profesor'], 401);
@@ -232,7 +233,8 @@ class AlumnosController extends Controller
                             'tarea_id' => 0,
                             'valor' => ($clase->duracion + ($clase->personas - 1))  * $profeClase->valor_clase,
                             'horas' => $clase->duracion,
-                            'estado' => 'Solicitado'
+                            'estado' => 'Solicitado',
+                            'valorTotal' => 0,
                             ]);
             if (!$pagoProf->id)
                 return response()->json(['error' => 'Error al crear Pago al Profesor'], 401);
