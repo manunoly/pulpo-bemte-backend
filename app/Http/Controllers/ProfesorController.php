@@ -370,7 +370,7 @@ class ProfesorController extends Controller
                                             'valor' => ($clase->duracion + ($clase->personas - 1)) * $profe->valor_clase,
                                             'horas' => $clase->duracion,
                                             'estado' => 'Solicitado',
-                                            'valorTotal' => 0,
+                                            'valorTotal' => 0
                                             ]);
                                 if (!$pagoProf->id)
                                     return response()->json(['error' => 'No se pudo crear pago al Profesor'], 401);                            

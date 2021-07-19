@@ -562,6 +562,11 @@ class RegistroController extends Controller
                         'estado' => 'Solicitada'
                     ]);
 
+                    if ($new == null || !$new->id)
+                    {
+                        return response()->json(['error' => 'Error al registrar solicitud!'], 401);
+                    }
+
                     $profesor = Profesore::create([
                         'user_id' => $user->id,
                         'celular' => $request['celular'],
@@ -587,7 +592,7 @@ class RegistroController extends Controller
                         'fecha_nacimiento' => $fecha_nacimiento,
                         'genero' => $genero,
                         'rechazado' => false,
-                        'valorTotal' => 0,
+                        'valorTotal' => 0
                     ]);
                     if($profesor)
                     {
