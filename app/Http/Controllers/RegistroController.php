@@ -436,7 +436,7 @@ class RegistroController extends Controller
                 'nombre' => 'required|min:3|max:50',
                 'apellido' => 'required|min:3|max:50',
                 'apodo' => 'required|min:3|max:20',
-                'email' => 'required',
+                'email' => 'required|email',
                 'password' => 'required|min:6|max:20',
                 'ubicacion' => 'required',
                 'ciudad' => 'required',
