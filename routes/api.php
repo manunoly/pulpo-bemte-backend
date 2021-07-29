@@ -108,16 +108,6 @@ Route::get('obtener-chat', 'ChatController@obtenerChat');
 Route::post('enviar-chat', 'ChatController@enviarChat');
 Route::post('eliminarChat', 'ChatController@eliminarChat');
 
-/*GET CARDS*/
-Route::get('/getCards','API\PaymentezController@getCards');
-/*DELETE CARDS*/
-    Route::post('/deleteCards/{idUser}','API\PaymentezController@deleteCards');
-//BUY==============================================
-//BUY
-    Route::post('/saveBuy','API\PaymentezController@saveBuy');
-//REFUND
-    Route::post('/refund/{idCompra}','API\PaymentezController@refund');
-//GET HISTORY BUY
-    Route::get('/getHistoryBuy','API\PaymentezController@getHistoryBuy');
-//REPEAT BUY
-    Route::put('/repeatBuy','API\PaymentezController@repeatBuy');
+/*INICIAR TRANSACCION PAAYMEMNTEZ*/
+Route::post('/inicioTransaccion','PaymentezController@inicioTransaccion');
+Route::post('/finTransaccion','PaymentezController@finTransaccion');

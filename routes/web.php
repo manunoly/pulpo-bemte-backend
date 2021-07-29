@@ -27,6 +27,8 @@ Route::group(['prefix' => 'admin'], function () {
     Route::get('profesorMultar', 'Voyager\ProfesoresController@multar')->name('profesor.multar');
     Route::post('updateOrCreate', 'Voyager\ProfesoresController@updateOrCreate')->name('profesor.updateOrCreate');
     
+    Route::post('refund', 'Voyager\PaymentezController@refund')->name('paymentez.refund');
+    
     Route::get('buscar', 'Voyager\ReportesController@multar')->name('reportes.buscar');
     Route::get('masivo', 'Voyager\MarketingController@enviar')->name('marketing.enviar');
 

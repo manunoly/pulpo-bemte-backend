@@ -141,6 +141,24 @@ class ProfesoresController extends Controller
             $view = "voyager::$slug.browse";
         }
 
+        $userID = $dataTypeContent;
+        // return $userID;
+        foreach ($userID as $item)
+        {
+            $pagos = Pago::where('estado', 'Solicitado')->get(); 
+            foreach ($pagos as $value)
+            {
+                $total = Pago::where('user_id', $value->user_id)->get(); 
+                // return $total;
+                $valorTotal = $total->sum('valor');
+                // foreach ($total as $item)
+                // {
+                    Profesore::where('user_id', $value->user_id)->update(['valorTotal' =>  $valorTotal]);
+                // }
+                
+            }
+        }
+
         return Voyager::view($view, compact(
             'dataType',
             'dataTypeContent',
@@ -214,15 +232,7 @@ class ProfesoresController extends Controller
             $view = "voyager::$slug.read";
         }
 
-        $userID = $id;
-        $pagos = Calendar::where('user_id', $userID)->get();
-        if (count($pagos) == 0) {
-            $pagos = Pago::where('user_id', $userID)->where('estado', 'Solicitado')->get();
-        }  
-
-        $valorTotal = $pagos->sum('valor');
-
-        return Voyager::view($view, compact('dataType', 'dataTypeContent', 'isModelTranslatable', 'isSoftDeleted', 'valorTotal'));
+        return Voyager::view($view, compact('dataType', 'dataTypeContent', 'isModelTranslatable', 'isSoftDeleted'));
     }
 
     //***************************************
@@ -899,19 +909,19 @@ class ProfesoresController extends Controller
         try
         {
             $userID = \Request::get('user_id');
-            $pagos = Calendar::where('user_id', $userID)->get(); 
-            if (count($pagos) == 0) {
-                $pagos = Pago::where('user_id', $userID)->where('estado', 'Solicitado')->get();
-                foreach ($pagos as $item)
-                {
-                    Pago::where('id', $item->id)->update(['estado' => 'Aprobado']);
-                }
-            }
-            // $pagos = Pago::where('user_id', $userID)->where('estado', 'Solicitado')->get(); 
-            // foreach ($pagos as $item)
-            // {
-            //     Pago::where('id', $item->id)->update(['estado' => 'Aprobado']);
+            // $pagos = Calendar::where('user_id', $userID)->get(); 
+            // if (count($pagos) == 0) {
+            //     $pagos = Pago::where('user_id', $userID)->where('estado', 'Solicitado')->get();
+            //     foreach ($pagos as $item)
+            //     {
+            //         Pago::where('id', $item->id)->update(['estado' => 'Aprobado']);
+            //     }
             // }
+            $pagos = Pago::where('user_id', $userID)->where('estado', 'Solicitado')->get(); 
+            foreach ($pagos as $item)
+            {
+                Pago::where('id', $item->id)->update(['estado' => 'Aprobado']);
+            }
             // \Request::session()->flash('success', 'Pagos realizados por un valor de $ '.$pagos->sum('valor'));
             return redirect()->back()->with([
                 'message'    => 'Pagos realizados por un valor de $ '.$pagos->sum('valor'),
@@ -962,7 +972,7 @@ class ProfesoresController extends Controller
         $startDate = $request['startDate'];
         $endDate = $request['endDate'];
         // Calendar::where('user_id', $userID)->delete();
-        Calendar::truncate();
+        // Calendar::truncate();
         if ($startDate != '' &&  $endDate != '') {
             $startDate = date_format(date_create($startDate), "Y-m-d H:i:s");
             $endDate = date_format(date_create($endDate), "Y-m-d H:i:s");
@@ -978,6 +988,8 @@ class ProfesoresController extends Controller
                     'end_date' => isset($endDate) ? $endDate : null,
                     'valor' => $valorTotal,
                 ]);
+
+                Profesore::where('user_id', $userID)->update(['valorTotal' =>  $valorTotal]);
             
             
         } else {
@@ -990,6 +1002,8 @@ class ProfesoresController extends Controller
                 'end_date' => null,
                 'valor' => $valorTotal,
             ]);
+
+            Profesore::where('user_id', $userID)->update(['valorTotal' =>  $valorTotal]);
         }
 
         return redirect()->back();
