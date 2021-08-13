@@ -328,7 +328,7 @@ class PaymentezController extends Controller
                     // $transaction = json_decode($compra->transaction);
                     $transactionData = [
                         "transaction" => [
-                            "id" => $compra->id
+                            "id" => $compra->id_transaction
                         ],
                     ];
                     $client = new Client();
@@ -355,7 +355,7 @@ class PaymentezController extends Controller
                 }
                 $transactionData = json_decode($response->getBody());
                 if (strcmp($transactionData->status, 'success') == 0) {
-                    Paymentez::where('id', $compra->id)->update(['estado' =>  'Reembolso']);
+                    Paymentez::where('id_transaction', $compra->id_transaction)->update(['estado' =>  'Reembolso']);
                     //return response()->json(Msg::responseMsg('Compra reembolzada', 'ok', true, true), 202);
                     return redirect()->back()->with([
                         'message'    => 'Compra reembolzada',

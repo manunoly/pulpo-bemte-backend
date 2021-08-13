@@ -77,7 +77,7 @@ class PaymentezController extends BaseController
                 'estado' => 'Inicio'
             ]);
             if ($inicio){
-                return $this->sendResponse('Success','Inicio de transacción');
+                return $this->sendResponse('Success','Inicio de transacción' .$inicio->id);
             }
         } catch (Exception $e) {
             $message = 'No se puede realizar la transacción';
@@ -91,6 +91,7 @@ class PaymentezController extends BaseController
 
             $transactionData = null;
             $validateUser = User::where('id', $request->user_id)->first();
+            $id_transaction = Transaction::where('user_id', $request->user_id)->where('estado', 'Inicio')->first();
             //PAGO POR TARJETA
             $date = new DateTime();
             $unix_timestamp = $date->getTimestamp();
@@ -127,7 +128,9 @@ class PaymentezController extends BaseController
                     'amount' => (float)$request->total,
                     'order_description' => $request->description,
                     'dev_reference' => $request->holder_name . '-' . $unix_timestamp,
-                    'installments' => 1
+                    'installments' => 1,
+                    'id' => $request->transaction_id,
+                    'status_detail' => $request->status_detail,
                 ],
                 "card" => [
                     "holder_name" => $validateUser->name,
@@ -144,7 +147,7 @@ class PaymentezController extends BaseController
             //     $client = new Client();
             //     $authToken = BemteUtilities::getAuthToken();
             //     $response = $client->post((string)$debitUrl, [
-            //         'headers' => ['Content-Type' => 'application/json', 'Auth-Token' => $authToken],
+            //         'headers' => ['Content-Type' => 'application/json'/*, 'Auth-Token' => $authToken*/],
             //         'body' => json_encode($debitData),
             //     ]);
             // } catch (BadResponseException $e) {
@@ -174,6 +177,7 @@ class PaymentezController extends BaseController
 
             $paymentez =  Paymentez::create([
                 'user_id' => $validateUser->id,
+                'id_transaction' => $request->transaction_id,
                 'holder_name' => $request->holder_name,
                 'email' => $validateUser->email,
                 'number_card' => $request->number,
@@ -186,14 +190,22 @@ class PaymentezController extends BaseController
 
             if($paymentez){
                     //RETORNAR MENSAJE DE EXITOSO
-                    Paymentez::where('user_id', $validateUser->id)
+                    Paymentez::where('id_transaction', $paymentez->id_transaction)
                     // ->join('transactions', 'transactions.id', '=', 'paymentez.id')
                     ->update(['estado' =>  'Pagado']);
+
+                    // Transaction::where('created_at', $paymentez->created_at)
+                    // // ->join('transactions', 'transactions.id', '=', 'paymentez.id')
+                    // ->update(['estado' =>  'Finalizado']);
+
                     return $this->sendResponse('Success','Compra realizada correctamente');
             } else {
-                Paymentez::where('user_id', $validateUser->id)
+                Paymentez::where('id_transaction', $paymentez->id_transaction)
                 // ->join('transactions', 'transactions.id', '=', 'paymentez.id')
                 ->update(['estado' =>  'Cancelado']);
+                // Transaction::where('created_at', $paymentez->created_at)
+                //     // ->join('transactions', 'transactions.id', '=', 'paymentez.id')
+                //     ->update(['estado' =>  'Cancelado']);
                 $message = 'Compra no realizada';
                 return $this->sendError($message ,'Algo ha sucedido, contáctese con el administrador del sistema', 404);
             }
