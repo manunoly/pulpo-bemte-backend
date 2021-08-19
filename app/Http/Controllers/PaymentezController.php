@@ -77,7 +77,7 @@ class PaymentezController extends BaseController
                 'estado' => 'Inicio'
             ]);
             if ($inicio){
-                return $this->sendResponse('Success','Inicio de transacción' .$inicio->id);
+                return $this->sendResponse('Success','Inicio de transacción', $inicio->id);
             }
         } catch (Exception $e) {
             $message = 'No se puede realizar la transacción';
@@ -129,12 +129,12 @@ class PaymentezController extends BaseController
                     'order_description' => $request->description,
                     'dev_reference' => $request->holder_name . '-' . $unix_timestamp,
                     'installments' => 1,
-                    'id' => $request->transaction_id,
+                    'id' => $request->id,
                     'status_detail' => $request->status_detail,
                 ],
                 "card" => [
                     "holder_name" => $validateUser->name,
-                    "number" => $request->number
+                    "number" => $request->number_card
                 ],
                 "user" => [
                     "id" => $validateUser->id,
@@ -177,14 +177,17 @@ class PaymentezController extends BaseController
 
             $paymentez =  Paymentez::create([
                 'user_id' => $validateUser->id,
-                'id_transaction' => $request->transaction_id,
+                'id_transaction' => $request->id,
                 'holder_name' => $request->holder_name,
                 'email' => $validateUser->email,
-                'number_card' => $request->number,
+                'number_card' => $request->number_card,
                 'amount' => (float)$request->total,
                 'message' => null,
                 'status' => 1,
                 'order_description' => $request->description,
+                'clase_id' => isset($request->clase_id) ? $request->clase_id : NULL,
+                'tarea_id' => isset($request->tarea_id) ? $request->tarea_id : NULL,
+                'combo_id' => isset($request->combo_id) ? $request->combo_id : NULL,
                 'estado' => 'Solicitado'
             ]);
 
@@ -198,7 +201,7 @@ class PaymentezController extends BaseController
                     // // ->join('transactions', 'transactions.id', '=', 'paymentez.id')
                     // ->update(['estado' =>  'Finalizado']);
 
-                    return $this->sendResponse('Success','Compra realizada correctamente');
+                    return $this->sendResponse('Success','Compra realizada correctamente', $paymentez->id);
             } else {
                 Paymentez::where('id_transaction', $paymentez->id_transaction)
                 // ->join('transactions', 'transactions.id', '=', 'paymentez.id')

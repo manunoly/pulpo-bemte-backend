@@ -18,6 +18,9 @@ class Paymentez extends Model
         'message',
         'status',
         'order_description',
+        'clase_id',
+        'tarea_id',
+        'combo_id',
         'estado'
     ];
     protected $private = [
