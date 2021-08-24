@@ -21,6 +21,8 @@ class Paymentez extends Model
         'clase_id',
         'tarea_id',
         'combo_id',
+        'paymentez_card',
+        'paymentez_transaction',
         'estado'
     ];
     protected $private = [

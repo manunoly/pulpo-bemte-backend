@@ -188,6 +188,8 @@ class PaymentezController extends BaseController
                 'clase_id' => isset($request->clase_id) ? $request->clase_id : NULL,
                 'tarea_id' => isset($request->tarea_id) ? $request->tarea_id : NULL,
                 'combo_id' => isset($request->combo_id) ? $request->combo_id : NULL,
+                'paymentez_card' => isset($request->paymentez_card) ? $request->paymentez_card : NULL,
+                'paymentez_transaction' => isset($request->paymentez_transaction) ? $request->paymentez_transaction : NULL,
                 'estado' => 'Solicitado'
             ]);
 
