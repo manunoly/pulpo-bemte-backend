@@ -724,10 +724,11 @@ class ClasesController extends Controller
                 ->join('materias', 'clases.materia', '=', 'materias.nombre')
                 ->leftJoin('profesores', 'profesores.user_id', '=', 'clases.user_id_pro')
                 ->leftJoin('users as p', 'p.id', '=', 'clases.user_id_pro')
+                ->leftJoin('alumno_compra as al', 'al.id', '=', 'clases.compra_id')
                 ->where('clases.id', $search)
                 ->select( 'clases.*', 'profesores.descripcion as profDescripcion', 'icono',
                 'users.name as alumno', 'alumnos.calificacion as alumnoCalif', 'users.avatar as alumnoAvatar',
-                'p.name as profesor', 'profesores.calificacion as profCalif', 'p.avatar as profAvatar')
+                'p.name as profesor', 'profesores.calificacion as profCalif', 'p.avatar as profAvatar', 'al.valor as valor_compra')
                 ->first();
         if ($clase != null)
         {
