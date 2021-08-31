@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\BaseController as BaseController;
 use http\Exception;
-use Mail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -17,7 +16,12 @@ use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Middleware;
 use App\BemteUtilities;
-
+use App\Alumno;
+use App\Tarea;
+use App\Clase;
+use App\AlumnoPago;
+use App\AlumnoCompra;
+use Illuminate\Support\Facades\Mail;
 use App\Mail\Notificacion;
 use DateTime;
 
@@ -87,7 +91,6 @@ class PaymentezController extends BaseController
 
     public function finTransaccion(Request $request){
         try {
-            // $url = ' https://portal-bemte/paymentez/webhook';
 
             $transactionData = null;
             $validateUser = User::where('id', $request->user_id)->first();
@@ -96,33 +99,6 @@ class PaymentezController extends BaseController
             $date = new DateTime();
             $unix_timestamp = $date->getTimestamp();
             $debitData = [
-                // "transaction": {
-                //     "status": 1,
-                //     "order_description": "ORDER #1507155336536",
-                //     "authorization_code": "113310",
-                //     "status_detail": 3,
-                //     "date": "04/10/2017 22:15:37",
-                //     "message": "Operation Successful",
-                //     "id": "CI-502",
-                //     "dev_reference": "1507155336536",
-                //     "carrier_code": "6",
-                //     "amount": 10.5,
-                //     "paid_date": "04/10/2017 19:15:00",
-                //     "installments": 1,
-                //     "stoken": "e03f67eba6d730d8468f328961ac9b2e",
-                //     "application_code": "AndroidTest"
-                //  },
-                //  "user": {
-                //     "id": "4",
-                //     "email": "user@example.com"
-                //  },
-                //  "card": {
-                //     "bin": "411111",
-                //     "holder_name": "Martin Mucito",
-                //     "type": "vi",
-                //     "number": "1111",
-                //     "origin": "ORIGIN"
-                //  }
                 'transaction' => [
                     'status' => 1,
                     'amount' => (float)$request->total,
@@ -190,27 +166,124 @@ class PaymentezController extends BaseController
                 'combo_id' => isset($request->combo_id) ? $request->combo_id : NULL,
                 'paymentez_card' => isset($request->paymentez_card) ? $request->paymentez_card : NULL,
                 'paymentez_transaction' => isset($request->paymentez_transaction) ? $request->paymentez_transaction : NULL,
-                'estado' => 'Solicitado'
+                'estado' => 'Pagado'
             ]);
 
             if($paymentez){
-                    //RETORNAR MENSAJE DE EXITOSO
-                    Paymentez::where('id_transaction', $paymentez->id_transaction)
-                    // ->join('transactions', 'transactions.id', '=', 'paymentez.id')
-                    ->update(['estado' =>  'Pagado']);
+                //RETORNAR MENSAJE DE EXITOSO
+                Transaction::where('id', $paymentez->id_transaction)
+                    ->update(['estado' =>  'Finalizado']);
 
-                    // Transaction::where('created_at', $paymentez->created_at)
-                    // // ->join('transactions', 'transactions.id', '=', 'paymentez.id')
-                    // ->update(['estado' =>  'Finalizado']);
+                $tarea = null;
+                if ($request['tarea_id'] > 0)
+                {
+                    if (($request['clase_id'] > 0) || ($request['combo_id'] != '0'))
+                    {
+                        return response()->json(['error' => 'Especifique una opción para la tarea'], 401);
+                    }
+                    $tarea = Tarea::where('id', $request['tarea_id'])->first();
+                    if ($tarea == null)
+                    {
+                        return response()->json(['error' => 'No existe Tarea a pagar'], 401);
+                    }
+                    // else if ($tarea->estado != 'Confirmado')
+                    // {
+                    //     return response()->json(['error' => 'Tarea no Confirmada para pagar'], 401);
+                    // }
+                }
+                $clase = null;
+                if ($request['clase_id'] > 0)
+                {
+                    if ($request['tarea_id'] > 0 || ($request['combo_id'] != '0'))
+                    {
+                        return response()->json(['error' => 'Especifique una opción para la clase'], 401);
+                    }
+                    $clase = Clase::where('id', $request['clase_id'])->first();
+                    if ($clase == null)
+                    {
+                        return response()->json(['error' => 'No existe Clase a pagar'], 401);
+                    }
+                    // else if ($clase->estado != 'Confirmado')
+                    // {
+                    //     return response()->json(['error' => 'Clase no Confirmada para pagar'], 401);
+                    // }
+                }
+                $combo = null;
+                if ($request['combo_id'] != '0')
+                {
+                    if ($request['tarea_id'] > 0 || $request['clase_id'] > 0)
+                    {
+                        return response()->json(['error' => 'Especifique una opción para el Combo'], 401);
+                    }
+                    if (is_numeric($request['combo_id']))
+                    {
+                        $combo = AlumnoCompra::where('id', $request['combo_id'])->where('user_id', $request['user_id'])->first();
+                        if ($combo != null && $combo->estado != 'Solicitado')
+                        {
+                            return response()->json(['error' => 'La Solicitud ya fue procesada'], 401);
+                        }
+                    }
+                } 
+                $user = Alumno::where('user_id', $request['user_id'])->first();
+                if ($user != null)
+                {
+                    if ($user->activo)
+                    {
 
-                    return $this->sendResponse('Success','Compra realizada correctamente', $paymentez->id);
+                        $correoAdmin = 'Ha sido realizado un pago por tarjedta de crédito por '.$user->nombres.' '.$user->apellidos;
+                        $detalle = '';
+                        
+                        if ($clase != null)
+                        {
+                            $dataClase['estado'] = 'Confirmado';
+                            $actualizado = Clase::where('id', $clase->id )->update( $dataClase );
+                            $detalle = 'Para la Clase de '.$clase->materia.', '.$clase->tema
+                                        .', para el '.$clase->fecha.' a las '.$clase->hora1;
+                            if(!$actualizado )
+                            {
+                                return response()->json(['error' => 'Error al actualizar solicitud'], 401);
+                            }
+                        }
+                        if ($tarea != null)
+                        {
+                            $dataTarea['estado'] = 'Confirmado';
+                            $actualizado = Tarea::where('id', $tarea->id )->update( $dataTarea );
+                            $detalle = 'Para la Tarea de '.$tarea->materia.', '.$tarea->tema
+                                        .', para el '.$tarea->fecha_entrega;
+                            if(!$actualizado )
+                            {
+                                return response()->json(['error' => 'Error al actualizar solicitud'], 401);
+                            }
+                        }
+                        try 
+                        {
+                            Mail::to(env('MAILADMIN'))->send(new Notificacion(
+                                    'Administrador de '.env('EMPRESA'), 
+                                    $correoAdmin, $detalle, 'Por favor, revisar el pago.', 
+                                    env('EMPRESA')));
+                        }
+                        catch (Exception $e) { }
+
+                        return $this->sendResponse('Success','Compra realizada correctamente', $paymentez->id);
+
+                    }
+                    else
+                    {
+                        return response()->json(['error' => 'Alumno Inactivo'], 401);
+                    }
+                }
+                else
+                {
+                    return response()->json(['error' => 'Sin Alumno para subir Transferencia'], 401);
+                }
+
             } else {
                 Paymentez::where('id_transaction', $paymentez->id_transaction)
-                // ->join('transactions', 'transactions.id', '=', 'paymentez.id')
                 ->update(['estado' =>  'Cancelado']);
-                // Transaction::where('created_at', $paymentez->created_at)
-                //     // ->join('transactions', 'transactions.id', '=', 'paymentez.id')
-                //     ->update(['estado' =>  'Cancelado']);
+
+                Transaction::where('id', $paymentez->id_transaction)
+                    ->update(['estado' =>  'Cancelado']);
+
                 $message = 'Compra no realizada';
                 return $this->sendError($message ,'Algo ha sucedido, contáctese con el administrador del sistema', 404);
             }
