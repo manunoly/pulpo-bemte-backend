@@ -215,7 +215,7 @@ class PaymentezController extends BaseController
                     {
                         return response()->json(['error' => 'Especifique una opción para el Combo'], 401);
                     }
-                    if (is_numeric($request['combo_id']))
+                    else
                     {
                         $combo = AlumnoCompra::where('id', $request['combo_id'])->where('user_id', $request['user_id'])->first();
                         if ($combo != null && $combo->estado != 'Solicitado')
@@ -230,7 +230,7 @@ class PaymentezController extends BaseController
                     if ($user->activo)
                     {
 
-                        $correoAdmin = 'Ha sido realizado un pago por tarjedta de crédito por '.$user->nombres.' '.$user->apellidos;
+                        $correoAdmin = 'Ha sido realizado un pago por tarjeta de crédito por '.$user->nombres.' '.$user->apellidos;
                         $detalle = '';
                         
                         if ($clase != null)
@@ -255,6 +255,7 @@ class PaymentezController extends BaseController
                                 return response()->json(['error' => 'Error al actualizar solicitud'], 401);
                             }
                         }
+
                         try 
                         {
                             Mail::to(env('MAILADMIN'))->send(new Notificacion(
