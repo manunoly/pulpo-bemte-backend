@@ -291,7 +291,7 @@ class ClasesController extends Controller
                         {
                             $userNotif = User::where('id', $clase->user_id)->first();
                             $correoAdmin = 'La Clase de '.$clase->materia.', '.$clase->tema.', ha sido cancelada por el Profesor '.$userNotif->name.' a las '.$dateTime;
-                            $notificacion['texto'] = 'Lamentamos informarte que el Profesor ha cancelado la Clase de '.$clase->materia.', '.$clase->tema;
+                            $notificacion['texto'] = 'Lamentamos informarte que el Profesor ha cancelado la Clase de '.$clase->materia.', '.$clase->tema.'Por favor solicita nuevamente.';
                         }
                         else
                         {
