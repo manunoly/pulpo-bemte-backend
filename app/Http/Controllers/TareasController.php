@@ -302,7 +302,7 @@ class TareasController extends Controller
                         {
                             $userNotif = User::where('id', $tarea->user_id)->first();
                             $correoAdmin = 'La Tarea de '.$tarea->materia.', '.$tarea->tema.', ha sido cancelada por el Profesor '.$userNotif->name.' a las '.$dateTime;
-                            $notificacion['texto'] = 'Lamentamos informarte que el Profesor ha cancelado la Tarea de '.$tarea->materia.', '.$tarea->tema .' Por favor solicita nuevamente.';
+                            $notificacion['texto'] = 'Lamentamos informarte que el Profesor ha cancelado la Tarea de '.$tarea->materia.', '.$tarea->tema .'. Por favor solicita nuevamente.';
                         }
                         else
                         {
