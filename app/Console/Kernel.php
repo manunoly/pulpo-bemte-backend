@@ -35,8 +35,8 @@ class Kernel extends ConsoleKernel
                 $tareas = Tarea::where('estado','Solicitado')->where('activa', true)
                                 ->where('updated_at','<=', $timestamp)->get();
                 return $tareas->count() > 0;
-            })
-            ->sendOutputTo('/var/www/portal.bemte.ec/bemte-backend/cron.txt');
+            });
+            // ->sendOutputTo(/var/www/portal.bemte.ec/bemte-backend/cron.txt);
             
         $schedule->command('asignar:pago:tarea')->everyMinute()
             ->when(function () 
@@ -45,8 +45,8 @@ class Kernel extends ConsoleKernel
                 $tareas = Tarea::whereIn('estado', ['Confirmado','Confirmando_Pago'])
                             ->where('activa', true)->where('updated_at','<=', $timestamp)->get();
                 return $tareas->count() > 0;
-            })
-            ->sendOutputTo('/var/www/portal.bemte.ec/bemte-backend/cron.txt');
+            });
+            // ->sendOutputTo(/var/www/portal.bemte.ec/bemte-backend/cron.txt);
             
         $schedule->command('terminar:tarea:clase')->everyMinute()
             ->when(function () 
@@ -85,8 +85,8 @@ class Kernel extends ConsoleKernel
                 {
                     return true;
                 }
-            })
-            ->sendOutputTo('/var/www/portal.bemte.ec/bemte-backend/cron.txt');
+            });
+            // ->sendOutputTo(/var/www/portal.bemte.ec/bemte-backend/cron.txt);
 
         $schedule->command('notificar:profesor:clase')->everyMinute()
             ->when(function () 
@@ -106,8 +106,8 @@ class Kernel extends ConsoleKernel
                                 ->where('activa', true)
                                 ->where('updated_at','<=', $timestamp)->get();
                 return $clases->count() > 0;
-            })
-            ->sendOutputTo('/var/www/portal.bemte.ec/bemte-backend/cron.txt');
+            });
+            // ->sendOutputTo(/var/www/portal.bemte.ec/bemte-backend/cron.txt);
 
         $schedule->command('asignar:pago:clase')->everyMinute()
         ->when(function () 
@@ -116,8 +116,8 @@ class Kernel extends ConsoleKernel
             $clases = Clase::whereIn('estado', ['Confirmado','Confirmando_Pago'])
                             ->where('activa', true)->where('updated_at','<=', $timestamp)->get();
             return $clases->count() > 0;
-        })
-        ->sendOutputTo('/var/www/portal.bemte.ec/bemte-backend/cron.txt');
+        });
+        // ->sendOutputTo(/var/www/portal.bemte.ec/bemte-backend/cron.txt);
     }
 
     /**
