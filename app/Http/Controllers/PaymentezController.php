@@ -28,6 +28,8 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\Notificacion;
 use DateTime;
 use App\NotificacionesPushFcm;
+use App\Mail\NotificacionClases;
+use App\Mail\NotificacionTareas;
 
 use Carbon\Carbon;
 
@@ -281,7 +283,7 @@ class PaymentezController extends BaseController
                                 'tarea_id' => $request['tarea_id'],
                                 'clase_id' => $request['clase_id'],
                                 'combo_id' => $combo != null ? $combo->id : $request['combo_id'],
-                                'archivo' => null,
+                                'archivo' => 'Credit Card',
                                 'drive' => null,
                                 'estado' => 'Aprobado'
                             ]);
@@ -294,8 +296,10 @@ class PaymentezController extends BaseController
                         if ($clase != null)
                         {
                             $duracion = $clase->duracion + ($clase->personas - 1);
+                            $dataAct['estado'] = 'Aceptado';
                             if ($clase->compra_id > 0)
                                 $compra = AlumnoCompra::where('id', $clase->compra_id )->first();
+                                $actualizarCompra = AlumnoCompra::where('id', $clase->compra_id)->update( $dataAct );
                             $dataClase['estado'] = 'Confirmado';
                             $actualizado = Clase::where('id', $clase->id )->update( $dataClase );
                             $detalle = ' para la Clase de '.$clase->materia.', '.$clase->tema
@@ -308,8 +312,11 @@ class PaymentezController extends BaseController
                         if ($tarea != null)
                         {
                             $duracion = $tarea->tiempo_estimado;
+                            $dataAct['estado'] = 'Aceptado';
                             if ($tarea->compra_id > 0)
-                                $compra = AlumnoCompra::where('id', $clase->compra_id )->first();
+                                $compra = AlumnoCompra::where('id', $tarea->compra_id )->first();
+                                $actualizarCompra = AlumnoCompra::where('id', $tarea->compra_id)->update( $dataAct );
+
                             $dataTarea['estado'] = 'Confirmado';
                             $actualizado = Tarea::where('id', $tarea->id )->update( $dataTarea );
                             $detalle = ' para la Tarea de '.$tarea->materia.', '.$tarea->tema
@@ -336,9 +343,6 @@ class PaymentezController extends BaseController
                                 return redirect()->back()->withErrors($messages)->withInput();
                             }
                         }
-
-                        $dataAct['estado'] = 'Aceptado';
-                        $actualizado = AlumnoCompra::where('id', $combo->id )->update( $dataAct );
 
                         if ($tarea != null)
                         {
@@ -417,7 +421,7 @@ class PaymentezController extends BaseController
                             $userProf = User::where('id', $clase->user_id_pro)->first();
                             try 
                             {
-                                Mail::to($userAlumno->correo)->send(new NotificacionClases($clase, $userAlumno->name, $userProf->name, 
+                                Mail::to($userAlumno->correo)->send(new NotificacionClases($clase, $userAlumno->nombres, $userProf->name, 
                                                                 env('EMPRESA'), true));
                                 Mail::to($userProf->email)->send(new NotificacionClases($clase, $userAlumno->name, $userProf->name, 
                                                                 env('EMPRESA'), false));
