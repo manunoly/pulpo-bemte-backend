@@ -291,6 +291,9 @@ class PaymentezController extends BaseController
                             }
                         }
 
+                        $dataActCompra['estado'] = 'Aceptado';
+                        $actualizado = AlumnoCompra::where('id', $combo->id )->update( $dataActCompra );
+
                         if ($clase != null)
                         {
                             $duracion = $clase->duracion + ($clase->personas - 1);
