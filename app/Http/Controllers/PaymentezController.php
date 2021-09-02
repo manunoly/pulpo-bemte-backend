@@ -299,7 +299,7 @@ class PaymentezController extends BaseController
                             $dataAct['estado'] = 'Aceptado';
                             if ($clase->compra_id > 0)
                                 $compra = AlumnoCompra::where('id', $clase->compra_id )->first();
-                                $actualizarCompra = AlumnoCompra::where('id', $clase->compra_id)->update( $dataAct );
+                                $actualizarCompra = AlumnoCompra::where('id', $compra->id)->update( $dataAct );
                             $dataClase['estado'] = 'Confirmado';
                             $actualizado = Clase::where('id', $clase->id )->update( $dataClase );
                             $detalle = ' para la Clase de '.$clase->materia.', '.$clase->tema
@@ -421,9 +421,9 @@ class PaymentezController extends BaseController
                             $userProf = User::where('id', $clase->user_id_pro)->first();
                             try 
                             {
-                                Mail::to($userAlumno->correo)->send(new NotificacionClases($clase, $userAlumno->nombres, $userProf->name, 
+                                Mail::to($userAlumno->correo)->send(new NotificacionClases($clase, $userAlumno->nombres ?? 'Alumno Nombre', $userProf->name ?? 'Profesor Nombre', 
                                                                 env('EMPRESA'), true));
-                                Mail::to($userProf->email)->send(new NotificacionClases($clase, $userAlumno->name, $userProf->name, 
+                                Mail::to($userProf->email)->send(new NotificacionClases($clase, $userAlumno->nombres ?? 'Alumno Nombre', $userProf->name ?? 'Profesor Nombre', 
                                                                 env('EMPRESA'), false));
                             }
                             catch (Exception $e) 
