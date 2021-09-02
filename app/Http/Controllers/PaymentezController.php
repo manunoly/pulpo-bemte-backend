@@ -21,9 +21,13 @@ use App\Tarea;
 use App\Clase;
 use App\AlumnoPago;
 use App\AlumnoCompra;
+use App\CombosHora;
+use App\Profesore;
+use App\Pago;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\Notificacion;
 use DateTime;
+use App\NotificacionesPushFcm;
 
 use Carbon\Carbon;
 
@@ -93,31 +97,31 @@ class PaymentezController extends BaseController
         try {
 
             $transactionData = null;
-            $validateUser = User::where('id', $request->user_id)->first();
-            $id_transaction = Transaction::where('user_id', $request->user_id)->where('estado', 'Inicio')->first();
+            $validateUser = Alumno::where('user_id', $request->user_id)->first();
+            // $id_transaction = Transaction::where('user_id', $request->user_id)->where('estado', 'Inicio')->first();
             //PAGO POR TARJETA
-            $date = new DateTime();
-            $unix_timestamp = $date->getTimestamp();
-            $debitData = [
-                'transaction' => [
-                    'status' => 1,
-                    'amount' => (float)$request->total,
-                    'order_description' => $request->description,
-                    'dev_reference' => $request->holder_name . '-' . $unix_timestamp,
-                    'installments' => 1,
-                    'id' => $request->id,
-                    'status_detail' => $request->status_detail,
-                ],
-                "card" => [
-                    "holder_name" => $validateUser->name,
-                    "number" => $request->number_card
-                ],
-                "user" => [
-                    "id" => $validateUser->id,
-                    "email" => $validateUser->email
-                ]
-            ];
-            $debitUrl = ' https://portal-bemte/paymentez/webhook';
+            // $date = new DateTime();
+            // $unix_timestamp = $date->getTimestamp();
+            // $debitData = [
+            //     'transaction' => [
+            //         'status' => 1,
+            //         'amount' => (float)$request->total,
+            //         'order_description' => $request->description,
+            //         'dev_reference' => $request->holder_name . '-' . $unix_timestamp,
+            //         'installments' => 1,
+            //         'id' => $request->id,
+            //         'status_detail' => $request->status_detail,
+            //     ],
+            //     "card" => [
+            //         "holder_name" => $validateUser->name,
+            //         "number" => $request->number_card
+            //     ],
+            //     "user" => [
+            //         "id" => $validateUser->id,
+            //         "email" => $validateUser->email
+            //     ]
+            // ];
+            // $debitUrl = ' https://portal-bemte/paymentez/webhook';
             // $debitUrl = Bemtetilities::getUrl() . 'transaction/debit';
             // try {
             //     $client = new Client();
@@ -130,36 +134,37 @@ class PaymentezController extends BaseController
             //     $message = 'Error con el medio de pago';
             //     return $this->sendError($message.''.$e ,'Algo ha sucedido, contactese con el administrador del sistema', 404);
             // }
-            $inf = json_encode($debitData);
-            $transactionInf = json_decode($inf);
-            // $transactionInf = json_decode($response->getBody());
-            if (!$transactionInf) {
-                $message = 'Error al realizar la transacción';
-                return $this->sendError($message ,'Algo ha sucedido, contactese con el administrador del sistema', 404);
-            }
-            if (strcmp($transactionInf->transaction->status, 'success') != 0) {
-                if (strcmp($transactionInf->transaction->status, 'pending') == 0) {
-                    $message = 'Error '.$this->estadosString[$transactionData->transaction->status_detail].'-'. $transactionData->transaction;
-                    return $this->sendError($message ,'Algo ha sucedido, contactese con el administrador del sistema', 404);
-                }
-                // $message = 'El pago ha sido rechazado';
-                // return $this->sendError($message ,'Algo ha sucedido, contactese con el administrador del sistema', 404);
-            }
+            // $inf = json_encode($debitData);
+            // $transactionInf = json_decode($inf);
+            // // $transactionInf = json_decode($response->getBody());
+            // if (!$transactionInf) {
+            //     $message = 'Error al realizar la transacción';
+            //     return $this->sendError($message ,'Algo ha sucedido, contactese con el administrador del sistema', 404);
+            // }
+            // if (strcmp($transactionInf->transaction->status, 'success') != 0) {
+            //     if (strcmp($transactionInf->transaction->status, 'pending') == 0) {
+            //         $message = 'Error '.$this->estadosString[$transactionData->transaction->status_detail].'-'. $transactionData->transaction;
+            //         return $this->sendError($message ,'Algo ha sucedido, contactese con el administrador del sistema', 404);
+            //     }
+            //     // $message = 'El pago ha sido rechazado';
+            //     // return $this->sendError($message ,'Algo ha sucedido, contactese con el administrador del sistema', 404);
+            // }
 
 
             // $userInformation = json_decode($transactionInf->user);
             // $transactionData = json_decode($transactionInf->transaction);
             // $card = json_decode($transactionInf->card);
+            $inf = json_decode($request->paymentez_transaction);
 
             $paymentez =  Paymentez::create([
-                'user_id' => $validateUser->id,
+                'user_id' => $validateUser->user_id,
                 'id_transaction' => $request->id,
                 'holder_name' => $request->holder_name,
-                'email' => $validateUser->email,
+                'email' => $validateUser->correo,
                 'number_card' => $request->number_card,
                 'amount' => (float)$request->total,
-                'message' => null,
-                'status' => 1,
+                'message' => $inf->status,
+                'status' => $inf->status_detail,
                 'order_description' => $request->description,
                 'clase_id' => isset($request->clase_id) ? $request->clase_id : NULL,
                 'tarea_id' => isset($request->tarea_id) ? $request->tarea_id : NULL,
@@ -170,9 +175,21 @@ class PaymentezController extends BaseController
             ]);
 
             if($paymentez){
+                if($paymentez->status != 3){
+                    Paymentez::where('id_transaction', $paymentez->id_transaction)
+                    ->update(['estado' =>  $inf->status]);
+
+                    Transaction::where('id', $paymentez->id_transaction)
+                        ->update(['estado' =>  $inf->status]);
+
+                    $message = $inf->status;
+                    return $this->sendError($message ,'. Algo ha sucedido, contáctese con el administrador del sistema', 404);
+                
+                }
                 //RETORNAR MENSAJE DE EXITOSO
                 Transaction::where('id', $paymentez->id_transaction)
                     ->update(['estado' =>  'Finalizado']);
+
 
                 $tarea = null;
                 if ($request['tarea_id'] > 0)
@@ -186,10 +203,10 @@ class PaymentezController extends BaseController
                     {
                         return response()->json(['error' => 'No existe Tarea a pagar'], 401);
                     }
-                    // else if ($tarea->estado != 'Confirmado')
-                    // {
-                    //     return response()->json(['error' => 'Tarea no Confirmada para pagar'], 401);
-                    // }
+                    else if ($tarea->estado != 'Confirmado')
+                    {
+                        return response()->json(['error' => 'Tarea no Confirmada para pagar'], 401);
+                    }
                 }
                 $clase = null;
                 if ($request['clase_id'] > 0)
@@ -203,10 +220,10 @@ class PaymentezController extends BaseController
                     {
                         return response()->json(['error' => 'No existe Clase a pagar'], 401);
                     }
-                    // else if ($clase->estado != 'Confirmado')
-                    // {
-                    //     return response()->json(['error' => 'Clase no Confirmada para pagar'], 401);
-                    // }
+                    else if ($clase->estado != 'Confirmado')
+                    {
+                        return response()->json(['error' => 'Clase no Confirmada para pagar'], 401);
+                    }
                 }
                 $combo = null;
                 if ($request['combo_id'] != '0')
@@ -215,7 +232,7 @@ class PaymentezController extends BaseController
                     {
                         return response()->json(['error' => 'Especifique una opción para el Combo'], 401);
                     }
-                    else
+                    if (is_numeric($request['combo_id']))
                     {
                         $combo = AlumnoCompra::where('id', $request['combo_id'])->where('user_id', $request['user_id'])->first();
                         if ($combo != null && $combo->estado != 'Solicitado')
@@ -229,15 +246,59 @@ class PaymentezController extends BaseController
                 {
                     if ($user->activo)
                     {
-
                         $correoAdmin = 'Ha sido realizado un pago por tarjeta de crédito por '.$user->nombres.' '.$user->apellidos;
                         $detalle = '';
-                        
+
+                        $duracion = 0;
+                        $compra = null;
+
+                        if ($request['combo_id'] != '0' && $combo == null)
+                        {
+                            $horas = CombosHora::where('descuento', $request['total'])->first();
+                            if ($horas){
+                                $combo = AlumnoCompra::create([
+                                    'user_id' => $request['user_id'],
+                                    'combo' => $request['combo_id'],
+                                    'valor' => $request['total'],
+                                    'horas' => $horas['hora'],
+                                    'estado' => 'Aceptado'
+                                ]);
+                                if (!$combo->id)
+                                {
+                                    return response()->json(['error' => 'Error al registrar solicitud!'], 401);
+                                }
+                            }
+                            
+                        }
+                        $solicitud = AlumnoPago::where('user_id', $request['user_id'])
+                                                ->where('tarea_id', $request['tarea_id'])
+                                                ->where('clase_id', $request['clase_id'])
+                                                ->where('combo_id', $combo != null ? $combo->id : $request['combo_id'])->first();
+                        if ($solicitud == null)
+                        {
+                            $aplica = AlumnoPago::create([
+                                'user_id' => $request['user_id'],
+                                'tarea_id' => $request['tarea_id'],
+                                'clase_id' => $request['clase_id'],
+                                'combo_id' => $combo != null ? $combo->id : $request['combo_id'],
+                                'archivo' => null,
+                                'drive' => null,
+                                'estado' => 'Aprobado'
+                            ]);
+                            if (!$aplica->id)
+                            {
+                                return response()->json(['error' => 'Error al registrar solicitud!'], 401);
+                            }
+                        }
+
                         if ($clase != null)
                         {
+                            $duracion = $clase->duracion + ($clase->personas - 1);
+                            if ($clase->compra_id > 0)
+                                $compra = AlumnoCompra::where('id', $clase->compra_id )->first();
                             $dataClase['estado'] = 'Confirmado';
                             $actualizado = Clase::where('id', $clase->id )->update( $dataClase );
-                            $detalle = 'Para la Clase de '.$clase->materia.', '.$clase->tema
+                            $detalle = ' para la Clase de '.$clase->materia.', '.$clase->tema
                                         .', para el '.$clase->fecha.' a las '.$clase->hora1;
                             if(!$actualizado )
                             {
@@ -246,14 +307,167 @@ class PaymentezController extends BaseController
                         }
                         if ($tarea != null)
                         {
+                            $duracion = $tarea->tiempo_estimado;
+                            if ($tarea->compra_id > 0)
+                                $compra = AlumnoCompra::where('id', $clase->compra_id )->first();
                             $dataTarea['estado'] = 'Confirmado';
                             $actualizado = Tarea::where('id', $tarea->id )->update( $dataTarea );
-                            $detalle = 'Para la Tarea de '.$tarea->materia.', '.$tarea->tema
+                            $detalle = ' para la Tarea de '.$tarea->materia.', '.$tarea->tema
                                         .', para el '.$tarea->fecha_entrega;
                             if(!$actualizado )
                             {
                                 return response()->json(['error' => 'Error al actualizar solicitud'], 401);
                             }
+                        }
+
+                        $billetera = Alumno::where('user_id', $request['user_id'])->first();
+                        if ($billetera == null)
+                        {
+                            $messages["error"] = 'El Alumno no existe';
+                            return redirect()->back()->withErrors($messages)->withInput();
+                        }
+                        if ($compra == null)
+                            $compra = AlumnoCompra::where('id', $combo->id)->first();
+                        if ($compra != null)
+                        {
+                            if ($billetera->billetera + $compra->horas - $duracion < 0)
+                            {
+                                $messages["error"] = 'La Horas compradas del combo no son suficientes para pagar';
+                                return redirect()->back()->withErrors($messages)->withInput();
+                            }
+                        }
+
+                        $dataAct['estado'] = 'Aceptado';
+                        if ($request['estado'] != 'Aprobado')
+                            $dataAct['activa'] = false;
+                        if ($tarea != null)
+                        {
+                            
+                            $profeTarea = Profesore::where('user_id', $tarea->user_id_pro)->first();
+                            $pagoProf = Pago::create([
+                                    'user_id' => $tarea->user_id_pro,
+                                    'tarea_id' => $tarea->id,
+                                    'clase_id' => 0,
+                                    'valor' => $duracion * $profeTarea->valor_tarea,
+                                    'horas' => $duracion,
+                                    'estado' => 'Solicitado',
+                                    'valorTotal' => 0
+                                    ]);
+                            if (!$pagoProf->id)
+                            {
+                                $messages["error"] = 'Ocurrió un error al crear Pago al Profesor';
+                                return redirect()->back()->withErrors($messages)->withInput();
+                            }
+                            
+                            $userAlumno = User::where('id', $tarea->user_id)->first();
+                            $userProf = User::where('id', $tarea->user_id_pro)->first();
+                            
+                            try 
+                            {
+                                Mail::to($userAlumno->email)->send(new NotificacionTareas($tarea, $userAlumno->name, $userProf->name, 
+                                                                env('EMPRESA'), true));
+                                Mail::to($userProf->email)->send(new NotificacionTareas($tarea, $userAlumno->name, $userProf->name, 
+                                                                env('EMPRESA'), false));
+                            }
+                            catch (Exception $e) 
+                            {
+                                $messages["error"] = 'No se ha podido enviar el correo';
+                                return redirect()->back()->withErrors($messages)->withInput();
+                            } 
+                            
+                            //enviar notificacion al profesor y al alumno
+                            $notificacion['titulo'] = 'Tarea Aprobada';
+                            $notificacion['color'] = "alumno";
+                            $notificacion['texto'] = 'El pago de la Tarea de '.$tarea->materia.', '.$tarea->tema.', ha sido '.$request['estado'];
+                            $notificacion['texto'] = $notificacion['texto'].'. La Tarea ha sido Asignada';
+
+                            $notificacion['estado'] = 'NO';
+                            $notificacion['tarea_id'] = $tarea->id;
+                            $notificacion['clase_id'] = 0;
+                            $notificacion['chat_id'] = 0;
+                            $notificacion['compra_id'] = 0;
+                            $pushClass = new NotificacionesPushFcm();
+                            $pushClass->enviarNotificacion($notificacion, $userAlumno);
+                            $notificacion['color'] = "profesor";
+                            $notificacion['texto'] = 'La Tarea de '.$tarea->materia.', '.$tarea->tema.', ha sido Confirmada.';
+
+                            $pushClass->enviarNotificacion($notificacion, $userProf);
+                        }
+                        if ($clase != null)
+                        {
+                            
+                            //$dataAct['estado'] = 'Pago_Aprobado';
+                            $profeClase = Profesore::where('user_id', $clase->user_id_pro)->first();
+                            $pagoProf = Pago::create([
+                                    'user_id' => $clase->user_id_pro,
+                                    'clase_id' => $clase->id,
+                                    'tarea_id' => 0,
+                                    'valor' => ($clase->duracion + ($clase->personas - 1)) * $profeClase->valor_clase,
+                                    'horas' => $clase->duracion,
+                                    'estado' => 'Solicitado',
+                                    'valorTotal' => 0
+                                    ]);
+                            if (!$pagoProf->id)
+                            {
+                                $messages["error"] = 'Ocurrió un error al crear Pago al Profesor';
+                                return redirect()->back()->withErrors($messages)->withInput();
+                            }
+                            
+                            $userAlumno = User::where('id', $clase->user_id)->first();
+                            $userProf = User::where('id', $clase->user_id_pro)->first();
+                            try 
+                            {
+                                Mail::to($userAlumno->email)->send(new NotificacionClases($clase, $userAlumno->name, $userProf->name, 
+                                                                env('EMPRESA'), true));
+                                Mail::to($userProf->email)->send(new NotificacionClases($clase, $userAlumno->name, $userProf->name, 
+                                                                env('EMPRESA'), false));
+                            }
+                            catch (Exception $e) 
+                            {
+                                $messages["error"] = 'No se ha podido enviar el correo';
+                                return redirect()->back()->withErrors($messages)->withInput();
+                            }
+                            //enviar notificacion al profesor y al alumno
+                            $notificacion['titulo'] = 'Clase Aprobada';
+                            $notificacion['color'] = "alumno";
+                            $notificacion['texto'] = 'El pago de la Clase de '.$clase->materia.', '.$clase->tema.', ha sido '.$request['estado'];
+                            $notificacion['texto'] = $notificacion['texto'].'. La Clase ha sido Asignada';
+
+                            $notificacion['estado'] = 'NO';
+                            $notificacion['clase_id'] = $clase->id;
+                            $notificacion['tarea_id'] = 0;
+                            $notificacion['chat_id'] = 0;
+                            $notificacion['compra_id'] = 0;
+                            $pushClass = new NotificacionesPushFcm();
+                            $pushClass->enviarNotificacion($notificacion, $userAlumno);
+                            $notificacion['color'] = "profesor";
+                            $notificacion['texto'] = 'La Clase de '.$clase->materia.', '.$clase->tema.', ha sido Confirmada.';
+
+                            $pushClass->enviarNotificacion($notificacion, $userProf);
+                        }
+                        if ($compra != null)
+                        {
+                            $dataBill['billetera'] = $billetera->billetera + $compra->horas - $duracion;
+                            $actualizado = Alumno::where('user_id', $billetera->user_id)->update( $dataBill );
+                            if(!$actualizado )
+                            {
+                                $messages["error"] = 'Ocurrió un error al actualizar Billetera';
+                                return redirect()->back()->withErrors($messages)->withInput();
+                            }
+                            //enviar notificacion al alumno
+                            $userAlumno = Alumno::where('user_id', $compra->user_id)->first();
+                            $notificacion['titulo'] = 'Pago Horas Aprobado';
+                            $notificacion['texto'] = 'El pago de '.$compra->horas.' Horas ha sido '.$request['estado'].'. Por favor,';
+                            $notificacion['color'] = "alumno";
+                            $notificacion['texto'] = $notificacion['texto'].' revise su Billetera';
+
+                            $notificacion['estado'] = 'NO';
+                            $notificacion['clase_id'] = 0;
+                            $notificacion['tarea_id'] = 0;
+                            $notificacion['chat_id'] = 0;
+                            $notificacion['compra_id'] = $compra->id;
+                            $pushClass = new NotificacionesPushFcm();
+                            $pushClass->enviarNotificacion($notificacion, $userAlumno);
                         }
 
                         try 
