@@ -376,22 +376,22 @@ class PaymentezController extends BaseController
                             } 
                             
                             //enviar notificacion al profesor y al alumno
-                            $notificacion['titulo'] = 'Tarea Aprobada';
-                            $notificacion['color'] = "alumno";
-                            $notificacion['texto'] = 'El pago de la Tarea de '.$tarea->materia.', '.$tarea->tema.', ha sido '.$request['estado'];
-                            $notificacion['texto'] = $notificacion['texto'].'. La Tarea ha sido Asignada';
+                                // $notificacion['titulo'] = 'Tarea Aprobada';
+                                // $notificacion['color'] = "alumno";
+                                // $notificacion['texto'] = 'El pago de la Tarea de '.$tarea->materia.', '.$tarea->tema.', ha sido '.$request['estado'];
+                                // $notificacion['texto'] = $notificacion['texto'].'. La Tarea ha sido Asignada';
 
-                            $notificacion['estado'] = 'NO';
-                            $notificacion['tarea_id'] = $tarea->id;
-                            $notificacion['clase_id'] = 0;
-                            $notificacion['chat_id'] = 0;
-                            $notificacion['compra_id'] = 0;
-                            $pushClass = new NotificacionesPushFcm();
-                            $pushClass->enviarNotificacion($notificacion, $userAlumno);
-                            $notificacion['color'] = "profesor";
-                            $notificacion['texto'] = 'La Tarea de '.$tarea->materia.', '.$tarea->tema.', ha sido Confirmada.';
+                                // $notificacion['estado'] = 'NO';
+                                // $notificacion['tarea_id'] = $tarea->id;
+                                // $notificacion['clase_id'] = 0;
+                                // $notificacion['chat_id'] = 0;
+                                // $notificacion['compra_id'] = 0;
+                                // $pushClass = new NotificacionesPushFcm();
+                                // $pushClass->enviarNotificacion($notificacion, $userAlumno);
+                                // $notificacion['color'] = "profesor";
+                                // $notificacion['texto'] = 'La Tarea de '.$tarea->materia.', '.$tarea->tema.', ha sido Confirmada.';
 
-                            $pushClass->enviarNotificacion($notificacion, $userProf);
+                                // $pushClass->enviarNotificacion($notificacion, $userProf);
                         }
                         if ($clase != null)
                         {
@@ -413,11 +413,11 @@ class PaymentezController extends BaseController
                                 return redirect()->back()->withErrors($messages)->withInput();
                             }
                             
-                            $userAlumno = User::where('id', $clase->user_id)->first();
+                            $userAlumno = Alumno::where('user_id', $clase->user_id)->first();
                             $userProf = User::where('id', $clase->user_id_pro)->first();
                             try 
                             {
-                                Mail::to($userAlumno->email)->send(new NotificacionClases($clase, $userAlumno->name, $userProf->name, 
+                                Mail::to($userAlumno->correo)->send(new NotificacionClases($clase, $userAlumno->name, $userProf->name, 
                                                                 env('EMPRESA'), true));
                                 Mail::to($userProf->email)->send(new NotificacionClases($clase, $userAlumno->name, $userProf->name, 
                                                                 env('EMPRESA'), false));
@@ -428,22 +428,22 @@ class PaymentezController extends BaseController
                                 return redirect()->back()->withErrors($messages)->withInput();
                             }
                             //enviar notificacion al profesor y al alumno
-                            $notificacion['titulo'] = 'Clase Aprobada';
-                            $notificacion['color'] = "alumno";
-                            $notificacion['texto'] = 'El pago de la Clase de '.$clase->materia.', '.$clase->tema.', ha sido '.$request['estado'];
-                            $notificacion['texto'] = $notificacion['texto'].'. La Clase ha sido Asignada';
+                            // $notificacion['titulo'] = 'Clase Aprobada';
+                            // $notificacion['color'] = "alumno";
+                            // $notificacion['texto'] = 'El pago de la Clase de '.$clase->materia.', '.$clase->tema.', ha sido '.$request['estado'];
+                            // $notificacion['texto'] = $notificacion['texto'].'. La Clase ha sido Asignada';
 
-                            $notificacion['estado'] = 'NO';
-                            $notificacion['clase_id'] = $clase->id;
-                            $notificacion['tarea_id'] = 0;
-                            $notificacion['chat_id'] = 0;
-                            $notificacion['compra_id'] = 0;
-                            $pushClass = new NotificacionesPushFcm();
-                            $pushClass->enviarNotificacion($notificacion, $userAlumno);
-                            $notificacion['color'] = "profesor";
-                            $notificacion['texto'] = 'La Clase de '.$clase->materia.', '.$clase->tema.', ha sido Confirmada.';
+                            // $notificacion['estado'] = 'NO';
+                            // $notificacion['clase_id'] = $clase->id;
+                            // $notificacion['tarea_id'] = 0;
+                            // $notificacion['chat_id'] = 0;
+                            // $notificacion['compra_id'] = 0;
+                            // $pushClass = new NotificacionesPushFcm();
+                            // $pushClass->enviarNotificacion($notificacion, $userAlumno);
+                            // $notificacion['color'] = "profesor";
+                            // $notificacion['texto'] = 'La Clase de '.$clase->materia.', '.$clase->tema.', ha sido Confirmada.';
 
-                            $pushClass->enviarNotificacion($notificacion, $userProf);
+                            // $pushClass->enviarNotificacion($notificacion, $userProf);
                         }
                         if ($compra != null)
                         {
@@ -455,19 +455,19 @@ class PaymentezController extends BaseController
                                 return redirect()->back()->withErrors($messages)->withInput();
                             }
                             //enviar notificacion al alumno
-                            $userAlumno = Alumno::where('user_id', $compra->user_id)->first();
-                            $notificacion['titulo'] = 'Pago Horas Aprobado';
-                            $notificacion['texto'] = 'El pago de '.$compra->horas.' Horas ha sido '.$request['estado'].'. Por favor,';
-                            $notificacion['color'] = "alumno";
-                            $notificacion['texto'] = $notificacion['texto'].' revise su Billetera';
+                            // $userAlumno = Alumno::where('user_id', $compra->user_id)->first();
+                            // $notificacion['titulo'] = 'Pago Horas Aprobado';
+                            // $notificacion['texto'] = 'El pago de '.$compra->horas.' Horas ha sido '.$request['estado'].'. Por favor,';
+                            // $notificacion['color'] = "alumno";
+                            // $notificacion['texto'] = $notificacion['texto'].' revise su Billetera';
 
-                            $notificacion['estado'] = 'NO';
-                            $notificacion['clase_id'] = 0;
-                            $notificacion['tarea_id'] = 0;
-                            $notificacion['chat_id'] = 0;
-                            $notificacion['compra_id'] = $compra->id;
-                            $pushClass = new NotificacionesPushFcm();
-                            $pushClass->enviarNotificacion($notificacion, $userAlumno);
+                            // $notificacion['estado'] = 'NO';
+                            // $notificacion['clase_id'] = 0;
+                            // $notificacion['tarea_id'] = 0;
+                            // $notificacion['chat_id'] = 0;
+                            // $notificacion['compra_id'] = $compra->id;
+                            // $pushClass = new NotificacionesPushFcm();
+                            // $pushClass->enviarNotificacion($notificacion, $userAlumno);
                         }
 
                         try 
