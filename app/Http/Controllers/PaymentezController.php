@@ -248,8 +248,9 @@ class PaymentezController extends BaseController
                 {
                     if ($user->activo)
                     {
-                        $correoAdmin = 'Ha sido realizado un pago por tarjeta de crédito por '.$user->nombres.' '.$user->apellidos;
-                        $detalle = '';
+                        $inf = json_decode($paymentez->paymentez_transaction);
+                        $correoAdmin = 'Se ha sido realizado un pago por tarjeta de crédito por '.$user->nombres.' '.$user->apellidos;
+                        $detalle = 'Transacción ID: '.$inf->id. ' Authorization Code: '.$inf->authorization_code.' Valor: '.$paymentez->amount;
 
                         $duracion = 0;
                         $compra = null;
