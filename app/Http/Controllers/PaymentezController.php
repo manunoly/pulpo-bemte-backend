@@ -459,6 +459,21 @@ class PaymentezController extends BaseController
                                 $messages["error"] = 'Ocurrió un error al actualizar Billetera';
                                 return redirect()->back()->withErrors($messages)->withInput();
                             }
+
+                            $userAlumno = User::where('id', $paymentez->user_id)->first();
+                            $inf = json_decode($paymentez->paymentez_transaction);
+                            try 
+                            {
+                                Mail::to($userAlumno->email)->send(new Notificacion(
+                                    $userAlumno->name, 
+                                    'Su compra de combo de ' .$combo->horas .' horas por el valor de '.$combo->valor.' con tarjeta de crédito, se ha realizado con éxito,', 'Transacción ID: '.$inf->id. ' Authorization code: '.$inf->authorization_code, '', 
+                                    env('EMPRESA')));
+                            }
+                            catch (Exception $e) 
+                            {
+                                $messages["error"] = 'No se ha podido enviar el correo';
+                                return redirect()->back()->withErrors($messages)->withInput();
+                            }
                             //enviar notificacion al alumno
                             // $userAlumno = Alumno::where('user_id', $compra->user_id)->first();
                             // $notificacion['titulo'] = 'Pago Horas Aprobado';
