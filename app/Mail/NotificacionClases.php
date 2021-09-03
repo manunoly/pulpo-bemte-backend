@@ -14,6 +14,8 @@ class NotificacionClases extends Mailable
     use Queueable, SerializesModels;
 
     public $clase;
+    public $transactionID;
+    public $valor;
     public $alumno;
     public $profesor;
     public $empresa;
@@ -24,9 +26,11 @@ class NotificacionClases extends Mailable
      *
      * @return void
      */
-    public function __construct(Clase $task, string $student, string $teacher, string $emp, bool $paraAlumno)
+    public function __construct(Clase $task, string $transactionID, string $valor, string $student, string $teacher, string $emp, bool $paraAlumno)
     {
         $this->clase = $task;
+        $this->transactionID = $transactionID;
+        $this->valor = $valor;
         $this->alumno = $student;
         $this->profesor = $teacher;
         $this->envioAlumno = $paraAlumno;
