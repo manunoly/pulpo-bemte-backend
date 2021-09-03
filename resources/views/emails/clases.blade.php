@@ -111,6 +111,7 @@
                 <p>La Clase solicitada ha sido asignada. A continuación los detalles de la misma.<p>
                 <p>Número: {{$clase->id}}<p>
                 <p>Transacción ID: {{$transactionID}}<p>
+                <p>Authorization code: {{$autorization}}<p>
                 <p>Valor: {{$valor}}<p>
                 <p>Alumno: {{$alumno}}<p>
                 <p>Profesor: {{$profesor}}<p>

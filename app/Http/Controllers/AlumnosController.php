@@ -213,9 +213,9 @@ class AlumnosController extends Controller
             {
                 $userAlum = User::where('id', $tarea->user_id)->first();
                 $userProf = User::where('id', $tarea->user_id_pro)->first();
-                Mail::to($userAlum->email)->send(new NotificacionTareas($tarea, '', '', $userAlum->name, $userProf->name, 
+                Mail::to($userAlum->email)->send(new NotificacionTareas($tarea, 'Transferencia', '', '', $userAlum->name, $userProf->name, 
                                                         env('EMPRESA'), true));
-                Mail::to($userProf->email)->send(new NotificacionTareas($tarea, '', '', $userAlum->name, $userProf->name, 
+                Mail::to($userProf->email)->send(new NotificacionTareas($tarea, 'Transferencia', '', '', $userAlum->name, $userProf->name, 
                                                         env('EMPRESA'), false));
             }
             catch (Exception $e) 
@@ -247,9 +247,9 @@ class AlumnosController extends Controller
             {
                 $userAlum = User::where('id', $clase->user_id)->first();
                 $userProf = User::where('id', $clase->user_id_pro)->first();
-                Mail::to($userAlum->email)->send(new NotificacionClases($clase,  '', '', $userAlum->name, $userProf->name, 
+                Mail::to($userAlum->email)->send(new NotificacionClases($clase, 'Transferencia', '', '', $userAlum->name, $userProf->name, 
                                                         env('EMPRESA'), true));
-                Mail::to($userProf->email)->send(new NotificacionClases($clase, '', '', $userAlum->name, $userProf->name, 
+                Mail::to($userProf->email)->send(new NotificacionClases($clase, 'Transferencia', '', '', $userAlum->name, $userProf->name, 
                                                         env('EMPRESA'), false));
             }
             catch (Exception $e) 

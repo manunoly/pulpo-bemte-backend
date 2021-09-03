@@ -15,6 +15,7 @@ class NotificacionClases extends Mailable
 
     public $clase;
     public $transactionID;
+    public $autorization;
     public $valor;
     public $alumno;
     public $profesor;
@@ -26,10 +27,11 @@ class NotificacionClases extends Mailable
      *
      * @return void
      */
-    public function __construct(Clase $task, string $transactionID, string $valor, string $student, string $teacher, string $emp, bool $paraAlumno)
+    public function __construct(Clase $task, string $transactionID, string $autorization, string $valor, string $student, string $teacher, string $emp, bool $paraAlumno)
     {
         $this->clase = $task;
         $this->transactionID = $transactionID;
+        $this->autorization = $autorization;
         $this->valor = $valor;
         $this->alumno = $student;
         $this->profesor = $teacher;

@@ -110,6 +110,7 @@
                 <p>Su pago ha sido procesado correctamente.<p>
                 <p>La Tarea solicitada ha sido asignada. A continuación los detalles de la misma.<p>
                 <p>Transacción ID: {{$transactionID}}<p>
+                <p>Authorization code: {{$autorization}}<p>
                 <p>Valor: {{$valor}}<p>
                 <p>Número: {{$tarea->id}}<p>
                 <p>Alumno: {{$alumno}}<p>

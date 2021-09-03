@@ -424,9 +424,9 @@ class AlumnoPagoController extends Controller
             {
                 try 
                 {
-                    Mail::to($userAlumno->email)->send(new NotificacionTareas($tarea, '', '', $userAlumno->name, $userProf->name, 
+                    Mail::to($userAlumno->email)->send(new NotificacionTareas($tarea, 'Transferencia', '', '', $userAlumno->name, $userProf->name, 
                                                     env('EMPRESA'), true));
-                    Mail::to($userProf->email)->send(new NotificacionTareas($tarea, '', '', $userAlumno->name, $userProf->name, 
+                    Mail::to($userProf->email)->send(new NotificacionTareas($tarea, 'Transferencia', '', '', $userAlumno->name, $userProf->name, 
                                                     env('EMPRESA'), false));
                 }
                 catch (Exception $e) 
@@ -516,9 +516,9 @@ class AlumnoPagoController extends Controller
             {
                 try 
                 {
-                    Mail::to($userAlumno->email)->send(new NotificacionClases($clase, '', '', $userAlumno->name, $userProf->name, 
+                    Mail::to($userAlumno->email)->send(new NotificacionClases($clase, 'Transferencia', '', '', $userAlumno->name, $userProf->name, 
                                                     env('EMPRESA'), true));
-                    Mail::to($userProf->email)->send(new NotificacionClases($clase,  '', '', $userAlumno->name, $userProf->name, 
+                    Mail::to($userProf->email)->send(new NotificacionClases($clase,  'Transferencia', '', '', $userAlumno->name, $userProf->name, 
                                                     env('EMPRESA'), false));
                 }
                 catch (Exception $e) 

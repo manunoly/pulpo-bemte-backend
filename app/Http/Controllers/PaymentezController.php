@@ -368,9 +368,9 @@ class PaymentezController extends BaseController
                             $inf = json_decode($paymentez->paymentez_transaction);
                             try 
                             {
-                                Mail::to($userAlumno->email)->send(new NotificacionTareas($tarea,  $inf->id, $paymentez->amount, $userAlumno->name, $userProf->name, 
+                                Mail::to($userAlumno->email)->send(new NotificacionTareas($tarea,  $inf->id, $inf->authorization_code, $paymentez->amount, $userAlumno->name, $userProf->name, 
                                                                 env('EMPRESA'), true));
-                                Mail::to($userProf->email)->send(new NotificacionTareas($tarea, $inf->id, $paymentez->amount, $userAlumno->name, $userProf->name, 
+                                Mail::to($userProf->email)->send(new NotificacionTareas($tarea, $inf->id, $inf->authorization_code, $paymentez->amount, $userAlumno->name, $userProf->name, 
                                                                 env('EMPRESA'), false));
                             }
                             catch (Exception $e) 
@@ -422,9 +422,9 @@ class PaymentezController extends BaseController
                             $inf = json_decode($paymentez->paymentez_transaction);
                             try 
                             {
-                                Mail::to($userAlumno->correo)->send(new NotificacionClases($clase, $inf->id, $paymentez->amount, $userAlumno->nombres ?? 'Alumno Nombre', $userProf->name ?? 'Profesor Nombre', 
+                                Mail::to($userAlumno->correo)->send(new NotificacionClases($clase, $inf->id, $inf->authorization_code, $paymentez->amount, $userAlumno->nombres ?? 'Alumno Nombre', $userProf->name ?? 'Profesor Nombre', 
                                                                 env('EMPRESA'), true));
-                                Mail::to($userProf->email)->send(new NotificacionClases($clase, $inf->id, $paymentez->amount, $userAlumno->nombres ?? 'Alumno Nombre', $userProf->name ?? 'Profesor Nombre', 
+                                Mail::to($userProf->email)->send(new NotificacionClases($clase, $inf->id, $inf->authorization_code, $paymentez->amount, $userAlumno->nombres ?? 'Alumno Nombre', $userProf->name ?? 'Profesor Nombre', 
                                                                 env('EMPRESA'), false));
                             }
                             catch (Exception $e) 
