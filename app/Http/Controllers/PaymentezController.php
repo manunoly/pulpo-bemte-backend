@@ -300,7 +300,7 @@ class PaymentezController extends BaseController
                             if ($clase->compra_id > 0)
                                 $compra = AlumnoCompra::where('id', $clase->compra_id )->first();
                                 $actualizarCompra = AlumnoCompra::where('id', $compra->id)->update( $dataAct );
-                            $dataClase['estado'] = 'Confirmado';
+                            $dataClase['estado'] = 'Aceptado';
                             $actualizado = Clase::where('id', $clase->id )->update( $dataClase );
                             $detalle = ' para la Clase de '.$clase->materia.', '.$clase->tema
                                         .', para el '.$clase->fecha.' a las '.$clase->hora1;
@@ -317,7 +317,7 @@ class PaymentezController extends BaseController
                                 $compra = AlumnoCompra::where('id', $tarea->compra_id )->first();
                                 $actualizarCompra = AlumnoCompra::where('id', $tarea->compra_id)->update( $dataAct );
 
-                            $dataTarea['estado'] = 'Confirmado';
+                            $dataTarea['estado'] = 'Aceptado';
                             $actualizado = Tarea::where('id', $tarea->id )->update( $dataTarea );
                             $detalle = ' para la Tarea de '.$tarea->materia.', '.$tarea->tema
                                         .', para el '.$tarea->fecha_entrega;
