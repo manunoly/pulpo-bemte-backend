@@ -24,6 +24,7 @@ use App\User;
 use App\Paymentez;
 use App\Transaction;
 use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Middleware;
@@ -325,16 +326,18 @@ class PaymentezController extends Controller
             $compra = Paymentez::where('id', $idCompra)->where('estado', 'Pagado')->first();
             if ($compra) {
                 try {
-                    // $transaction = json_decode($compra->transaction);
+                    $transaction = json_decode($compra->paymentez_transaction);
                     $transactionData = [
                         "transaction" => [
-                            "id" => $compra->id_transaction
+                            "id" => $transaction->id
                         ],
                     ];
-                    $client = new Client();
+                    $client = new \GuzzleHttp\Client();
+                    // $request = new \GuzzleHttp\Psr7\Request;
                     $authToken = BemteUtilities::getAuthToken();
+                    return $authToken;
                     if (BemteUtilities::getAuthToken()) {
-                        $response = $client->post($refundUrl, [
+                        $response = $client->request('POST', $refundUrl, [
                             'headers' => ['Content-Type' => 'application/json', 'Auth-Token' => $authToken],
                             'body' => json_encode($transactionData)
                         ]);
@@ -353,12 +356,14 @@ class PaymentezController extends Controller
                         'alert-type' => 'error',
                     ]);
                 }
-                $transactionData = json_decode($response->getBody());
+                $transactionData = $response->getBody();
+                return $transactionData;
                 if (strcmp($transactionData->status, 'success') == 0) {
-                    Paymentez::where('id_transaction', $compra->id_transaction)->update(['estado' =>  'Reembolso']);
+                    Paymentez::where('id_transaction', $transaction->id)->update(['estado' =>  'Reembolzo']);
+                    
                     //return response()->json(Msg::responseMsg('Compra reembolzada', 'ok', true, true), 202);
                     return redirect()->back()->with([
-                        'message'    => 'Compra reembolzada',
+                        'message'    => 'Compra reembolzada correctamente',
                         'alert-type' => 'success',
                     ]);
                 } else {
