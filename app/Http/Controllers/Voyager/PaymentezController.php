@@ -335,7 +335,7 @@ class PaymentezController extends Controller
                     $client = new \GuzzleHttp\Client();
                     // $request = new \GuzzleHttp\Psr7\Request;
                     $authToken = BemteUtilities::getAuthToken();
-                    return $authToken;
+                    // return $authToken;
                     if (BemteUtilities::getAuthToken()) {
                         $response = $client->request('POST', $refundUrl, [
                             'headers' => ['Content-Type' => 'application/json', 'Auth-Token' => $authToken],
@@ -356,10 +356,32 @@ class PaymentezController extends Controller
                         'alert-type' => 'error',
                     ]);
                 }
-                $transactionData = $response->getBody();
-                return $transactionData;
+                $transactionData = json_decode($response->getBody());
+                // return $transactionData;
                 if (strcmp($transactionData->status, 'success') == 0) {
                     Paymentez::where('id_transaction', $transaction->id)->update(['estado' =>  'Reembolzo']);
+
+                    $userAlumno = User::where('id', $compra->user_id)->first();
+                    $correoAdmin = 'Se ha sido realizado un reembolso al usuario '.$userAlumno->name;
+                    $detalle = 'Transacción ID: '.$transaction->id. ' Authorization Code: '.$transaction->authorization_code.' Valor: '.$compra->amount;
+
+                    try 
+                    {
+                        Mail::to($userAlumno->email)->send(new Notificacion(
+                            $userAlumno->name, 
+                            'Se ha realizado el reembolso de su pago por el valor de $' .$compra->amount .' realizado con tarjeta de crédito.', 'Transacción ID: '.$transaction->id. ' Authorization code: '.$transaction->authorization_code, '', 
+                            env('EMPRESA')));
+
+                        Mail::to(env('MAILADMIN'))->send(new Notificacion(
+                            'Administrador de '.env('EMPRESA'), 
+                            $correoAdmin, $detalle, 'Por favor, revisar la transacción.', 
+                            env('EMPRESA')));
+                    }
+                    catch (Exception $e) 
+                    {
+                        $messages["error"] = 'No se ha podido enviar el correo';
+                        return redirect()->back()->withErrors($messages)->withInput();
+                    }
                     
                     //return response()->json(Msg::responseMsg('Compra reembolzada', 'ok', true, true), 202);
                     return redirect()->back()->with([
