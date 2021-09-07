@@ -356,9 +356,9 @@ class PaymentezController extends Controller
                         'alert-type' => 'error',
                     ]);
                 }
-                $transactionData = $response->getBody();
+                $transactionData = json_decode($response->getBody());
                 return $transactionData;
-                if (strcmp($transactionData->status, 'success') == 0) {
+                if ($transactionData->status == 'success') {
                     Paymentez::where('id_transaction', $transaction->id)->update(['estado' =>  'Reembolzo']);
                     
                     //return response()->json(Msg::responseMsg('Compra reembolzada', 'ok', true, true), 202);
