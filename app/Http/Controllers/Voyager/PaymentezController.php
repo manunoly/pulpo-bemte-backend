@@ -455,7 +455,7 @@ class PaymentezController extends Controller
                             $horas = $horas['hora'];
                             $compraAlumno = AlumnoCompra::where('horas', $horas)->first();
                             if ( $clase != null) {
-                                $duracion = $clase->duracion + ($clase->personas - 1);
+                                $duracion = $clase->duracion + ($clase->personas - 1) * -1;
                             } else if ($tarea != null){
                                 $duracion = $tarea->tiempo_estimado;
                             } else {
