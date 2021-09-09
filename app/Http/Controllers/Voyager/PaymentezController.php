@@ -29,7 +29,14 @@ use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Middleware;
 use App\BemteUtilities;
-
+use App\Alumno;
+use App\Tarea;
+use App\Clase;
+use App\AlumnoPago;
+use App\AlumnoCompra;
+use App\CombosHora;
+use App\Profesore;
+use App\Pago;
 use App\Mail\Notificacion;
 use DateTime;
 
