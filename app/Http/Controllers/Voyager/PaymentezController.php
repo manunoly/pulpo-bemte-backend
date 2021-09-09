@@ -371,7 +371,8 @@ class PaymentezController extends Controller
                     // $clase = $compra->id_clase;
                     // $tarea = $compra->id_tarea;
                     Paymentez::where('id', $idCompra)->update(['estado' =>  'Reembolzo']);
-
+                    $duracion = 0;
+                    $compraAlumno = null;
                     $tarea = null;
                     if ($compra->id_tarea > 0)
                     {
