@@ -415,13 +415,12 @@ class PaymentezController extends Controller
 
                     if ($clase != null)
                         {
-                            $duracion = $clase->duracion + ($clase->personas - 1);
+                            $duracion = $clase->duracion;
                             $dataAct['estado'] = 'Rechazado';
                             if ($clase->compra_id > 0)
                                 $compraAlumno = AlumnoCompra::where('id', $clase->compra_id )->first();
-                                $actualizarCompra = AlumnoCompra::where('id', $compra->id)->update( $dataAct );
+                                $actualizarCompra = AlumnoCompra::where('id', $clase->compra_id )->update( $dataAct );
                             
-                            $duracion = $compraAlumno->horas;
                             $dataClase['estado'] = 'Pago_Rechazado';
                             $actualizado = Clase::where('id', $clase->id )->update( $dataClase );
                             if(!$actualizado )
@@ -436,7 +435,7 @@ class PaymentezController extends Controller
                                 $compraAlumno = AlumnoCompra::where('id', $tarea->compra_id )->first();
                                 $actualizarCompra = AlumnoCompra::where('id', $tarea->compra_id)->update( $dataAct );
                             
-                            $duracion = $compraAlumno->horas;
+                            $duracion = $tarea->tiempo_estimado;
                             $dataTarea['estado'] = 'Pago_Rechazado';
                             $actualizado = Tarea::where('id', $tarea->id )->update( $dataTarea );
                             if(!$actualizado )
