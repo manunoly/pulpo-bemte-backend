@@ -430,7 +430,7 @@ class PaymentezController extends Controller
                         }
                         if ($tarea != null)
                         {
-                            $duracion = $tarea->tiempo_estimado
+                            $duracion = $tarea->tiempo_estimado;
                             $dataAct['estado'] = 'Rechazado';
                             if ($tarea->compra_id > 0)
                                 $compraAlumno = AlumnoCompra::where('id', $tarea->compra_id )->first();
