@@ -420,6 +420,8 @@ class PaymentezController extends Controller
                             if ($clase->compra_id > 0)
                                 $compraAlumno = AlumnoCompra::where('id', $clase->compra_id )->first();
                                 $actualizarCompra = AlumnoCompra::where('id', $compra->id)->update( $dataAct );
+                            
+                            $duracion = $compraAlumno->horas;
                             $dataClase['estado'] = 'Pago_Rechazado';
                             $actualizado = Clase::where('id', $clase->id )->update( $dataClase );
                             if(!$actualizado )
@@ -429,12 +431,12 @@ class PaymentezController extends Controller
                         }
                         if ($tarea != null)
                         {
-                            $duracion = $tarea->tiempo_estimado;
                             $dataAct['estado'] = 'Rechazado';
                             if ($tarea->compra_id > 0)
                                 $compraAlumno = AlumnoCompra::where('id', $tarea->compra_id )->first();
                                 $actualizarCompra = AlumnoCompra::where('id', $tarea->compra_id)->update( $dataAct );
-
+                            
+                            $duracion = $compraAlumno->horas;
                             $dataTarea['estado'] = 'Pago_Rechazado';
                             $actualizado = Tarea::where('id', $tarea->id )->update( $dataTarea );
                             if(!$actualizado )
@@ -453,6 +455,7 @@ class PaymentezController extends Controller
                             $horas = CombosHora::where('descuento', $compra->amount)->first();
                             $horas = $horas['hora'];
                             $compraAlumno = AlumnoCompra::where('horas', $horas)->first();
+                            $duracion = $compraAlumno->horas * -1;
                         }                    
 
                         if ($tarea != null)
@@ -472,7 +475,7 @@ class PaymentezController extends Controller
                         }
                         if ($compraAlumno != null)
                         {
-                            $dataBill['billetera'] = $billetera->billetera - $compraAlumno->horas + $duracion;
+                            $dataBill['billetera'] = $billetera->billetera + $duracion;
                             $actualizado = Alumno::where('user_id', $billetera->user_id)->update( $dataBill );
                             if(!$actualizado )
                             {
