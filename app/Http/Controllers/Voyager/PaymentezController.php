@@ -398,9 +398,9 @@ class PaymentezController extends Controller
                         {
                             return response()->json(['error' => 'Especifique una opción para el Combo'], 401);
                         }
-                        if (is_numeric($request['combo_id']))
+                        if (is_numeric($compra->id_combo))
                         {
-                            $combo = AlumnoCompra::where('id', $compra->id_combo)->where('user_id', $request['user_id'])->first();
+                            $combo = AlumnoCompra::where('id', $compra->id_combo)->where('user_id', $compra->user_id)->first();
                             
                         }
                     } 
