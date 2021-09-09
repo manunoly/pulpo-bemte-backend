@@ -421,8 +421,8 @@ class PaymentezController extends Controller
                                 $compraAlumno = AlumnoCompra::where('id', $clase->compra_id )->first();
                                 $actualizarCompra = AlumnoCompra::where('id', $clase->compra_id )->update( $dataAct );
                             
-                            $dataClase['estado'] = 'Pago_Rechazado';
-                            $actualizado = Clase::where('id', $clase->id )->update( $dataClase );
+                            $dataClase['estado'] = 'Cancelado';
+                            $actualizado = Clase::where('id', $compra->id_clase )->update( $dataClase );
                             if(!$actualizado )
                             {
                                 return response()->json(['error' => 'Error al actualizar solicitud'], 401);
@@ -436,8 +436,8 @@ class PaymentezController extends Controller
                                 $actualizarCompra = AlumnoCompra::where('id', $tarea->compra_id)->update( $dataAct );
                             
                             $duracion = $tarea->tiempo_estimado;
-                            $dataTarea['estado'] = 'Pago_Rechazado';
-                            $actualizado = Tarea::where('id', $tarea->id )->update( $dataTarea );
+                            $dataTarea['estado'] = 'Cancelado';
+                            $actualizado = Tarea::where('id', $compra->id_tarea )->update( $dataTarea );
                             if(!$actualizado )
                             {
                                 return response()->json(['error' => 'Error al actualizar solicitud'], 401);
@@ -455,9 +455,9 @@ class PaymentezController extends Controller
                             $horas = $horas['hora'];
                             $compraAlumno = AlumnoCompra::where('horas', $horas)->first();
                             if ( $clase != null) {
-                                $duracion = $compraAlumno->horas;
+                                $duracion = $clase->duracion + ($clase->personas - 1);
                             } else if ($tarea != null){
-                                $duracion = $compraAlumno->horas;
+                                $duracion = $tarea->tiempo_estimado;
                             } else {
                                 $duracion = $compraAlumno->horas * -1;
                             }
