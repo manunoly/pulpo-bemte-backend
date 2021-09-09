@@ -474,7 +474,7 @@ class PaymentezController extends Controller
                         }
                         if ($compraAlumno != null)
                         {
-                            $dataBill['billetera'] = $billetera->billetera - $compraAlumno->horas + $duracion;
+                            $dataBill['billetera'] = $billetera->billetera - $compraAlumno->horas - $duracion;
                             $actualizado = Alumno::where('user_id', $billetera->user_id)->update( $dataBill );
                             if(!$actualizado )
                             {
