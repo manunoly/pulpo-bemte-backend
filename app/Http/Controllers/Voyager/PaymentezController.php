@@ -449,9 +449,11 @@ class PaymentezController extends Controller
                             $messages["error"] = 'El Alumno no existe';
                             return redirect()->back()->withErrors($messages)->withInput();
                         }
-                        if ($compraAlumno == null)
-                            $compraAlumno = AlumnoCompra::where('id', $combo->id)->first();
-                        
+                        if ($compraAlumno == null) {
+                            $horas = CombosHora::where('descuento', $compra->amount)->first();
+                            $horas = $horas['hora'];
+                            $compraAlumno = AlumnoCompra::where('horas', $horas)->first();
+                        }                    
 
                         if ($tarea != null)
                         {
@@ -470,7 +472,7 @@ class PaymentezController extends Controller
                         }
                         if ($compraAlumno != null)
                         {
-                            $dataBill['billetera'] = $billetera->billetera - $compra->horas + $duracion;
+                            $dataBill['billetera'] = $billetera->billetera - $compraAlumno->horas + $duracion;
                             $actualizado = Alumno::where('user_id', $billetera->user_id)->update( $dataBill );
                             if(!$actualizado )
                             {
