@@ -454,7 +454,14 @@ class PaymentezController extends Controller
                             $horas = CombosHora::where('descuento', $compra->amount)->first();
                             $horas = $horas['hora'];
                             $compraAlumno = AlumnoCompra::where('horas', $horas)->first();
-                            $duracion = $compraAlumno->horas * -1;
+                            if ( $clase != null) {
+                                $duracion = $compraAlumno->horas;
+                            } else if ($tarea != null){
+                                $duracion = $compraAlumno->horas;
+                            } else {
+                                $duracion = $compraAlumno->horas * -1;
+                            }
+                            
                         }                    
 
                         if ($tarea != null)
