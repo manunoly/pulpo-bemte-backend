@@ -359,7 +359,7 @@ class PaymentezController extends Controller
                 $transactionData = json_decode($response->getBody());
                 // return $transactionData;
                 if (strcmp($transactionData->status, 'success') == 0) {
-                    Paymentez::where('id_transaction', $transaction->id)->update(['estado' =>  'Reembolzo']);
+                    Paymentez::where('id_transaction', $compra->id_transaction)->update(['estado' =>  'Reembolzo']);
 
                     $userAlumno = User::where('id', $compra->user_id)->first();
                     $correoAdmin = 'Se ha sido realizado un reembolso al usuario '.$userAlumno->name;
@@ -398,7 +398,7 @@ class PaymentezController extends Controller
             } else {
                 // return response()->json(Msg::responseMsg('No se encontró la referencia de la compra', 'error', 500, false), 500);
                 return redirect()->back()->with([
-                    'message'    => 'No se encontró la referencia de la compra',
+                    'message'    => 'La Compra ya ha sido reembolsada',
                     'alert-type' => 'error',
                 ]);
             }
