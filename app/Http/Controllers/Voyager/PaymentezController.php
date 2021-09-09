@@ -359,10 +359,120 @@ class PaymentezController extends Controller
                 $transactionData = json_decode($response->getBody());
                 // return $transactionData;
                 if (strcmp($transactionData->status, 'success') == 0) {
-                    Paymentez::where('id_transaction', $compra->id_transaction)->update(['estado' =>  'Reembolzo']);
+
+                    // $combo = $compra->id_combo;
+                    // $clase = $compra->id_clase;
+                    // $tarea = $compra->id_tarea;
+                    Paymentez::where('id', $idCompra)->update(['estado' =>  'Reembolzo']);
+
+                    $tarea = null;
+                    if ($compra->id_tarea > 0)
+                    {
+                        if (($compra->id_clase > 0) || ($compra->id_combo != '0'))
+                        {
+                            return response()->json(['error' => 'Especifique una opción para la tarea'], 401);
+                        }
+                        $tarea = Tarea::where('id', $compra->id_tarea)->first();
+                        if ($tarea == null)
+                        {
+                            return response()->json(['error' => 'No existe Tarea'], 401);
+                        }
+                    }
+                    $clase = null;
+                    if ($compra->id_clase > 0)
+                    {
+                        if ($compra->tarea_id > 0 || ($compra->id_combo != '0'))
+                        {
+                            return response()->json(['error' => 'Especifique una opción para la clase'], 401);
+                        }
+                        $clase = Clase::where('id', $compra->id_clase)->first();
+                        if ($clase == null)
+                        {
+                            return response()->json(['error' => 'No existe Clase'], 401);
+                        }
+                    }
+                    $combo = null;
+                    if ($compra->id_combo != '0')
+                    {
+                        if ($compra->tarea_id > 0 || $compra->id_clase > 0)
+                        {
+                            return response()->json(['error' => 'Especifique una opción para el Combo'], 401);
+                        }
+                        if (is_numeric($request['combo_id']))
+                        {
+                            $combo = AlumnoCompra::where('id', $compra->id_combo)->where('user_id', $request['user_id'])->first();
+                            
+                        }
+                    } 
+
+                    if ($clase != null)
+                        {
+                            $duracion = $clase->duracion + ($clase->personas - 1);
+                            $dataAct['estado'] = 'Rechazado';
+                            if ($clase->compra_id > 0)
+                                $compraAlumno = AlumnoCompra::where('id', $clase->compra_id )->first();
+                                $actualizarCompra = AlumnoCompra::where('id', $compra->id)->update( $dataAct );
+                            $dataClase['estado'] = 'Pago_Rechazado';
+                            $actualizado = Clase::where('id', $clase->id )->update( $dataClase );
+                            if(!$actualizado )
+                            {
+                                return response()->json(['error' => 'Error al actualizar solicitud'], 401);
+                            }
+                        }
+                        if ($tarea != null)
+                        {
+                            $duracion = $tarea->tiempo_estimado;
+                            $dataAct['estado'] = 'Rechazado';
+                            if ($tarea->compra_id > 0)
+                                $compraAlumno = AlumnoCompra::where('id', $tarea->compra_id )->first();
+                                $actualizarCompra = AlumnoCompra::where('id', $tarea->compra_id)->update( $dataAct );
+
+                            $dataTarea['estado'] = 'Pago_Rechazado';
+                            $actualizado = Tarea::where('id', $tarea->id )->update( $dataTarea );
+                            if(!$actualizado )
+                            {
+                                return response()->json(['error' => 'Error al actualizar solicitud'], 401);
+                            }
+                        }
+
+                        $billetera = Alumno::where('user_id', $compra->user_id)->first();
+                        if ($billetera == null)
+                        {
+                            $messages["error"] = 'El Alumno no existe';
+                            return redirect()->back()->withErrors($messages)->withInput();
+                        }
+                        if ($compraAlumno == null)
+                            $compraAlumno = AlumnoCompra::where('id', $combo->id)->first();
+                        
+
+                        if ($tarea != null)
+                        {
+                            
+                            $profeTarea = Profesore::where('user_id', $tarea->user_id_pro)->first();
+                            $pagoProf = Profesore::where('user_id', $tarea->user_id_pro)->update('estado', 'Cancelado');
+                                                      
+                        }
+                        if ($clase != null)
+                        {
+                            
+                            $profeClase = Profesore::where('user_id', $clase->user_id_pro)->first();
+                            $pagoProf = Profesore::where('user_id', $clase->user_id_pro)->update('estado', 'Cancelado');
+                            
+                        
+                        }
+                        if ($compraAlumno != null)
+                        {
+                            $dataBill['billetera'] = $billetera->billetera - $compra->horas + $duracion;
+                            $actualizado = Alumno::where('user_id', $billetera->user_id)->update( $dataBill );
+                            if(!$actualizado )
+                            {
+                                $messages["error"] = 'Ocurrió un error al actualizar Billetera';
+                                return redirect()->back()->withErrors($messages)->withInput();
+                            }
+                        }
 
                     $userAlumno = User::where('id', $compra->user_id)->first();
-                    $correoAdmin = 'Se ha sido realizado un reembolso al usuario '.$userAlumno->name;
+                    $correoAdmin = 'Se ha realizado un reembolso al usuario '.$userAlumno->name;
                     $detalle = 'Transacción ID: '.$transaction->id. ' Authorization Code: '.$transaction->authorization_code.' Valor: '.$compra->amount;
 
                     try 
