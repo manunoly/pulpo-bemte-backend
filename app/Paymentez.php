@@ -10,6 +10,7 @@ class Paymentez extends Model
     protected $table ='paymentez';
     protected $fillable = [
 		'user_id',
+		'id_bemte',
         'id_transaction',
         'holder_name',
         'email',

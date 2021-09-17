@@ -160,7 +160,8 @@ class PaymentezController extends BaseController
 
             $paymentez =  Paymentez::create([
                 'user_id' => $validateUser->user_id,
-                'id_transaction' => $request->id,
+                'id_bemte' => $request->id,
+                'id_transaction' => $inf->id,
                 'holder_name' => $request->holder_name,
                 'email' => $validateUser->correo,
                 'number_card' => $request->number_card,
