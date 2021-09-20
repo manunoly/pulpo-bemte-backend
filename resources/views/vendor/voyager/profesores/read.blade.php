@@ -56,7 +56,7 @@
         <div class="row">
             <div class="col-md-12">
 
-                <div class="panel panel-bordered" style="padding-bottom:5px;">
+                <div class="panel panel-bordered" style="padding-bottom:10px;">
                 <h3 class="panel-title">Cálculo del valor total pagos: </h3>
                     <form role="form"
                             class="form-edit-add"
@@ -65,21 +65,21 @@
                         {{ method_field('PUT') }}
                         {{ csrf_field() }}
                         <div class="panel-body">
-                            <div class="column">
-                                <div class='col-sm-6'>
+                            <div class="column" style="padding-top:5px;">
+                                <div class='col-sm-4' style="padding-top:5px;">
                                     <input id="startDate" class="date form-control"type="text" name="input" placeholder="Fecha Inicio" onchange="myFunction();">
 
                                 </div>
                                 
-                                <div class='col-sm-6'>
+                                <div class='col-sm-4' style="padding-top:5px;">
                                     <input id="endDate" class="date form-control"type="text" name="input" placeholder="Fecha Fin" onchange="mainInfo(this.value);">
                                 </div>
-                            </div>
-                            
-                            <div class="panel-body" style="margin-top:10px;">
-                            <a href="javascript:;" class="btn btn-default" id="valorTotalButton" data-target="#valorTotal_modal" >
-                                <i class="voyager-dollar pull-left"></i><span>  Calcular  </span>
-                            </a>
+
+                                <div style="padding-bottom:5px;">
+                                <a href="javascript:;" class="btn btn-default" id="valorTotalButton" data-target="#valorTotal_modal" >
+                                    <i class="voyager-dollar pull-left"></i><span>  Calcular  </span>
+                                </a>
+                                </div>
                             </div>
                             
                         </div>

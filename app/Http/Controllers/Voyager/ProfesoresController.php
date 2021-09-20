@@ -154,6 +154,8 @@ class ProfesoresController extends Controller
                 // foreach ($total as $item)
                 // {
                     Profesore::where('user_id', $value->user_id)->update(['valorTotal' =>  $valorTotal]);
+                    Pago::where('user_id', $value->user_id)->update(['valorPendiente' =>  $valorTotal]);
+
                 // }
                 
             }
@@ -974,22 +976,30 @@ class ProfesoresController extends Controller
         // Calendar::where('user_id', $userID)->delete();
         // Calendar::truncate();
         if ($startDate != '' &&  $endDate != '') {
-            $startDate = date_format(date_create($startDate), "Y-m-d H:i:s");
-            $endDate = date_format(date_create($endDate), "Y-m-d H:i:s");
+            $startDate = date_format(date_create($startDate), "Y-m-d");
+            $endDate = date_format(date_create($endDate), "Y-m-d");
             $pagos = Pago::where('user_id', $userID)->where('estado', 'Solicitado')
             ->where('created_at', '>=', $startDate)
             ->where('created_at', '<=', $endDate)->get();         
 
-            $valorTotal = $pagos->sum('valor');
+            $calculoValor = $pagos->sum('valor');
 
                 Calendar::create([
                     'user_id' => $userID,
                     'start_date' => isset($startDate) ? $startDate : null,
                     'end_date' => isset($endDate) ? $endDate : null,
-                    'valor' => $valorTotal,
+                    'valor' => $calculoValor,
                 ]);
 
-                Profesore::where('user_id', $userID)->update(['valorTotal' =>  $valorTotal]);
+                // Profesore::where('user_id', $userID)->update(['valorTotal' =>  $calculoValor]);
+
+                $valor = Pago::where('user_id', $userID)->where('estado', 'Solicitado')->get(); 
+                $valorTotal = $valor->sum('valor');
+                foreach ($valor as $item) {
+                    Pago::where('id', $item->id)->update(['calculoValor' =>  $calculoValor]);
+                    $valorPendiente = $valorTotal - $calculoValor;
+                    Pago::where('id', $item->id)->update(['valorPendiente' =>  $valorPendiente]);
+                }
             
             
         } else {
@@ -1004,6 +1014,7 @@ class ProfesoresController extends Controller
             ]);
 
             Profesore::where('user_id', $userID)->update(['valorTotal' =>  $valorTotal]);
+            Pago::where('user_id', $userID)->update(['valorPendiente' =>  $valorTotal]);
         }
 
         return redirect()->back();
