@@ -147,17 +147,17 @@ class ProfesoresController extends Controller
         {
             $pagos = Pago::where('user_id', $item->user_id)->where('estado', 'Solicitado')->get(); 
             $valorTotal = $pagos->sum('valor');
-            foreach ($pagos as $value)
-            {
+            // foreach ($pagos as $value)
+            // {
                 // return $total;
                 // foreach ($total as $item)
                 // {
-                    Profesore::where('user_id', $value->user_id)->update(['valorTotal' =>  $valorTotal]);
-                    Pago::where('user_id', $value->user_id)->update(['valorPendiente' =>  $valorTotal]);
+                    Profesore::where('user_id', $item->user_id)->update(['valorTotal' =>  $valorTotal]);
+                    Pago::where('user_id', $item->user_id)->update(['valorPendiente' =>  $valorTotal]);
 
                 // }
                 
-            }
+            // }
         }
 
         return Voyager::view($view, compact(

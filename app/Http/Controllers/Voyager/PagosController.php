@@ -140,6 +140,7 @@ class PagosController extends Controller
         {
             $pagos = Pago::where('user_id', $item->user_id)->where('estado', 'Solicitado')->get(); 
             $valorTotal = $pagos->sum('valor'); 
+            // $valorTotal = 0.00; 
             foreach ($pagos as $value)
             {
                 Pago::where('id', $value->id)->where('estado', 'Solicitado')->update(['valorTotal' => $valorTotal]);
@@ -217,6 +218,13 @@ class PagosController extends Controller
         if (view()->exists("voyager::$slug.read")) {
             $view = "voyager::$slug.read";
         }
+
+        $pagos = Pago::where('id', $id)->where('estado', 'Solicitado')->get(); 
+        $valorTotal = $pagos->sum('valor'); 
+        // foreach ($pagos as $value)
+        // {
+            Pago::where('id', $id)->where('estado', 'Solicitado')->update(['valorTotal' => $valorTotal]);
+        // }
 
         return Voyager::view($view, compact('dataType', 'dataTypeContent', 'isModelTranslatable', 'isSoftDeleted'));
     }
