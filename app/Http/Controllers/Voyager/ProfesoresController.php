@@ -145,12 +145,11 @@ class ProfesoresController extends Controller
         // return $userID;
         foreach ($userID as $item)
         {
-            $pagos = Pago::where('estado', 'Solicitado')->get(); 
+            $pagos = Pago::where('user_id', $item->user_id)->where('estado', 'Solicitado')->get(); 
             foreach ($pagos as $value)
             {
-                $total = Pago::where('user_id', $value->user_id)->get(); 
                 // return $total;
-                $valorTotal = $total->sum('valor');
+                $valorTotal = $pagos->sum('valor');
                 // foreach ($total as $item)
                 // {
                     Profesore::where('user_id', $value->user_id)->update(['valorTotal' =>  $valorTotal]);
