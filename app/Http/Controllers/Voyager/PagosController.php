@@ -142,7 +142,7 @@ class PagosController extends Controller
             $valorTotal = $pagos->sum('valor'); 
             foreach ($pagos as $item)
             {
-                Pago::where('id', $item->id)->where('estado', 'Solicitado')->update(['valorTotal' => $valorTotal]);
+                Pago::where('id', $item->id)->update(['valorTotal' => $valorTotal]);
             }
         }
         return Voyager::view($view, compact(
