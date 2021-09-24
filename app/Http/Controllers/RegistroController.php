@@ -66,6 +66,9 @@ class RegistroController extends Controller
         ]);
         if ($validator->fails()) 
         {
+            if(strlen($request['apodo']) > 20) {
+                return response()->json(['error' => 'El apodo no debe ser mayor a 20 caracteres.'], 401);
+            }
             return response()->json(['error' => $validator->errors()], 406);
         }
         if (($request['tipo'] != 'Alumno') && ($request['tipo'] != 'Profesor'))
