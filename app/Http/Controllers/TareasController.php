@@ -535,12 +535,12 @@ class TareasController extends Controller
                     ->join('materias', 'tareas.materia', '=', 'materias.nombre')
                     ->leftJoin('profesores', 'profesores.user_id', '=', 'tareas.user_id_pro')
                     ->leftJoin('users as p', 'p.id', '=', 'tareas.user_id_pro')
-                    ->leftJoin('alumno_compra as al', 'al.id', '=', 'tareas.compra_id')
+                    ->leftJoin('tarea_profesor as tp', 'tp.tarea_id', '=', 'tareas.id')
                     ->where('tareas.id', $search)
                     ->select( 'tareas.*', 'profesores.descripcion as profDescripcion', 'icono',
                     'users.name as alumno', 'alumnos.calificacion as alumnoCalif', 'users.avatar as alumnoAvatar',
                     'p.name as profesor', 'profesores.calificacion as profCalif', 'p.avatar as profAvatar',
-                    'alumnos.apodo AS apodoAlumno', 'profesores.apodo as apodoProfesor', 'al.valor as valor_compra')
+                    'alumnos.apodo AS apodoAlumno', 'profesores.apodo as apodoProfesor', 'tp.inversion as valor_compra')
                     ->first();
         if ($tarea != null)
         {
