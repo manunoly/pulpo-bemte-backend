@@ -137,11 +137,19 @@ class MultasController extends Controller
         $userID = $dataTypeContent;
         foreach ($userID as $item)
         {
-            $multas = Multa::where('user_id', $item->user_id)->get(); 
+            $multas = Multa::where('user_id', $item->user_id)->where('estado', 'Aprobado')->get(); 
+            // $valorTotal = $multas->sum('valor');
+            foreach ($multas as $item)
+            {
+                Multa::where('id', $item->id)->where('estado', 'Aprobado')->update(['valorTotal' => 0]);
+
+            }
+
+            $multas = Multa::where('user_id', $item->user_id)->where('estado', 'Solicitado')->get(); 
             $valorTotal = $multas->sum('valor');
             foreach ($multas as $item)
             {
-                Multa::where('id', $item->id)->update(['valorTotal' => $valorTotal]);
+                Multa::where('id', $item->id)->where('estado', 'Solicitado')->update(['valorTotal' => $valorTotal]);
 
             }
         }

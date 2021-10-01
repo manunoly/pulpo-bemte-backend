@@ -142,22 +142,37 @@ class ProfesoresController extends Controller
         }
 
         $userID = $dataTypeContent;
+        $valorTotal = 0;
         // return $userID;
         foreach ($userID as $item)
         {
             $pagos = Pago::where('user_id', $item->user_id)->where('estado', 'Solicitado')->get(); 
-            $valorTotal = $pagos->sum('valor');
-            // foreach ($pagos as $value)
-            // {
+            $pagosTotal = $pagos->sum('valor');
+            if($pagosTotal > 0){
+                $multas = Multa::where('user_id', $item->user_id)->where('estado', 'Solicitado')->get(); 
+                $multasTotal = $multas->sum('valor');
+                if($multasTotal > $pagosTotal) {
+                    $valorTotal = 0;
+                } else {
+                    $valorTotal = $pagosTotal - $multasTotal; 
+                }
+            } else {
+                $valorTotal = $pagosTotal;
+            }
+            
+            foreach ($pagos as $value)
+            {
                 // return $total;
                 // foreach ($total as $item)
                 // {
-                    Profesore::where('user_id', $item->user_id)->update(['valorTotal' =>  $valorTotal]);
-                    Pago::where('user_id', $item->user_id)->update(['valorPendiente' =>  $valorTotal]);
+                    Profesore::where('user_id', $value->user_id)->update(['valorTotal' =>  $valorTotal]);
+                    Pago::where('user_id', $value->user_id)->update(['valorPendiente' =>  $valorTotal]);
+                    // Pago::where('user_id', $value->user_id)->update(['valorTotal' =>  $valorTotal]);
+                    Pago::where('user_id', $value->user_id)->update(['calculoValor' =>  0]);
 
                 // }
                 
-            // }
+            }
         }
 
         return Voyager::view($view, compact(
@@ -910,6 +925,7 @@ class ProfesoresController extends Controller
         try
         {
             $userID = \Request::get('user_id');
+            $valorTotal = 0;
             // $pagos = Calendar::where('user_id', $userID)->get(); 
             // if (count($pagos) == 0) {
             //     $pagos = Pago::where('user_id', $userID)->where('estado', 'Solicitado')->get();
@@ -921,11 +937,45 @@ class ProfesoresController extends Controller
             $pagos = Pago::where('user_id', $userID)->where('estado', 'Solicitado')->get(); 
             foreach ($pagos as $item)
             {
-                Pago::where('id', $item->id)->update(['estado' => 'Aprobado']);
+                $valorPagar = Pago::where('id', $item->id)->where('calculoValor','>', 0)->first();
+                
+                if($valorPagar){
+                    $valorTotal = $valorPagar;
+                } else {
+                    $pagosTotal = $pagos->sum('valor');
+                    if($pagosTotal > 0){
+                        $multas = Multa::where('user_id', $item->user_id)->where('estado', 'Solicitado')->get(); 
+                        $multasTotal = $multas->sum('valor');
+                        if($multasTotal > $pagosTotal) {
+                            $valorTotal = 0;
+                        } else {
+                            $valorTotal = $pagosTotal - $multasTotal; 
+                        }
+                    } else {
+                        $valorTotal = $pagosTotal;
+                    }
+                    foreach ($pagos as $item)
+                    {
+                        Pago::where('id', $item->id)->update(['estado' => 'Aprobado']);
+                        Pago::where('id', $item->id)->update(['valorPendiente' =>  $valorTotal]);
+                    }
+                }
             }
+            
+            $profesor = Profesore::where('user_id', $userID)->select('valorTotal')->first();
+            // return $profesor;
+            if ($profesor){
+                $valorNuevo = (float)$profesor->valorTotal - $valorTotal;
+                Profesore::where('user_id', $userID)->update(['valorTotal' => $valorNuevo]);
+                Pago::where('user_id', $userID)->update(['valorPendiente' =>  $valorNuevo]);
+                Pago::where('user_id', $userID)->update(['valorTotal' =>  $valorNuevo]);
+                Pago::where('user_id', $userID)->update(['calculoValor' =>  0]);
+            }
+            // Profesore::where('user_id', $userID)->update(['valorTotal' => $pagos->sum('valor')]);
+            // Pago::where('user_id', $userID)->update(['valorTotal' =>  $pagos->sum('valor')]);
             // \Request::session()->flash('success', 'Pagos realizados por un valor de $ '.$pagos->sum('valor'));
             return redirect()->back()->with([
-                'message'    => 'Pagos realizados por un valor de $ '.$pagos->sum('valor'),
+                'message'    => 'Pagos realizados por un valor de $ '.$valorTotal,
                 'alert-type' => 'success',
             ]);
         }
@@ -950,6 +1000,7 @@ class ProfesoresController extends Controller
             {
                 Multa::where('id', $item->id)->update(['estado' => 'Aprobado']);
             }
+            Multa::where('user_id', $userID)->where('estado', 'Aprobado')->update(['valorTotal' =>  0]);            
             // \Request::session()->flash('success', 'Multas realizados por un valor de $ '.$multas->sum('valor'));
             return redirect()->back()->with([
                 'message'    => 'Multas realizados por un valor de $ '.$multas->sum('valor'),
@@ -979,9 +1030,17 @@ class ProfesoresController extends Controller
             $endDate = date_format(date_create($endDate), "Y-m-d");
             $pagos = Pago::where('user_id', $userID)->where('estado', 'Solicitado')
             ->where('created_at', '>=', $startDate)
-            ->where('created_at', '<=', $endDate)->get();         
+            ->where('created_at', '<=', $endDate)->get(); 
+            
+            $pagosTotal = $pagos->sum('valor');
 
-            $calculoValor = $pagos->sum('valor');
+            $multas = Multa::where('user_id', $userID)->where('estado', 'Solicitado')->get(); 
+            $multasTotal = $multas->sum('valor');
+            if($multasTotal > $pagosTotal) {
+                $calculoValor = 0;
+            } else {
+                $calculoValor = $pagosTotal - $multasTotal; 
+            }
 
                 Calendar::create([
                     'user_id' => $userID,
@@ -990,8 +1049,6 @@ class ProfesoresController extends Controller
                     'valor' => $calculoValor,
                 ]);
 
-                // Profesore::where('user_id', $userID)->update(['valorTotal' =>  $calculoValor]);
-
                 $valor = Pago::where('user_id', $userID)->where('estado', 'Solicitado')->get(); 
                 $valorTotal = $valor->sum('valor');
                 foreach ($valor as $item) {
@@ -999,11 +1056,20 @@ class ProfesoresController extends Controller
                     $valorPendiente = $valorTotal - $calculoValor;
                     Pago::where('id', $item->id)->update(['valorPendiente' =>  $valorPendiente]);
                 }
+                // Profesore::where('user_id', $userID)->update(['valorTotal' =>  $valorTotal]);
+
             
             
         } else {
             $pagos = Pago::where('user_id', $userID)->where('estado', 'Solicitado')->get();         
-            $valorTotal = $pagos->sum('valor');
+            $pagosTotal = $pagos->sum('valor');
+            
+            $multas = Multa::where('user_id', $userID)->where('estado', 'Solicitado')->get(); 
+            $multasTotal = $multas->sum('valor');
+            $valorTotal = $pagosTotal - $multasTotal;
+            if($valorTotal < 0){
+                $valorTotal = $valorTotal * -1;
+            }
 
             Calendar::create([
                 'user_id' => $userID,

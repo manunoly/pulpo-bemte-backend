@@ -138,6 +138,22 @@ class PagosController extends Controller
         $userID = $dataTypeContent;
         foreach ($userID as $item)
         {
+            $multas = Pago::where('user_id', $item->user_id)->where('estado', 'Aprobado')->get(); 
+            // $valorTotal = $multas->sum('valor');
+            foreach ($multas as $item)
+            {
+                Pago::where('id', $item->id)->where('estado', 'Aprobado')->update(['valorTotal' => 0]);
+
+            }
+
+            $pagos = Pago::where('user_id', $item->user_id)->where('estado', 'Cancelado')->get(); 
+            $valorTotal = $pagos->sum('valor'); 
+            // $valorTotal = 0.00; 
+            foreach ($pagos as $value)
+            {
+                Pago::where('id', $value->id)->where('estado', 'Cancelado')->update(['valorTotal' => 0]);
+            }
+
             $pagos = Pago::where('user_id', $item->user_id)->where('estado', 'Solicitado')->get(); 
             $valorTotal = $pagos->sum('valor'); 
             // $valorTotal = 0.00; 
