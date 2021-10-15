@@ -398,7 +398,7 @@ class ProfesorController extends Controller
                                 $notificacion['color'] = "alumno";
                                 $notificacion['titulo'] = 'Clase Confirmada';
                                 $notificacion['texto'] = 'La Clase de '.$clase->materia.', '.$clase->tema.', ha sido confirmada por el profesor '
-                                        .$profe->nombres.' '.$profe->apellidos;
+                                        .$profe->nombres.' '.$profe->apellidos.'. Por favor, procede a realizar el pago.';
                                 $notificacion['estado'] = $estado;
                                 $pushClass = new NotificacionesPushFcm();
                                 $pushClass->enviarNotificacion($notificacion, $userAlumno);
