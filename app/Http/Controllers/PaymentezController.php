@@ -368,6 +368,24 @@ class PaymentezController extends BaseController
                             $userAlumno = User::where('id', $tarea->user_id)->first();
                             $userProf = User::where('id', $tarea->user_id_pro)->first();
                             $inf = json_decode($paymentez->paymentez_transaction);
+
+                            try {
+                                //enviar notificacion al profesor y al alumno
+                                $notificacion['titulo'] = 'Tarea Aprobada';
+                                $notificacion['estado'] = 'NO';
+                                $notificacion['tarea_id'] = $tarea->id;
+                                $notificacion['clase_id'] = 0;
+                                $notificacion['chat_id'] = 0;
+                                $notificacion['compra_id'] = 0;
+                                $pushClass = new NotificacionesPushFcm();
+                                $notificacion['color'] = "profesor";
+                                $notificacion['texto'] = 'La Tarea de '.$tarea->materia.', '.$tarea->tema.', ha sido Confirmada.';
+                                $pushClass->enviarNotificacion($notificacion, $userProf);
+                        
+                            } catch (Exception $e) {
+                                //throw $th;
+                            }
+
                             try 
                             {
                                 Mail::to($userAlumno->email)->send(new NotificacionTareas($tarea,  $inf->id, $inf->authorization_code, $paymentez->amount, $userAlumno->name, $userProf->name, 
@@ -379,26 +397,9 @@ class PaymentezController extends BaseController
                             {
                                 $messages["error"] = 'No se ha podido enviar el correo';
                                 return redirect()->back()->withErrors($messages)->withInput();
-                            } 
-                            
-                            //enviar notificacion al profesor y al alumno
-                                // $notificacion['titulo'] = 'Tarea Aprobada';
-                                // $notificacion['color'] = "alumno";
-                                // $notificacion['texto'] = 'El pago de la Tarea de '.$tarea->materia.', '.$tarea->tema.', ha sido '.$request['estado'];
-                                // $notificacion['texto'] = $notificacion['texto'].'. La Tarea ha sido Asignada';
+                            };
 
-                                // $notificacion['estado'] = 'NO';
-                                // $notificacion['tarea_id'] = $tarea->id;
-                                // $notificacion['clase_id'] = 0;
-                                // $notificacion['chat_id'] = 0;
-                                // $notificacion['compra_id'] = 0;
-                                // $pushClass = new NotificacionesPushFcm();
-                                // $pushClass->enviarNotificacion($notificacion, $userAlumno);
-                                // $notificacion['color'] = "profesor";
-                                // $notificacion['texto'] = 'La Tarea de '.$tarea->materia.', '.$tarea->tema.', ha sido Confirmada.';
-
-                                // $pushClass->enviarNotificacion($notificacion, $userProf);
-                        }
+                        }                            
                         if ($clase != null)
                         {
                             
@@ -422,6 +423,26 @@ class PaymentezController extends BaseController
                             $userAlumno = Alumno::where('user_id', $clase->user_id)->first();
                             $userProf = User::where('id', $clase->user_id_pro)->first();
                             $inf = json_decode($paymentez->paymentez_transaction);
+                            
+                            try {
+
+                                //enviar notificacion al profesor y al alumno
+                                $notificacion['titulo'] = 'Clase Aprobada';
+                                $notificacion['estado'] = 'NO';
+                                $notificacion['clase_id'] = $clase->id;
+                                $notificacion['tarea_id'] = 0;
+                                $notificacion['chat_id'] = 0;
+                                $notificacion['compra_id'] = 0;
+                                $pushClass = new NotificacionesPushFcm();
+                                $notificacion['color'] = "profesor";
+                                $notificacion['texto'] = 'La Clase de '.$clase->materia.', '.$clase->tema.', ha sido Confirmada.';
+
+                                $pushClass->enviarNotificacion($notificacion, $userProf);
+
+                            }catch ( Exception $e ) {
+
+                            }
+
                             try 
                             {
                                 Mail::to($userAlumno->correo)->send(new NotificacionClases($clase, $inf->id, $inf->authorization_code, $paymentez->amount, $userAlumno->nombres ?? 'Alumno Nombre', $userProf->name ?? 'Profesor Nombre', 
@@ -433,24 +454,8 @@ class PaymentezController extends BaseController
                             {
                                 $messages["error"] = 'No se ha podido enviar el correo';
                                 return redirect()->back()->withErrors($messages)->withInput();
-                            }
-                            //enviar notificacion al profesor y al alumno
-                            // $notificacion['titulo'] = 'Clase Aprobada';
-                            // $notificacion['color'] = "alumno";
-                            // $notificacion['texto'] = 'El pago de la Clase de '.$clase->materia.', '.$clase->tema.', ha sido '.$request['estado'];
-                            // $notificacion['texto'] = $notificacion['texto'].'. La Clase ha sido Asignada';
-
-                            // $notificacion['estado'] = 'NO';
-                            // $notificacion['clase_id'] = $clase->id;
-                            // $notificacion['tarea_id'] = 0;
-                            // $notificacion['chat_id'] = 0;
-                            // $notificacion['compra_id'] = 0;
-                            // $pushClass = new NotificacionesPushFcm();
-                            // $pushClass->enviarNotificacion($notificacion, $userAlumno);
-                            // $notificacion['color'] = "profesor";
-                            // $notificacion['texto'] = 'La Clase de '.$clase->materia.', '.$clase->tema.', ha sido Confirmada.';
-
-                            // $pushClass->enviarNotificacion($notificacion, $userProf);
+                            } 
+                            
                         }
                         if ($compra != null)
                         {
