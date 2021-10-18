@@ -506,7 +506,8 @@ class PaymentezController extends BaseController
                         }
                         catch (Exception $e) { }
 
-                        return $this->sendResponse('Success','Compra realizada correctamente', $paymentez->id);
+                        return true;
+                        // return $this->sendResponse('Success','Compra realizada correctamente', $paymentez->id);
 
                     }
                     else
