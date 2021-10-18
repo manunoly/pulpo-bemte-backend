@@ -388,16 +388,13 @@ class PaymentezController extends BaseController
 
                             try 
                             {
-                                Mail::to($userAlumno->email)->send(new NotificacionTareas($tarea,  $inf->id, $inf->authorization_code, $paymentez->amount, $userAlumno->name, $userProf->name, 
+                                Mail::to($userAlumno->email)->send(new NotificacionTareas($tarea ?? 'Tarea',  $inf->id ?? 'ID', $inf->authorization_code ?? 'Code', $paymentez->amount ?? 'Monto', $userAlumno->name ?? 'Alumno', $userProf->name ?? 'Profesor', 
                                                                 env('EMPRESA'), true));
-                                Mail::to($userProf->email)->send(new NotificacionTareas($tarea, $inf->id, $inf->authorization_code, $paymentez->amount, $userAlumno->name, $userProf->name, 
+                                Mail::to($userProf->email)->send(new NotificacionTareas($tarea ?? 'Tarea', $inf->id ?? 'ID', $inf->authorization_code ?? 'Code', $paymentez->amount ?? 'Monto', $userAlumno->name ?? 'Alumno', $userProf->name ?? 'Profesor', 
                                                                 env('EMPRESA'), false));
                             }
                             catch (Exception $e) 
-                            {
-                                $messages["error"] = 'No se ha podido enviar el correo';
-                                return redirect()->back()->withErrors($messages)->withInput();
-                            };
+                            { };
 
                         }                            
                         if ($clase != null)
@@ -445,16 +442,13 @@ class PaymentezController extends BaseController
 
                             try 
                             {
-                                Mail::to($userAlumno->correo)->send(new NotificacionClases($clase, $inf->id, $inf->authorization_code, $paymentez->amount, $userAlumno->nombres ?? 'Alumno Nombre', $userProf->name ?? 'Profesor Nombre', 
+                                Mail::to($userAlumno->correo)->send(new NotificacionClases($clase ?? 'Clase', $inf->id ?? 'ID', $inf->authorization_code ?? 'Code', $paymentez->amount ?? 'Monto', $userAlumno->nombres ?? 'Alumno Nombre', $userProf->name ?? 'Profesor Nombre', 
                                                                 env('EMPRESA'), true));
-                                Mail::to($userProf->email)->send(new NotificacionClases($clase, $inf->id, $inf->authorization_code, $paymentez->amount, $userAlumno->nombres ?? 'Alumno Nombre', $userProf->name ?? 'Profesor Nombre', 
+                                Mail::to($userProf->email)->send(new NotificacionClases($clase ?? 'Clase', $inf->id ?? 'ID', $inf->authorization_code ?? 'Code', $paymentez->amount ?? 'Monto', $userAlumno->nombres ?? 'Alumno Nombre', $userProf->name ?? 'Profesor Nombre', 
                                                                 env('EMPRESA'), false));
                             }
                             catch (Exception $e) 
-                            {
-                                $messages["error"] = 'No se ha podido enviar el correo';
-                                return redirect()->back()->withErrors($messages)->withInput();
-                            } 
+                            { } 
                             
                         }
                         if ($compra != null)
@@ -469,18 +463,15 @@ class PaymentezController extends BaseController
 
                             $userAlumno = User::where('id', $paymentez->user_id)->first();
                             $inf = json_decode($paymentez->paymentez_transaction);
-                            // try 
-                            // {
-                            //     Mail::to($userAlumno->email)->send(new Notificacion(
-                            //         $userAlumno->name, 
-                            //         'Su compra de combo de ' .$combo->horas .' horas por el valor de '.$combo->valor.' con tarjeta de crédito, se ha realizado con éxito,', 'Transacción ID: '.$inf->id. ' Authorization code: '.$inf->authorization_code, '', 
-                            //         env('EMPRESA')));
-                            // }
-                            // catch (Exception $e) 
-                            // {
-                            //     $messages["error"] = 'No se ha podido enviar el correo';
-                            //     return redirect()->back()->withErrors($messages)->withInput();
-                            // }
+                            try 
+                            {
+                                Mail::to($userAlumno->email)->send(new Notificacion(
+                                    $userAlumno->name ?? 'Estimado', 
+                                    'Su compra de combo de ' .$combo->horas ?? '-1' .' horas por el valor de '.$combo->valor ?? '-1'.' con tarjeta de crédito, se ha realizado con éxito,', 'Transacción ID: '.$inf->id ?? 'ID'. ' Authorization code: '.$inf->authorization_code ?? 'Code', '', 
+                                    env('EMPRESA')));
+                            }
+                            catch (Exception $e) { }
+
                             //enviar notificacion al alumno
                             // $userAlumno = Alumno::where('user_id', $compra->user_id)->first();
                             // $notificacion['titulo'] = 'Pago Horas Aprobado';
@@ -497,17 +488,17 @@ class PaymentezController extends BaseController
                             // $pushClass->enviarNotificacion($notificacion, $userAlumno);
                         }
 
-                        // try 
-                        // {
-                        //     Mail::to(env('MAILADMIN'))->send(new Notificacion(
-                        //             'Administrador de '.env('EMPRESA'), 
-                        //             $correoAdmin, $detalle, 'Por favor, revisar el pago.', 
-                        //             env('EMPRESA')));
-                        // }
-                        // catch (Exception $e) { }
+                        try 
+                        {
+                            Mail::to(env('MAILADMIN'))->send(new Notificacion(
+                                    'Administrador de '.env('EMPRESA'), 
+                                    $correoAdmin, $detalle ?? 'Pago tarjeta', 'Por favor, revisar el pago.', 
+                                    env('EMPRESA')));
+                        }
+                        catch (Exception $e) { }
 
                         // return true;
-                        return $this->sendResponse('Success','Compra realizada correctamente', $paymentez->id);
+                        return $this->sendResponse('Success','Compra realizada correctamente', 0);
 
                     }
                     else
