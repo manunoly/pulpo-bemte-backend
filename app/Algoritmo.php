@@ -138,7 +138,7 @@ class Algoritmo
             $userProfesor = User::where('id', $propuestaSeleccionada["user_id"])->first();
             $texto = 'La Tarea de '.$tarea->materia.', '.$tarea->tema.', ha sido confirmada por el profesor '
                         .$profe->apodo.'. Por favor, realizar el pago.';
-            $textoProf = 'Usted ha sido seleccionado para La Tarea de' .$tarea->materia.', '.$tarea->tema.', estado por confirmar';
+            $textoProf = 'Usted ha sido seleccionado para La Tarea de ' .$tarea->materia.', '.$tarea->tema.', estado por confirmar';
             
             //enviar notificacion al profesor y al alumno
             $notificacion['titulo'] = 'Tarea Confirmada';
