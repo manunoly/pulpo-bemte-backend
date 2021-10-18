@@ -458,20 +458,22 @@ class PaymentezController extends BaseController
                             if(!$actualizado )
                             {
                                 $messages["error"] = 'Ocurrió un error al actualizar Billetera';
-                                return redirect()->back()->withErrors($messages)->withInput();
+                                return response()->json(['error' => 'Ocurrió un error al actualizar Billetera'], 401);
                             }
 
-                            $userAlumno = User::where('id', $paymentez->user_id)->first();
-                            $inf = json_decode($paymentez->paymentez_transaction);
-                            try 
-                            {
-                                Mail::to($userAlumno->email)->send(new Notificacion(
-                                    $userAlumno->name ?? 'Estimado', 
-                                    'Su compra de combo de ' .$combo->horas ?? '-1' .' horas por el valor de '.$combo->valor ?? '-1'.' con tarjeta de crédito, se ha realizado con éxito,', 'Transacción ID: '.$inf->id ?? 'ID'. ' Authorization code: '.$inf->authorization_code ?? 'Code', '', 
-                                    env('EMPRESA')));
+                            if ($combo != null) {
+                                $userAlumno = User::where('id', $paymentez->user_id)->first();
+                                $inf = json_decode($paymentez->paymentez_transaction);
+                                try 
+                                {
+                                    Mail::to($userAlumno->email)->send(new Notificacion(
+                                        $userAlumno->name ?? 'Estimado', 
+                                        'Su compra de combo de ' .$combo->horas ?? '-1' .' horas por el valor de '.$combo->valor ?? '-1'.' con tarjeta de crédito, se ha realizado con éxito,', 'Transacción ID: '.$inf->id ?? 'ID'. ' Authorization code: '.$inf->authorization_code ?? 'Code', '', 
+                                        env('EMPRESA')));
+                                }
+                                catch (Exception $e) { }
                             }
-                            catch (Exception $e) { }
-
+                            
                             //enviar notificacion al alumno
                             // $userAlumno = Alumno::where('user_id', $compra->user_id)->first();
                             // $notificacion['titulo'] = 'Pago Horas Aprobado';
