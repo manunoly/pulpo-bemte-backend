@@ -404,7 +404,9 @@ class AlumnoPagoController extends Controller
                         'valor' => $duracion * $profeTarea->valor_tarea,
                         'horas' => $duracion,
                         'estado' => 'Solicitado',
-                        'valorTotal' => 0
+                        'valorTotal' => 0,
+                        'calculoValor' => 0,
+                        'valorPendiente' => 0
                         ]);
                 if (!$pagoProf->id)
                 {
@@ -496,7 +498,9 @@ class AlumnoPagoController extends Controller
                         'valor' => ($clase->duracion + ($clase->personas - 1)) * $profeClase->valor_clase,
                         'horas' => $clase->duracion,
                         'estado' => 'Solicitado',
-                        'valorTotal' => 0
+                        'valorTotal' => 0,
+                        'calculoValor' => 0,
+                        'valorPendiente' => 0
                         ]);
                 if (!$pagoProf->id)
                 {
