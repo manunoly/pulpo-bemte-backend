@@ -357,7 +357,9 @@ class PaymentezController extends BaseController
                                     'valor' => $duracion * $profeTarea->valor_tarea,
                                     'horas' => $duracion,
                                     'estado' => 'Solicitado',
-                                    'valorTotal' => 0
+                                    'valorTotal' => 0,
+                                    'calculoValor' => 0,
+                                    'valorPendiente' => 0
                                     ]);
                             if (!$pagoProf->id)
                             {
@@ -409,7 +411,9 @@ class PaymentezController extends BaseController
                                     'valor' => ($clase->duracion + ($clase->personas - 1)) * $profeClase->valor_clase,
                                     'horas' => $clase->duracion,
                                     'estado' => 'Solicitado',
-                                    'valorTotal' => 0
+                                    'valorTotal' => 0,
+                                    'calculoValor' => 0,
+                                    'valorPendiente' => 0
                                     ]);
                             if (!$pagoProf->id)
                             {
@@ -462,11 +466,11 @@ class PaymentezController extends BaseController
                             }
 
                             if ($combo != null) {
-                                $userAlumno = Alumno::where('user_id', $request['user_id'])->first();
+                                $userAlumno = User::where('id', $paymentez->user_id)->first();
                                 $inf = json_decode($paymentez->paymentez_transaction);
                                 try 
                                 {
-                                    Mail::to($userAlumno->correo)->send(new Notificacion(
+                                    Mail::to($userAlumno->email)->send(new Notificacion(
                                         $userAlumno->name ?? 'Estimado', 
                                         'Su compra de combo de ' .$combo->horas ?? '-1' .' horas por el valor de '.$combo->valor ?? '-1'.' con tarjeta de crédito, se ha realizado con éxito,', 'Transacción ID: '.$inf->id ?? 'ID'. ' Authorization code: '.$inf->authorization_code ?? 'Code', '', 
                                         env('EMPRESA')));
