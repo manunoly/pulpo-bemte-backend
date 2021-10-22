@@ -392,10 +392,20 @@ class PaymentezController extends BaseController
 
                             try 
                             {
-                                Mail::to($userAlumno->email)->send(new NotificacionTareas($tarea ?? 'Tarea',  $inf->id ?? 'ID', $inf->authorization_code ?? 'Code', $paymentez->amount ?? 'Monto', $userAlumno->name ?? 'Alumno', $userProf->name ?? 'Profesor', 
-                                                                env('EMPRESA'), true));
-                                Mail::to($userProf->email)->send(new NotificacionTareas($tarea ?? 'Tarea', $inf->id ?? 'ID', $inf->authorization_code ?? 'Code', $paymentez->amount ?? 'Monto', $userAlumno->name ?? 'Alumno', $userProf->name ?? 'Profesor', 
-                                                                env('EMPRESA'), false));
+                                Mail::to($userAlumno->email)->send(new NotificacionTareas($tarea ?? 'Tarea',  
+                                            $inf->id ?? 'ID', 
+                                            $inf->authorization_code ?? 'Code', 
+                                            $paymentez->amount ?? 'Monto', 
+                                            $userAlumno->name ?? 'Alumno', 
+                                            $userProf->name ?? 'Profesor', 
+                                            env('EMPRESA'), true));
+                                Mail::to($userProf->email)->send(new NotificacionTareas($tarea ?? 'Tarea', 
+                                            $inf->id ?? 'ID', 
+                                            $inf->authorization_code ?? 'Code', 
+                                            $paymentez->amount ?? 'Monto', 
+                                            $userAlumno->name ?? 'Alumno', 
+                                            $userProf->name ?? 'Profesor', 
+                                            env('EMPRESA'), false));
                             }
                             catch (Exception $e) 
                             { };
@@ -455,14 +465,14 @@ class PaymentezController extends BaseController
                                         $inf->id ?? 'ID',
                                         $inf->authorization_code ?? 'Code', 
                                         $paymentez->amount ?? 'Monto', 
-                                        $userAlumno->nombres ?? 'Alumno Nombre', 
+                                        $userAlumno->name ?? 'Alumno Nombre', 
                                         $userProf->name ?? 'Profesor Nombre', 
                                         env('EMPRESA'), true));
                                 Mail::to($userProf->email)->send(new NotificacionClases($clase ?? 'Clase', 
                                         $inf->id ?? 'ID', 
                                         $inf->authorization_code ?? 'Code', 
                                         $paymentez->amount ?? 'Monto', 
-                                        $userAlumno->nombres ?? 'Alumno Nombre', 
+                                        $userAlumno->name ?? 'Alumno Nombre', 
                                         $userProf->name ?? 'Profesor Nombre', 
                                         env('EMPRESA'), false));
                             }
@@ -487,7 +497,7 @@ class PaymentezController extends BaseController
                                 {
                                     Mail::to($userAlumno->email)->send(new Notificacion(
                                         $userAlumno->name ?? 'Estimado', 
-                                        'Su compra de combo de ' .$combo->horas ?? '-1' .' horas por el valor de '.$combo->valor ?? '-1'.' con tarjeta de crédito, se ha realizado con éxito,',
+                                        'Su compra de combo de ' .$compra->horas ?? '-1' .' horas por el valor de '.$compra->valor ?? '-1'.' con tarjeta de crédito, se ha realizado con éxito,',
                                         'Transacción ID: '.$inf->id ?? 'ID'. ' Authorization code: '.$inf->authorization_code ?? 'Code',
                                          '', 
                                         env('EMPRESA')));
