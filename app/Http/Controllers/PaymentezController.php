@@ -272,6 +272,10 @@ class PaymentezController extends BaseController
                                     return response()->json(['error' => 'Error al registrar solicitud!'], 401);
                                 }
                             }
+
+                            if ($compra == null)
+                                $compra = AlumnoCompra::where('id', $combo->id)->first();
+                            
                             
                         }
                         $solicitud = AlumnoPago::where('user_id', $request['user_id'])
@@ -333,10 +337,9 @@ class PaymentezController extends BaseController
                         if ($billetera == null)
                         {
                             $messages["error"] = 'El Alumno no existe';
-                            return redirect()->back()->withErrors($messages)->withInput();
+                            return response()->json(['error' => 'El Alumno no existe'], 401);
                         }
-                        if ($compra == null)
-                            $compra = AlumnoCompra::where('id', $combo->id)->first();
+
                         if ($compra != null)
                         {
                             if ($billetera->billetera + $compra->horas - $duracion < 0)
@@ -385,9 +388,7 @@ class PaymentezController extends BaseController
                                 $notificacion['texto'] = 'La Tarea de '.$tarea->materia.', '.$tarea->tema.', ha sido Confirmada.';
                                 $pushClass->enviarNotificacion($notificacion, $userProf);
                         
-                            } catch (Exception $e) {
-                                //throw $th;
-                            }
+                            } catch (Exception $e) { }
 
                             try 
                             {
@@ -451,7 +452,7 @@ class PaymentezController extends BaseController
                             try 
                             {
                                 Mail::to($userAlumno->email)->send(new NotificacionClases($clase ?? 'Clase', 
-                                        $inf->id ?? 'ID', 
+                                        $inf->id ?? 'ID',
                                         $inf->authorization_code ?? 'Code', 
                                         $paymentez->amount ?? 'Monto', 
                                         $userAlumno->nombres ?? 'Alumno Nombre', 
