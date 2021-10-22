@@ -462,11 +462,11 @@ class PaymentezController extends BaseController
                             }
 
                             if ($combo != null) {
-                                $userAlumno = User::where('id', $paymentez->user_id)->first();
+                                $userAlumno = Alumno::where('user_id', $request['user_id'])->first();
                                 $inf = json_decode($paymentez->paymentez_transaction);
                                 try 
                                 {
-                                    Mail::to($userAlumno->email)->send(new Notificacion(
+                                    Mail::to($userAlumno->correo)->send(new Notificacion(
                                         $userAlumno->name ?? 'Estimado', 
                                         'Su compra de combo de ' .$combo->horas ?? '-1' .' horas por el valor de '.$combo->valor ?? '-1'.' con tarjeta de crédito, se ha realizado con éxito,', 'Transacción ID: '.$inf->id ?? 'ID'. ' Authorization code: '.$inf->authorization_code ?? 'Code', '', 
                                         env('EMPRESA')));
