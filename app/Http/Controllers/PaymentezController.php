@@ -365,8 +365,8 @@ class PaymentezController extends BaseController
                                 return redirect()->back()->withErrors($messages)->withInput();
                             }
                             
-                            $userAlumno = User::where('id', $tarea->user_id)->first();
-                            $userProf = User::where('id', $tarea->user_id_pro)->first();
+                            $userAlumno =  Alumno::where('user_id', $request['user_id'])->first();
+                            $userProf = Profesore::where('user_id', $tarea->user_id_pro)->first();
                             $inf = json_decode($paymentez->paymentez_transaction);
 
                             try {
@@ -388,9 +388,9 @@ class PaymentezController extends BaseController
 
                             try 
                             {
-                                Mail::to($userAlumno->email)->send(new NotificacionTareas($tarea ?? 'Tarea',  $inf->id ?? 'ID', $inf->authorization_code ?? 'Code', $paymentez->amount ?? 'Monto', $userAlumno->name ?? 'Alumno', $userProf->name ?? 'Profesor', 
+                                Mail::to($userAlumno->correo)->send(new NotificacionTareas($tarea ?? 'Tarea',  $inf->id ?? 'ID', $inf->authorization_code ?? 'Code', $paymentez->amount ?? 'Monto', $userAlumno->name ?? 'Alumno', $userProf->name ?? 'Profesor', 
                                                                 env('EMPRESA'), true));
-                                Mail::to($userProf->email)->send(new NotificacionTareas($tarea ?? 'Tarea', $inf->id ?? 'ID', $inf->authorization_code ?? 'Code', $paymentez->amount ?? 'Monto', $userAlumno->name ?? 'Alumno', $userProf->name ?? 'Profesor', 
+                                Mail::to($userProf->correo)->send(new NotificacionTareas($tarea ?? 'Tarea', $inf->id ?? 'ID', $inf->authorization_code ?? 'Code', $paymentez->amount ?? 'Monto', $userAlumno->name ?? 'Alumno', $userProf->name ?? 'Profesor', 
                                                                 env('EMPRESA'), false));
                             }
                             catch (Exception $e) 
@@ -418,7 +418,7 @@ class PaymentezController extends BaseController
                             }
                             
                             $userAlumno = Alumno::where('user_id', $clase->user_id)->first();
-                            $userProf = User::where('id', $clase->user_id_pro)->first();
+                            $userProf = Profesore::where('user_id', $clase->user_id_pro)->first();
                             $inf = json_decode($paymentez->paymentez_transaction);
                             
                             try {
@@ -444,7 +444,7 @@ class PaymentezController extends BaseController
                             {
                                 Mail::to($userAlumno->correo)->send(new NotificacionClases($clase ?? 'Clase', $inf->id ?? 'ID', $inf->authorization_code ?? 'Code', $paymentez->amount ?? 'Monto', $userAlumno->nombres ?? 'Alumno Nombre', $userProf->name ?? 'Profesor Nombre', 
                                                                 env('EMPRESA'), true));
-                                Mail::to($userProf->email)->send(new NotificacionClases($clase ?? 'Clase', $inf->id ?? 'ID', $inf->authorization_code ?? 'Code', $paymentez->amount ?? 'Monto', $userAlumno->nombres ?? 'Alumno Nombre', $userProf->name ?? 'Profesor Nombre', 
+                                Mail::to($userProf->correo)->send(new NotificacionClases($clase ?? 'Clase', $inf->id ?? 'ID', $inf->authorization_code ?? 'Code', $paymentez->amount ?? 'Monto', $userAlumno->nombres ?? 'Alumno Nombre', $userProf->name ?? 'Profesor Nombre', 
                                                                 env('EMPRESA'), false));
                             }
                             catch (Exception $e) 
