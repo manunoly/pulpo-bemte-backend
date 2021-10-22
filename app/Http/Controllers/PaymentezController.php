@@ -465,7 +465,7 @@ class PaymentezController extends BaseController
                                 return response()->json(['error' => 'Ocurrió un error al actualizar Billetera'], 401);
                             }
 
-                            if ($combo != null) {
+                            if ($request['combo_id'] != '0') {
                                 $userAlumno = User::where('id', $paymentez->user_id)->first();
                                 $inf = json_decode($paymentez->paymentez_transaction);
                                 try 
