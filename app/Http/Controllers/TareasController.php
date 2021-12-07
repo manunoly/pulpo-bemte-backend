@@ -52,7 +52,7 @@ class TareasController extends Controller
                 return response()->json(['error' => $validator->errors()], 406);
             }
             
-            $limit = date("Y-m-d H:i:s", strtotime($request['fecha_entrega'].' '.$request['hora_inicio']. '-2 hours'));
+            $limit = date("Y-m-d H:i:s", strtotime($request['fecha_entrega'].' '.$request['hora_inicio']));
             $limitDate = date_format(date_create($limit), "Y-m-d");
             $limitTime = date_format(date_create($limit), "H:i:s");
             $nowDate = date("Y-m-d");
